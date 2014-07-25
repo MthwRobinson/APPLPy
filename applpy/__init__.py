@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
+from sympy import *
 from applpy import *
+init_session()
 
 

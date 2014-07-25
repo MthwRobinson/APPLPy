@@ -23,7 +23,6 @@ Main ApplPy Module
 Imports supporting ApplPy Modules
 
 """
-from __future__ import division
 from rv import *
 from dist_type import *
 from stats import *

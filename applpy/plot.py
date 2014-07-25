@@ -1,3 +1,8 @@
+from __future__ import division
+
+from sympy import *
+from applpy import *
+
 """
     A Probability Progamming Language (APPL) -- Python Edition
     Copyright (C) 2001,2002,2008,2010,2014 Andrew Glen, Larry
@@ -24,10 +29,6 @@ Plotting Module
 Defines procedures for plotting random variables
 
 """
-from __future__ import division
-from sympy import *
-from applpy import *
-
 try:
     from pylab import *
 except:

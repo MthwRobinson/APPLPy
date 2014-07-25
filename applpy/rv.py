@@ -1,3 +1,9 @@
+from __future__ import division
+from sympy import *
+import plot as plt
+from random import random
+x,y,z,t=symbols('x y z t')
+
 """
     A Probability Progamming Language (APPL) -- Python Edition
     Copyright (C) 2001,2002,2008,2010,2014 Andrew Glen, Larry
@@ -16,24 +22,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
-
-from __future__ import division
-from sympy import *
-import plot as plt
-from random import random
-x,y,z,t=symbols('x y z t')
-
-"""
-Bugs:
-    1. Cannot create RVs with symbolic
-        supports
-
-Fixes:
-    1. Convolution/ProductIID have difficulty
-        evaluating for high values of n
-    2. Plotting is still clunky
-"""
-
 
 """
 Main Random Variable Module
