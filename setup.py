@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='APPLPy',
-    version='0.1.1',
+    version='0.1.2',
     author='Matthew Robinson',
     author_email='mthw.wm.robinson@gmail.com',
     packages=['applpy','applpy.test'],
