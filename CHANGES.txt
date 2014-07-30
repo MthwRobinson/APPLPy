@@ -1,6 +1,4 @@
-v0.1.1, DATE TBD
-
-New Features:
+v0.1.1, 29 JULY 2014
 
 Fixed Bugs:
 	1. Convolution/Product/MaximumIID procedures have been updated
