@@ -1,1 +1,20 @@
+v0.1.1, DATE TBD
+
+New Features:
+
+Fixed Bugs:
+	1. Convolution/Product/MaximumIID procedures have been updated
+	so that they now function with all distributions. In the
+	initial release, they only worked with lifetime distributions.
+
+	2. Expected value procedures were modified to output
+	simplified expressions
+
+	3. init.py file modified so that all dependencies are
+	automatically imported
+
+	4. Plotting now takes place through the sympy plotting front-
+	end. The PlotDist procedure is now capable of plotting all
+	functions
+
 v0.1.0, 23 JULY 2014 -- Initial Release
