@@ -20,5 +20,7 @@
 from sympy import *
 from applpy import *
 init_session()
+import sys
+sys.display_hook=pprint
 
 

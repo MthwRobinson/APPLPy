@@ -1051,9 +1051,10 @@ def ConvolutionIID(RVar,n):
 
     # Compute the iid convolution
     X_dummy=PDF(RVar)
+    X_final=X_dummy
     for i in range(n-1):
-        X_dummy+=X_dummy
-    return X_dummy
+        X_final+=X_dummy
+    return X_final
 
 def CoefOfVar(RVar):
     """
@@ -1066,7 +1067,7 @@ def CoefOfVar(RVar):
     expect=Mean(RVar)
     sig=Variance(RVar)
     cov=(sqrt(sig))/expect
-    return cov
+    return simplify(cov)
 
 def ExpectedValue(RVar,gX=x):
     """
@@ -1085,8 +1086,7 @@ def ExpectedValue(RVar,gX=x):
         for i in range(len(fx.func)):
             Expect+=integrate(gX*fx.func[i],
                               (x,fx.support[i],fx.support[i+1]))
-        simplify(Expect)
-        return Expect
+        return simplify(Expect)
 
     # If the distribution is discrete, compute the expected
     #   value
@@ -1095,7 +1095,7 @@ def ExpectedValue(RVar,gX=x):
         #   mean procedure to find the expected value
         fx_trans=Transform(fx,[[gX],[-oo,oo]])
         Expect=Mean(fx_trans)
-        return Expect
+        return simplify(Expect)
 
 def Kurtosis(RVar):
     """
@@ -1112,7 +1112,7 @@ def Kurtosis(RVar):
     Term3=6*(expect**2)*ExpectedValue(RVar,x**2)
     Term4=3*expect**4
     kurt=(Term1-Term2+Term3-Term4)/(sig**4)
-    return kurt
+    return simplify(kurt)
 
 def MaximumIID(RVar,n):
     """
@@ -1128,8 +1128,9 @@ def MaximumIID(RVar,n):
 
     # Compute the iid maximum
     X_dummy=RVar
+    X_final=X_dummy
     for i in range(n-2):
-        X_dummy=Maximum(X_dummy,X_dummy)
+        X_final=Maximum(X_final,X_dummy)
     return X_dummy
 
 def Mean(RVar):
@@ -1152,7 +1153,7 @@ def Mean(RVar):
         for i in range(len(X_dummy.func)):
             val=integrate(meanfunc[i],(x,X_dummy.support[i],X_dummy.support[i+1]))
             meanval+=val
-        return meanval
+        return simplify(meanval)
 
     # If the random variable is discrete, find and return the variance
     if RVar.ftype[0]=='discrete':
@@ -1164,7 +1165,7 @@ def Mean(RVar):
         meanval=0
         for i in range(len(meanlist)):
             meanval+=meanlist[i]
-        return meanval
+        return simplify(meanval)
 
 def MGF(RVar):
     """
@@ -1174,8 +1175,7 @@ def MGF(RVar):
     Output:     1. The moment generating function
     """
     mgf=ExpectedValue(RVar,exp(t*x))
-    simplify(mgf)
-    return mgf
+    return simplify(mgf)
 
 def MinimumIID(RVar,n):
     """
@@ -1191,9 +1191,10 @@ def MinimumIID(RVar,n):
 
     # Compute the iid minimum
     X_dummy=RVar
+    X_final=X_dummy
     for i in range(n-2):
-        X_dummy=Minimum(X_dummy,X_dummy)
-    return X_dummy
+        X_final=Minimum(X_final,X_dummy)
+    return X_final
 
 def NextCombination(Previous,N):
     """
@@ -1461,9 +1462,10 @@ def ProductIID(RVar,n):
 
     # Compute the iid convolution
     X_dummy=PDF(RVar)
+    X_final=X_dummy
     for i in range(n-1):
-        X_dummy*=X_dummy
-    return X_dummy
+        X_final*=X_dummy
+    return X_final
 
 def Skewness(RVar):
     """
@@ -1479,7 +1481,7 @@ def Skewness(RVar):
     Term2=3*expect*ExpectedValue(RVar,x**2)
     Term3=2*expect**3
     skew=(Term1-Term2+Term3)/(sig**3)
-    return skew
+    return simplify(skew)
                             
 
 def Transform(RVar,gXt):
@@ -1739,7 +1741,7 @@ def Variance(RVar):
             exxval+=val
         # Find Var(X)=E(X^2)-E(X)^2
         var=exxval-(EX**2)
-        return var
+        return simplify(var)
 
     # If the random variable is discrete, find and return the variance
     if RVar.ftype[0]=='discrete':
@@ -1756,7 +1758,7 @@ def Variance(RVar):
             exxval+=exxlist[i]
         # Find Var(X)=E(X^2)-E(X)^2
         var=exxval-(EX**2)
-        return var
+        return simplify(var)
 
 """
 Procedures on Two Random Variables
@@ -2600,17 +2602,29 @@ def PlotDist(RVar,suplist=None,opt=None):
             if i>lwindx and i<upindx:
                 plotsupp.append(RVar.support[i])
         plotsupp.append(suplist[1])
-        print plotsupp
+
+        initial_plot=plot(plotfunc[0],(x,plotsupp[0],plotsupp[1]),
+                          title=lab2)
+        for i in range(1,len(plotfunc)):
+            plot_extension=plot(plotfunc[i],
+                                (x,plotsupp[i],plotsupp[i+1]),
+                                show=False)
+            initial_plot.append(plot_extension[0])
+        initial_plot.show()
+
+        # Old PlotDist code before sympy created the
+        #   plotting front-end
+        #print plotsupp
         # Parse the functions for matplotlib
-        plot_func=[]
-        for i in range(len(plotfunc)):
-            strfunc=str(plotfunc[i])
-            plot_func.append(strfunc)
-        print plot_func
+        #plot_func=[]
+        #for i in range(len(plotfunc)):
+        #    strfunc=str(plotfunc[i])
+        #    plot_func.append(strfunc)
+        #print plot_func
         # Display the plot
-        if opt!='display':
-            plt.ion()
-        plt.mat_plot(plot_func,plotsupp,lab1,lab2,'continuous')
+        #if opt!='display':
+        #    plt.ion()
+        #plt.mat_plot(plot_func,plotsupp,lab1,lab2,'continuous')
     if RVar.ftype[0]=='discrete':
         if opt!='display':
             plt.ion()
