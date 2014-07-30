@@ -123,7 +123,10 @@ class RV:
             for i in range(len(self.func)):
                 f=self.func[i]
                 sup='x>=%s'%(self.support[i])
-                tup=(f,eval(sup))
+                try:
+                    tup=(f,eval(sup))
+                except:
+                    tup=(f,sup)
                 piece_list.append(tup)
             piece_list.append((0,True))
             piece_input='Piecewise('+str(piece_list)+')'
