@@ -34,7 +34,7 @@ Defines procedures for Bayesian parameter estimation
 Bayesian Procedures:
 
 Procedures:
-    1. Posterior(LikeRV,PriorRV,data,param)
+    1. BayesUpdate(LikeRV,PriorRV,data,param)
 
 """
 
@@ -58,11 +58,12 @@ def BayesMenu():
     print 'CS(m,s,alpha,n,type),Jeffreys(X,low,high,param)'
     print ""
 
-def Posterior(LikeRV,PriorRV,data,param):
+def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
     """
-    Procedure Name: Posterior
+    Procedure Name: BayesUpdate
     Purpose: Derive a posterior distribution for a parameter
-                given a likelihood function, a prior distribution and a data set
+                given a likelihood function, a prior distribution and
+                an observation
     Arguments:  1. LikeRV: The likelihood function (a random variable)
                 2. PriorRV: A prior distribution (a random variable)
                 3. data: a data observation
@@ -123,12 +124,61 @@ def Posterior(LikeRV,PriorRV,data,param):
         # Convert the list of posterior distributions to RV form
         PostRV=RV(FinalList,PriorRV.support,['continuous','pdf'])
         return PostRV
+    # If the prior distribution is discrete and the likelihood function
+    #   is continuous, compute the posterior distribution
+    if PriorRV.ftype[0]=='discrete' and LikeRV.fype[0]=='continuous':
+        # Compute a distribution that is proportional to the posterior
+        #   distribution
+        List1=[]
+        for i in range(len(PriorRV.support)):
+            likelihood=LikeRV.func[0]
+            likelihood=likelihood.subs(x,data)
+            # Substitute each point that appears in the support of
+            #   the prior distribution into the likelihood distribution
+            subslike=likelihood.subs(param,PriorRV.support[i])
+            prior=PriorRV.func[i]
+            # Multiply the prior distribution by the likelihood function
+            priorXlike=simplify(priorXsubslike)
+            List1.append(priorXlike)
+        # Find the marginal distribution
+        marginal=sum(List1)
+        # Find the posterior distribution by dividing each value
+        #   in PriorXLike by the marginal distribution
+        List2=[]
+        for i in range(len(List1)):
+            List2.append(List1[i]/marginal)
+        PostRV=RV(List2,PriorRV.support,PriorRV.ftype)
+        return PostRV
+    # If the prior distribution and the likelihood function are both
+    #   discrete, compute the posterior distribution
+    if PriorRV.ftype[0]=='discrete' and LikeRV.ftype[0]=='discrete':
+        # If the prior distribution and the likelihood function do not
+        #   have the same sizes, return and error
+        if len(PriorRV.func)!=len(LikeRV.func):
+            string='the number of values in the prior distribution and'
+            string+='likelihood function must be the same'
+            raise RVError(string)
+        # Multiply the prior distribution by the likelihood function
+        priorXlike=[]
+        for i in range(len(PriorRV.func)):
+            val=PriorRV.func[i]*LikeRV.func[i]
+            priorXlike.append(val)
+        # Compute the marginal distribution to normalize the posterior
+        k=sum(priorXlike)
+        # Compute the posterior distribution
+        posteriorlist=[]
+        for i in range(len(priorXlike)):
+            val=priorXlike/k
+            posteriorlist.append(val)
+        PostRV=RV(posteriorlist,PriorRV.support,PriorRV.ftype)
+        return PostRV
+
+  
+        
         
             
         
         
-
-    
     
 
 
