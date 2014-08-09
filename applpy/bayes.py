@@ -35,6 +35,11 @@ Bayesian Procedures:
 
 Procedures:
     1. BayesUpdate(LikeRV,PriorRV,data,param)
+    2. CredibleSet(X,alpha)
+    2. JeffreysPrior(LikeRV,low,high,param)
+    3. Posterior(LikeRV,PriorRV,data,param)
+    4. PosteriorPredictive(LikeRV,PriorRV,data,param)
+    
 
 """
 
@@ -74,33 +79,18 @@ def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
     # If the unknown parameter is not a symbol, return an error
     if type(param)!=Symbol:
         raise RVError('the unknown parameter must be a symbol')
-    # If -oo or oo is in the support of either random variable,
-    #   return an error
-    if LikeRV.ftype[0]=='Discrete':
-        if max(LikeRV.support)==oo or min(LikeRV.support)==-oo:
-            string='discrete RVs with infinite supports are not'
-            string+='supported'
-            raise RVError(string)
-    if PriorRV.ftype[0]=='Discrete':
-        if max(PriorRV.support)==oo or min(PriorRV.support)==-oo:
-            string='discrete RVs with infinite supports are not'
-            string+='supported'
-            raise RVError(string)
-    # If the prior distribution is continuous, compute the posterior
-    #   distribution
     if PriorRV.ftype[0]=='continuous':
         # Extract the likelihood function from the likelhood random
         #   variable
-        likelihood=LikeRV.func[0]
+        likelihood=LikeRV.func[0].subs(x,data)
         # Create a list of proportional posterior distributions
         FunctionList=[]
         for i in range(len(PriorRV.func)):
             # extract the prior distribution
-            prior=PriorRV.func[i]
+            prior=PriorRV.func[i].subs(x,param)
             # multiply by the likelihood function
             proppost=likelihood*prior
             # substitute the data observation
-            proppost=proppost.subs(x,data)
             proppost=simplify(proppost)
             # add to the function list
             FunctionList.append(proppost)
@@ -109,7 +99,7 @@ def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
         for i in range(len(PriorRV.func)):
             # Find the area under the curve for each segment
             #   and add to the total
-            segment=integrate(PriorRV.func[i],
+            segment=integrate(FunctionList[i],
                               (param,PriorRV.support[i],
                                PriorRV.support[i+1]))
             k+=segment
@@ -119,6 +109,7 @@ def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
         FinalList=[]
         for i in range(len(FunctionList)):
             finalfunc=FunctionList[i]/k
+            finalfunc=finalfunc.subs(param,x)
             finalfunc=simplify(finalfunc)
             FinalList.append(finalfunc)
         # Convert the list of posterior distributions to RV form
@@ -173,8 +164,101 @@ def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
         PostRV=RV(posteriorlist,PriorRV.support,PriorRV.ftype)
         return PostRV
 
-  
-        
+def CredibleSet(LikeRV,alpha):
+    """
+    Procedure Name: CredibleSet
+    Purpose: Produce a credible set given a likelihood function
+                and a confidence level
+    Arguments:  1. LikeRV: The likelihood function (a random variable)
+                2. alpha: the confidence level
+    Output:     1. CredSet: a credible set in the form of a list
+    """
+    # Computer the lower bound of the credible set
+    lower=LikeRV.variate(n=1,s=alpha/2)
+    # Compute the upper bound of the credible set
+    upper=LikeRV.variate(n=1,s=1-(alpha/2))
+    CredSet=[lower,upper]
+    return CredSet
+
+def JeffreysPrior(LikeRV,low,high,param):
+    """
+    Procedure Name: JeffreysPrior
+    Purpose: Derive a Jeffreys Prior for a likelihood function
+    Arguments:  1. LikeRV: The likelihood function (a random variable)
+                2. low: the lower support
+                3. high: the upper support
+                4. param: the unknown parameter
+    Output:     1. JeffRV: the Jeffreys Prior distribution
+    """
+    # If the likelihood function is continuous, compute the Jeffreys
+    #   Prior
+    if LikeRV.ftype[0]=='continuous':
+        likelihood=LikeRV.func[0]
+        loglike=ln(likelihood)
+        logdiff=diff(loglike,param)
+        jefffunc=sqrt(integrate(likelihood*logdiff**2,
+                                (x,LikeRV.support[0],
+                                 LikeRV.support[1])))
+        jefffunc=simplify(jefffunc)
+        jefffunc=jefffunc.subs(param,x)
+        JeffRV=RV([jefffunc],[low,high],LikeRV.ftype)
+        return JeffRV
+
+def Posterior(LikeRV,PriorRV,data=[],param=Symbol('theta')):
+    """
+    Procedure Name: Posterior
+    Purpose: Derive a posterior distribution for a parameter
+                given a likelihood function, a prior distribution and
+                a data set
+    Arguments:  1. LikeRV: The likelihood function (a random variable)
+                2. PriorRV: A prior distribution (a random variable)
+                3. data: a data set
+                4. param: the uknown parameter in the likelihood function
+                    (a sympy symbol)
+    Output:     1. PostRV: A posterior distribution
+    """
+    # Find the posterior distribution for the first observation
+    PostRV=BayesUpdate(LikeRV,PriorRV,data[0],param)
+    # If there are multiple observations, continue bayesian updating
+    #   for each observation in the data set
+    if len(data)>1:
+        for i in range(1,len(data)):
+            # Set the previous posterior distribution as the new
+            #   prior distribution
+            NewPrior=PostRV
+            # Compute the new posterior distribution for the next
+            #   observation in the data set
+            PostRV=BayesUpdate(LikeRV,NewPrior,data[i],param)
+    return PostRV
+
+def PosteriorPredictive(LikeRV,PriorRV,data=[],param=Symbol('theta')):
+    """
+    Procedure Name: PosteriorPredictive
+    Purpose: Derive a posterior predictive distribution to predict the next
+                observation, given a likelihood function, a prior
+                distribution and a data vector
+    Arguments:  1. LikeRV: The likelihood function (a random variable)
+                2. PriorRV: A prior distribution (a random variable)
+                3. data: a data set
+                4. param: the uknown parameter in the likelihood function
+                    (a sympy symbol)
+    Output:     1. PostPredRV: A posterior predictive distribution
+    """
+    # If the prior distribution is continuous, compute the posterior
+    #   predictive distribution
+    if PriorRV.ftype[0]=='continuous':
+        # Compute the posterior distribution
+        PostRV=Posterior(LikeRV,PriorRV,data,param)
+        posteriorfunc=PostRV.func[0].subs(x,param)
+        likelihoodfunc=LikeRV.func[0]
+        postXlike=posteriorfunc*likelihoodfunc
+        postpredict=integrate(postXlike,
+                              (param,PriorRV.support[0],
+                               PriorRV.support[1]))
+        postpredict=simplify(postpredict)
+        PostPredRV=RV([postpredict],LikeRV.support,LikeRV.ftype)
+        return PostPredRV
+
         
             
         
