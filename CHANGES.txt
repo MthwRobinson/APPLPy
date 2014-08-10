@@ -1,3 +1,20 @@
+v0.1.3, xx xxxx xxxx
+
+New Capabilities:
+	1. Bayesian statistics module has been added. Capabilities
+		include:
+		a. Computing posterior distributions
+		b. Computing posterior predictive distributions
+		c. Computing Jeffreys Priors
+		d. Credible Sets
+	2. Functionality added for discrete random variables in
+		functional forms for the following procedures:
+		a. All procedures for changing functional form
+			(i.e. CDF to PDF)
+		b. All expected value procedures
+
+Fixed Bugs:
+
 v0.1.2, 30 JULY 2014
 
 New Capabilities:

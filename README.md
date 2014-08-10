@@ -19,6 +19,13 @@ ApplPy include:
 6. Random sampling from distributions
 7. Bootstrapping data sets
 
+In addition, the Bayesian statistics module provides the following Bayesian
+capabilities:
+
+1. Computation of posterior and posterior distributions for unknown parameters
+2. Derivation of Jeffreys Priors
+3. Computation of credible sets
+
 ApplPy is derived from A Probability Programming Language (APPL), which runs
 in Maple. The idea behind ApplPy is to make the capabilites of APPL available
 on a free of charge, open source platform. This has the potential to make APPL

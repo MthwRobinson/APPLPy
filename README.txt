@@ -1,4 +1,4 @@
-ApplPy
+A Probability Progamming Language (APPL) -- Python Edition
 
 ABOUT:
 
@@ -19,6 +19,13 @@ ApplPy include:
 6. Random sampling from distributions
 7. Bootstrapping data sets
 
+In addition, the Bayesian statistics module provides the following Bayesian
+capabilities:
+
+1. Computation of posterior and posterior distributions for unknown parameters
+2. Derivation of Jeffreys Priors
+3. Computation of credible sets
+
 ApplPy is derived from A Probability Programming Language (APPL), which runs
 in Maple. The idea behind ApplPy is to make the capabilites of APPL available
 on a free of charge, open source platform. This has the potential to make APPL
@@ -27,15 +34,19 @@ much more effective, both as an educational resource and a research tool.
 INSTALLATION:
 
 ApplPy requires the following dependencies in order to run properly:
-1. SymPy, available at https://github.com/sympy/sympy
-2. Pyglet or Matplotlib, for plotting functions
 
-Functions plot more smoothly using Matplotlib, however, it is not yet fully
-debugged. As such, it may not yet work for all function. Pyglet is the main
-plotting library for SymPy. If both are installed, then ApplPy will default to a 
-Pyglet plot if Matplotlib raises an exception. Full installation instructions
-will be added for Microsoft Windows, Mac OS X and various Linux distributions
-once the project is further along.
+1. SymPy
+2. Matplotlib
+
+The latests stable release of both of these packages can be downloading
+from the python package index at https://pypi.python.org/pypi
+
+The latest working edition of APPLPy is available on GitHub and the latest
+stable release is available from the python package index. To install the
+software, open the directory where APPLPy has been downloaded and type
+the following command
+
+$ python setup.py install
 
 If you have any comments or suggestions for ApplPy, feel free to contact the author
 at mthw.wm.robinson@gmail.com. Users with Python experience are encouraged to
