@@ -12,6 +12,7 @@ New Capabilities:
 		a. All procedures for changing functional form
 			(i.e. CDF to PDF)
 		b. All expected value procedures
+	3. KSRV Random Variable type added
 
 Fixed Bugs:
 
