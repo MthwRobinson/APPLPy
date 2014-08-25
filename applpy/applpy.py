@@ -77,7 +77,7 @@ def Menu():
     print 'ExponentialPowerRV(theta,kappa),ExtremeValueRV(alpha,beta)'
     print 'GammaRV(theta,kappa),GompertzRV(theta,kappa)'
     print 'InverseGaussianRV(theta,mu),InverseGammaRV(alpha,beta)'
-    print 'LogGammaRV(alpha,beta), LogisticRV(kappa,theta)'
+    print 'KSRV(n), LogGammaRV(alpha,beta), LogisticRV(kappa,theta)'
     print 'LogLogisticRV(theta,kappa),LogNormalRV(mu,sigma)'
     print 'LomaxRV(kappa,theta),MuthRV(kappa),NormalRV(mu,sigma)'
     print 'ParetoRV(theta,kappa),RayleighRV(theta),TriangularRV(a,b,c)'
