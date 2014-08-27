@@ -311,59 +311,59 @@ class KSRV(RV):
         # Create a list of indexed u variables
         varstring='u:'+str(N+1)
         u=symbols(varstring)
-    for k in range(2,m+1):
-        z=int(max(floor(N*c[k]-1/2),0))
-        l=int(min(floor(2*N*c[k])+1,N))
-        F[N][N]=integrate(1,(u[N],x[N]-v,1))
-        V[N][N]=integrate(1,(u[N],u[N-1],1))
-        for i in reversed(range(2,N,-1)):
-            if i+l>N:
+        for k in range(2,m+1):
+            z=int(max(floor(N*c[k]-1/2),0))
+            l=int(min(floor(2*N*c[k])+1,N))
+            F[N][N]=integrate(1,(u[N],x[N]-v,1))
+            V[N][N]=integrate(1,(u[N],u[N-1],1))
+            for i in reversed(range(2,N,-1)):
+                if i+l>N:
+                    S=0
+                else:
+                    S=F[i+1][i+l]
+                if i+l>N+1:
+                    F[i][N]=integrate(V[i+1][N],
+                                      (u[i],x[N]-v,floor(x[i]+c[k])))
+                    V[i][N]=integrate(V[i+1][N],
+                                      (u[i],u[i-1],floor(x[i]+c[k])))
+                if i+l==N+1:
+                    F[i][N]=integrate(V[i+1][N],
+                                      (u[i],x[N]-v,x[i]+v))
+                if i+l<N+1:
+                    F[i][i+l-1]=integrate(V[i+1][i+l-1]+S,
+                                          (u[i],x[N]-v,x[i]+v))
+                S+=F[i+1][min(i+l-1,N)]
+                for j in reversed(range(max(i+1,z+2),min(N-1,i+l-2)+1,-1)):
+                    F[i][j]=integrate(V[i+1][j]+S,
+                                      (u[i],x[j]-v,x[j+1]-v))
+                    V[i][j]=integrate(V[i+1][j]+S,
+                                      (u[i],u[i-1],x[j+1]-v))
+                    S+=F[i+1][j]
+                if z+1<=i:
+                    V[i][i]=integrate(S,(u[i],u[i-1],x[i+1]-v))
+                if z+1>i:
+                    V[i][z+1]=integrate(V[i+1][z+1]+S,
+                                        (u[i],u[i-1],x[z+2]-v))
+                if z+1<i:
+                    F[i][i]=integrate(S,(u[i],x[i]-v,x[i+1]-v))
+            if l==N:
                 S=0
             else:
-                S=F[i+1][i+l]
-            if i+l>N+1:
-                F[i][N]=integrate(V[i+1][N],
-                                  (u[i],x[N]-v,floor(x[i]+c[k])))
-                V[i][N]=integrate(V[i+1][N],
-                                  (u[i],u[i-1],floor(x[i]+c[k])))
-            if i+l==N+1:
-                F[i][N]=integrate(V[i+1][N],
-                                  (u[i],x[N]-v,x[i]+v))
-            if i+l<N+1:
-                F[i][i+l-1]=integrate(V[i+1][i+l-1]+S,
-                                      (u[i],x[N]-v,x[i]+v))
-            S+=F[i+1][min(i+l-1,N)]
-            for j in reversed(range(max(i+1,z+2),min(N-1,i+l-2)+1,-1)):
-                F[i][j]=integrate(V[i+1][j]+S,
-                                  (u[i],x[j]-v,x[j+1]-v))
-                V[i][j]=integrate(V[i+1][j]+S,
-                                  (u[i],u[i-1],x[j+1]-v))
-                S+=F[i+1][j]
-            if z+1<=i:
-                V[i][i]=integrate(S,(u[i],u[i-1],x[i+1]-v))
-            if z+1>i:
-                V[i][z+1]=integrate(V[i+1][z+1]+S,
-                                    (u[i],u[i-1],x[z+2]-v))
-            if z+1<i:
-                F[i][i]=integrate(S,(u[i],x[i]-v,x[i+1]-v))
-        if l==N:
-            S=0
-        else:
-            S=F[2][l+1]
-        if l<N:
-            F[1][l]=integrate(V[2][l]+S,(u[1],x[l]-v,x[1]+v))
-        S+=F[2][j]
-        for j in reversed(range(max(2,z+1),min(N-1,l-1)+1,-1)):
-            F[1][j]=integrate(V[2][j]+S,
-                              (u[1],(x[j]-v)*(floor(x[j]-c[k])+1),
-                               x[j+1]-v))
+                S=F[2][l+1]
+            if l<N:
+                F[1][l]=integrate(V[2][l]+S,(u[1],x[l]-v,x[1]+v))
             S+=F[2][j]
-        if z==0:
-            F[1][1]=integrate(S,(u[1],0,x[2]-v))
-        P[k]=0
-        for j in range(z+1,l+1):
-            P[k]+=F[1][j]
-        P[k]=factorial(N)*P[k]
+            for j in reversed(range(max(2,z+1),min(N-1,l-1)+1,-1)):
+                F[1][j]=integrate(V[2][j]+S,
+                                  (u[1],(x[j]-v)*(floor(x[j]-c[k])+1),
+                               x[j+1]-v))
+                S+=F[2][j]
+            if z==0:
+                F[1][1]=integrate(S,(u[1],0,x[2]-v))
+            P[k]=0
+            for j in range(z+1,l+1):
+                P[k]+=F[1][j]
+            P[k]=factorial(N)*P[k]
         # Create the support and function list for the KSRV
         KSspt=[];KSCDF=[]
         x=Symbol('x')
