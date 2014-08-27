@@ -16,6 +16,8 @@ New Capabilities:
 	4. KS Test added to the statistics module
 
 Fixed Bugs:
+	1. PlotDist now supports univariate discrete randomv
+		variables
 
 v0.1.2, 30 JULY 2014
 
