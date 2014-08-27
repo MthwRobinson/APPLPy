@@ -1111,15 +1111,21 @@ def PDF(RVar,value=x):
             X_dummy=CDF(RVar)
             if value==x:
                 pdflist=[]
+                # Find the pmf by subtracting CDF(X,x)-CDF(X,x-1)
                 for i in range(len(X_dummy.func)):
-                    pdflist.append(diff(X_dummy.func[i],x))
+                    funcX1=X_dummy.func[i]
+                    funcX0=X_dummy.func[i].subs(x,x-1)
+                    pmf=simplify(funcX1-funcX0)
+                    pdflist.append(pmf)
                 return RV(pdflist,RVar.support,['Discrete','pdf'])
             if value!=x:
                 for i in range(len(X_dummy.support)):
                     for i in range(len(X_dummy.support)):
                         if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
-                            pdffunc=diff(X_dummy.func[i],x)
-                            pdfvalue=pdffunc.subs(x,value)
+                            funcX1=X_dummy.func[i]
+                            funcX0=X_dummy.func[i].subs(x,x-1)
+                            pmf=simplify(funcX1-funcX0)
+                            pdfvalue=pmf.subs(x,value)
                             return simplify(pdfvalue)
                         
     # If the distribution is discrete, find and return the pdf of the random variable
