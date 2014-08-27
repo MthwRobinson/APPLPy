@@ -13,6 +13,7 @@ New Capabilities:
 			(i.e. CDF to PDF)
 		b. All expected value procedures
 	3. KSRV Random Variable type added
+	4. KS Test added to the statistics module
 
 Fixed Bugs:
 
