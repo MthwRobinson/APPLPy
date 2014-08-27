@@ -3042,7 +3042,19 @@ def PlotDist(RVar,suplist=None,opt=None):
         #if opt!='display':
         #    plt.ion()
         #plt.mat_plot(plot_func,plotsupp,lab1,lab2,'continuous')
-    if RVar.ftype[0]=='discrete':
+    if RVar.ftype[0]=='discrete' or RVar.ftype[0]=='Discrete':
+        if RVar.ftype[0]=='Discrete':
+            if RVar.support[-1]!=oo:
+                RVar=Convert(RVar)
+            else:
+                p=1;i=RVar.support[0]
+                while p>.00001:
+                    p=PDF(RVar,i).evalf()
+                    i+=1
+                newsupport=RVar.support
+                newsupport[-1]=i
+                RVar=RV(RVar.func,newsupport,RVar.ftype)
+                RVar=Convert(RVar)
         if opt!='display':
             plt.ion()
         plt.mat_plot(RVar.func,RVar.support,lab1,lab2,'discrete') 
