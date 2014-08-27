@@ -30,10 +30,53 @@ from rv import *
 Parameter Estimation Procedures
 
 Procedures:
+    1. KSTest(RVar,data)
     1. MOM(RVar,data,parameters)
     2. MLE(RVar,data,parameters,censor)
 """
 
+def KSTest(RVar,data):
+    """
+    Procedure Name: KSTest
+    Purpose: Calculates the Kolmogorov-Smirnoff test statistic
+                for the empirical CDF of the sample data versus
+                the CDF of a fitted distribution with random
+                variable X
+    Arguments:  1. RVar: A random variable model
+                2. data: A data sample in list format
+    Output:     1. The Kolmogorov-Smirnoff test statistics
+    """
+    # If parameter estimates are given, ensure that the
+    #  parameter estimates are given in list of list format
+    #   and that the number of estimates equals the number
+    #   of parameters
+    if parameters!=None:
+        if len(parameters)!=2:
+            errstring='Parameter estimates must be given in'
+            errstring+='a list of two lists'
+            raise RVError(errstring)
+        if len(parameters[0])!=len(parameters[1]):
+            errstring='The number of parameters must equal'
+            errstring+='the number of estimates'
+            raise RVError(errstring)
+    # Create an empirical CDF from the data sample
+    EmpCDF=CDF(BootstrapRV(data))
+    m=len(EmpCDF.support)
+    # Compute fitted CDF values
+    FX=CDF(RVar)
+    FittedCDFValue=[]
+    for i in EmpCDF.support:
+        FittedCDFValue.append(CDF(FX,i).evalf())
+    # Compute the KS test statistic
+    KS=0
+    for i in range(m-1):
+        Dpos=abs(EmpCDF.func[i+1]-FittedCDFValue[i]).evalf()
+        Dneg=abs(FittedCDFValue[i]-EmpCDF.func[i]).evalf()
+        KS=max(max(KS,Dpos),Dneg)
+    KS=max(KS,abs(FittedCDFValue[m-1]).evalf())
+    return KS
+        
+           
 def MOM(RVar,data,parameters):
     """
     Procedure Name: MLE

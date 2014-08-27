@@ -66,6 +66,10 @@ def Menu():
     print 'Mixture([p1,p2],[X,Y]),Product(X,Y)'
     print ""
 
+    print 'Statistics Procedures'
+    print 'KSTest(X,[sample]), MOM(X,[sample],[parameters])'
+    print 'MLE(X,[sample],[parameters],censor)'
+
     print 'Utilities'
     print 'PlotDist(X,{[x1,x2]}),PlotDisplay([plotlist],{[x1,x2]})'
     print 'PPPlot(X,[sample]),QQPlot(X,[sample])'
