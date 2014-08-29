@@ -540,7 +540,7 @@ class UniformRV(RV):
         self.ftype=X_dummy.ftype
         self.parameter=[a,b]
 
-    def variate(self,n=1,sim='sim'):
+    def variate(self,n=1,s='sim'):
         # If no parameter is specified, return an error
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')

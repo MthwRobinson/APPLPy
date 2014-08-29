@@ -69,6 +69,7 @@ def Menu():
     print 'Statistics Procedures'
     print 'KSTest(X,[sample]), MOM(X,[sample],[parameters])'
     print 'MLE(X,[sample],[parameters],censor)'
+    print ""
 
     print 'Utilities'
     print 'PlotDist(X,{[x1,x2]}),PlotDisplay([plotlist],{[x1,x2]})'

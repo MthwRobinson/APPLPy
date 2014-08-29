@@ -46,19 +46,6 @@ def KSTest(RVar,data):
                 2. data: A data sample in list format
     Output:     1. The Kolmogorov-Smirnoff test statistics
     """
-    # If parameter estimates are given, ensure that the
-    #  parameter estimates are given in list of list format
-    #   and that the number of estimates equals the number
-    #   of parameters
-    if parameters!=None:
-        if len(parameters)!=2:
-            errstring='Parameter estimates must be given in'
-            errstring+='a list of two lists'
-            raise RVError(errstring)
-        if len(parameters[0])!=len(parameters[1]):
-            errstring='The number of parameters must equal'
-            errstring+='the number of estimates'
-            raise RVError(errstring)
     # Create an empirical CDF from the data sample
     EmpCDF=CDF(BootstrapRV(data))
     m=len(EmpCDF.support)
