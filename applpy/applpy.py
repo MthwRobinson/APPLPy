@@ -76,6 +76,13 @@ def Menu():
     print 'PPPlot(X,[sample]),QQPlot(X,[sample])'
     print ""
 
+    print 'Bayesian Procedures'
+    print 'CredibleSet(X,alpha), JeffreysPrior(X,low,high,param)'
+    print 'Posterior(X,Y,[data],param)'
+    print 'PosteriorPredictive(X,Y,[data],param)'
+    print ""
+    
+
     print 'Continuous Distributions'
     print 'BetaRV(alpha,beta),CauchyRV(a,alpha),ChiRV(N),ChiSquareRV(N)'
     print 'ErlangRV(theta,N),ExponentialRV(theta)'

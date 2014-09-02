@@ -63,7 +63,7 @@ def BayesMenu():
     print 'CS(m,s,alpha,n,type),Jeffreys(X,low,high,param)'
     print ""
 
-def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
+def Posterior(LikeRV,PriorRV,data=[],param=Symbol('theta')):
     """
     Procedure Name: BayesUpdate
     Purpose: Derive a posterior distribution for a parameter
@@ -82,38 +82,25 @@ def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
     if PriorRV.ftype[0]=='continuous':
         # Extract the likelihood function from the likelhood random
         #   variable
-        likelihood=LikeRV.func[0].subs(x,data)
+        likelihood=LikeRV.func[0].subs(x,data[0])
+        for i in range(1,len(data)):    
+            likelihood+=LikeRV.func[0].subs(x,data[i])
+        likelihood=simplify(likelihood)
+        likelihood=likelihood.subs(param,x)
         # Create a list of proportional posterior distributions
         FunctionList=[]
         for i in range(len(PriorRV.func)):
             # extract the prior distribution
-            prior=PriorRV.func[i].subs(x,param)
+            prior=PriorRV.func[i]
             # multiply by the likelihood function
             proppost=likelihood*prior
             # substitute the data observation
             proppost=simplify(proppost)
             # add to the function list
             FunctionList.append(proppost)
-        # Find the normalizing constant
-        k=0
-        for i in range(len(PriorRV.func)):
-            # Find the area under the curve for each segment
-            #   and add to the total
-            segment=integrate(FunctionList[i],
-                              (param,PriorRV.support[i],
-                               PriorRV.support[i+1]))
-            k+=segment
-        k=k.subs(x,data)
-        # Divide each segment of the function list by the normalizing
-        #   constant to find the posterior distribution
-        FinalList=[]
-        for i in range(len(FunctionList)):
-            finalfunc=FunctionList[i]/k
-            finalfunc=finalfunc.subs(param,x)
-            finalfunc=simplify(finalfunc)
-            FinalList.append(finalfunc)
-        # Convert the list of posterior distributions to RV form
-        PostRV=RV(FinalList,PriorRV.support,['continuous','pdf'])
+        PropPost=RV(FunctionList,PriorRV.support,['continuous','pdf'])
+        # Normalize the posterior distribution
+        PostRV=Truncate(PropPost,[PriorRV.support[0],PriorRV.support[-1]])
         return PostRV
     # If the prior distribution is discrete and the likelihood function
     #   is continuous, compute the posterior distribution
@@ -164,19 +151,22 @@ def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
         PostRV=RV(posteriorlist,PriorRV.support,PriorRV.ftype)
         return PostRV
 
-def CredibleSet(LikeRV,alpha):
+def CredibleSet(PostRV,alpha):
     """
     Procedure Name: CredibleSet
     Purpose: Produce a credible set given a likelihood function
                 and a confidence level
-    Arguments:  1. LikeRV: The likelihood function (a random variable)
+    Arguments:  1. PostRV: The distribution of the parameter
                 2. alpha: the confidence level
     Output:     1. CredSet: a credible set in the form of a list
     """
-    # Computer the lower bound of the credible set
-    lower=LikeRV.variate(n=1,s=alpha/2)
-    # Compute the upper bound of the credible set
-    upper=LikeRV.variate(n=1,s=1-(alpha/2))
+    # If alpha is not between 0 and 1, return an error
+    if alpha<0 or alpha>1:
+        raise RVError('alpha must be between 0 and 1')
+    # Computer the upper bound of the credible set
+    lower=PostRV.variate(n=1,s=alpha/2)[0]
+    # Compute the lower bound of the credible set
+    upper=PostRV.variate(n=1,s=1-(alpha/2))[0]
     CredSet=[lower,upper]
     return CredSet
 
@@ -204,7 +194,10 @@ def JeffreysPrior(LikeRV,low,high,param):
         JeffRV=RV([jefffunc],[low,high],LikeRV.ftype)
         return JeffRV
 
-def Posterior(LikeRV,PriorRV,data=[],param=Symbol('theta')):
+# Old BayesUpdate code ... the Posterior procedure now computes
+# the posterior distribution with only one integration. New
+# code runs much faster
+def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
     """
     Procedure Name: Posterior
     Purpose: Derive a posterior distribution for a parameter
