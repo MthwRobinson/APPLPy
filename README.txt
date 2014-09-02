@@ -22,8 +22,9 @@ ApplPy include:
 In addition, the Bayesian statistics module provides the following Bayesian
 capabilities:
 
-1. Computation of posterior and posterior distributions for unknown parameters
-2. Derivation of Jeffreys Priors
+1. Computation of posterior and posterior predictive distributions 
+for unknown parameters
+2. Derivation of Jeffrey's Priors
 3. Computation of credible sets
 
 ApplPy is derived from A Probability Programming Language (APPL), which runs
