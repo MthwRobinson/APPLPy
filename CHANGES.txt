@@ -12,11 +12,12 @@ New Capabilities:
 		a. All procedures for changing functional form
 			(i.e. CDF to PDF)
 		b. All expected value procedures
-	3. KSRV Random Variable type added
+	3. New Random Variable types added (new distributions are
+		listed in the startup menu)
 	4. KS Test added to the statistics module
 
 Fixed Bugs:
-	1. PlotDist now supports univariate discrete randomv
+	1. PlotDist now supports univariate discrete random
 		variables
 
 v0.1.2, 30 JULY 2014
