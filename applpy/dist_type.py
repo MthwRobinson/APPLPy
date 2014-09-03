@@ -39,6 +39,22 @@ Continuous Distributions
 
 """
 
+class ArcSinRV(RV):
+    def __init__(self):
+        X_dummy=RV(1/(pi*sqrt(x*(1-x))),[0,1])
+        self.func=X_dummy.func
+        self.support=X_dummy.support
+        self.ftype=X_dummy.ftype
+
+class ArcTanRV(RV):
+    def __init__(self,alpha=Symbol('alpha',positive=True),
+                 phi=Symbol('phi')):
+        X_dummy=RV(alpha/(atan(alpha*phi)+pi/2)*(1+alpha**2*(x-phi)**2),
+                   [0,oo])
+        self.func=X_dummy.func
+        self.support=X_dummy.support
+        self.ftype=X_dummy.ftype
+
 class BetaRV(RV):
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta'),positive=True):
@@ -96,6 +112,25 @@ class ErlangRV(RV):
                  N=Symbol('N',positive=True)):
         X_dummy=RV((theta*(theta*x)**(N-1)*exp(-theta*x))/
                    (factorial(N-1)),[0,oo])
+        self.func=X_dummy.func
+        self.support=X_dummy.support
+        self.ftype=X_dummy.ftype
+
+class ErrorRV(RV):
+    def __init__(self,mu=Symbol('mu',positive=True),
+                 alpha=Symbol('alpha'),d=Symbol('d')):
+        X_dummy=RV(mu*exp(-abs(mu*(x-d1))**alpha)/
+                   (2*gamma(1+1/alpha)),[-oo,oo])
+        self.func=X_dummy.func
+        self.support=X_dummy.support
+        self.ftype=X_dummy.ftype
+
+class ErrorIIRV(RV):
+    def __init__(self,a=Symbol('a'),b=Symbol('b'),
+                 c=Symbol('c')):
+        X_dummy=RV(exp(-((abs(x-a))**(2/c)/(2*b))/
+                       ((b**(c/2))*2**(c/2+1)*gamma(c/2+1))),
+                   [-oo,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
@@ -179,6 +214,16 @@ class ExtremeValueRV(RV):
             varlist.append(var)
         return varlist
 
+class FRV(RV):
+    def __init__(self,n1=Symbol('n1',positive=True),
+                 n2=Symbol('n2',positive=True)):
+        X_dummy=RV(gamma((n1+n2)/2)*(n1/n2)**(n/2)*x**(n/2-1)/
+                   gamma(n1/2)*gamma(n2/2)*((n1/n2)*x+1)**((n1+n2)/2),
+                   [0,oo])
+        self.func=X_dummy.func
+        self.support=X_dummy.support
+        self.ftype=X_dummy.ftype
+
 class GammaRV(RV):
     def __init__(self,theta=Symbol('theta'),kappa=Symbol('kappa')):
         X_dummy=RV((theta*(theta*x)**(kappa-1)*exp(-theta*x))/(gamma(kappa)),
@@ -187,6 +232,15 @@ class GammaRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+
+class GeneralizedParetoRV(RV):
+    def __init__(self,theta=Symbol('theta',positive=True),
+                 delta=Symbol('delta'),kappa=Symbol('kappa')):
+        X_dummy=RV((theta+kappa/(x+delta))*(1+x/delta)**(-kappa)*
+                   exp(-theta*x),[0,oo])
+        self.func=X_dummy.func
+        self.support=X_dummy.support
+        self.ftype=X_dummy.ftype
 
 class GompertzRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
@@ -214,6 +268,15 @@ class GompertzRV(RV):
             var=idf_func.subs(t,val)
             varlist.append(var)
         return varlist
+
+class IDBRV(RV):
+    def __init__(self,theta=Symbol('theta'),delta=Symbol('delta'),
+                 kappa=Symbol('kappa')):
+        X_dummy=RV(1-(1+kappa*x)**(-theta/kappa)*
+                   exp(-delta*x**2/2),[0,oo])
+        self.func=X_dummy.func
+        self.support=X_dummy.support
+        self.ftype=X_dummy.ftype
 
 class InverseGaussianRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
@@ -385,7 +448,14 @@ class KSRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        
+
+class LaPlaceRV(RV):
+    def __init__(self,omega=Symbol('omega',positive=True),
+                 theta=Symbol('theta')):
+        X_dummy=RV(exp(-abs(x-theta)/omega)/(2*omega),[-oo,oo])
+        self.func=X_dummy.func
+        self.support=X_dummy.support
+        self.ftype=X_dummy.ftype
         
 class LogGammaRV(RV):
     def __init__(self,alpha=Symbol('alpha',positive=True),
@@ -480,6 +550,16 @@ class LomaxRV(RV):
             var=idf_func.subs(t,val)
             varlist.append(var)
         return varlist
+
+class MakehamRV(RV):
+    def __init__(self,theta=Symbol('theta',positive=True),
+                 delta=Symbol('delta',positive=True),
+                 kappa=Symbol('kappa')):
+        X_dummy=RV((theta+delta*kappa**x)*
+                   exp(-theta*x-delta*(kappa**x-1)/log(kappa)),[0,oo])
+        self.func=X_dummy.func
+        self.support=X_dummy.support
+        self.ftype=X_dummy.ftype
 
 class MuthRV(RV):
     def __init__(self,kappa=Symbol('kappa',positive=True)):

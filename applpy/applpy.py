@@ -84,14 +84,17 @@ def Menu():
     
 
     print 'Continuous Distributions'
-    print 'BetaRV(alpha,beta),CauchyRV(a,alpha),ChiRV(N),ChiSquareRV(N)'
-    print 'ErlangRV(theta,N),ExponentialRV(theta)'
+    print 'ArcSinRV(),ArcTanRV(alpha,phi),BetaRV(alpha,beta)'
+    print 'CauchyRV(a,alpha)ChiRV(N),ChiSquareRV(N),ErlangRV(theta,N)'
+    print 'ErrorRV(mu,alpha,d),ErrorIIRV(a,b,c),ExponentialRV(theta)'
     print 'ExponentialPowerRV(theta,kappa),ExtremeValueRV(alpha,beta)'
-    print 'GammaRV(theta,kappa),GompertzRV(theta,kappa)'
+    print 'FRV(n1,n2),GammaRV(theta,kappa),GompertzRV(theta,kappa)'
+    print 'GeneralizedParetoRV(theta,delta,kappa),IDBRV(theta,delta,kappa)'
     print 'InverseGaussianRV(theta,mu),InverseGammaRV(alpha,beta)'
-    print 'KSRV(n), LogGammaRV(alpha,beta), LogisticRV(kappa,theta)'
-    print 'LogLogisticRV(theta,kappa),LogNormalRV(mu,sigma)'
-    print 'LomaxRV(kappa,theta),MuthRV(kappa),NormalRV(mu,sigma)'
+    print 'KSRV(n),LaPlaceRV(omega,theta), LogGammaRV(alpha,beta)'
+    print 'LogisticRV(kappa,theta),LogLogisticRV(theta,kappa)'
+    print 'LogNormalRV(mu,sigma),LomaxRV(kappa,theta)'
+    print 'MakehamRV(theta,delta,kappa),MuthRV(kappa),NormalRV(mu,sigma)'
     print 'ParetoRV(theta,kappa),RayleighRV(theta),TriangularRV(a,b,c)'
     print 'TRV(N),UniformRV(a,b),WeibullRV(theta,kappa)'
     print ""
