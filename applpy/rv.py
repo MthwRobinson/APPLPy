@@ -3027,7 +3027,7 @@ def PlotDist(RVar,suplist=None,opt=None):
                                 (x,plotsupp[i],plotsupp[i+1]),
                                 show=False)
             initial_plot.append(plot_extension[0])
-        initial_plot.show()
+        #initial_plot.show()
 
         # Old PlotDist code before sympy created the
         #   plotting front-end
