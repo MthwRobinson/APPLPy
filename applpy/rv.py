@@ -113,7 +113,7 @@ class RV:
         4. __add__(self,other)
     """
 
-    def display(self,opt=None):
+    def display(self,opt='repr'):
         """
         Creates a default print setting for the random variable class
         """
@@ -146,7 +146,7 @@ class RV:
                                                 self.support)
                 if opt=='repr':
                     return self.func
-                else:
+                elif opt=='piecewise':
                     return p
             except:
                 print '%s %s with support %s:'%(self.ftype[0],

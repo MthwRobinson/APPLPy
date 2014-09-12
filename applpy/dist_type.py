@@ -614,7 +614,7 @@ class TRV(RV):
 
 class UniformRV(RV):
     def __init__(self,a=Symbol('a'),b=Symbol('b')):
-        X_dummy=RV((b-a)**(-1),[a,b])
+        X_dummy=RV(simplify((b-a)**(-1)),[a,b])
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
