@@ -19,6 +19,9 @@ New Capabilities:
 Fixed Bugs:
 	1. PlotDist now supports univariate discrete random
 		variables
+	2. Random Variables no longer default to floating point
+		numbers when it produces output. Computation of
+		exact distributions is now possible
 
 v0.1.2, 30 JULY 2014
 
