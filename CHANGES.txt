@@ -22,6 +22,8 @@ Fixed Bugs:
 	2. Random Variables no longer default to floating point
 		numbers when it produces output. Computation of
 		exact distributions is now possible
+	3. PlotDist now appears in the iPython Notebook when the
+		command %pylab inline is entered
 
 v0.1.2, 30 JULY 2014
 
