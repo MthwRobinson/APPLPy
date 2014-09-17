@@ -521,7 +521,7 @@ class LogLogisticRV(RV):
 class LogNormalRV(RV):
     def __init__(self,mu=Symbol('mu'),
                  sigma=Symbol('sigma',positive=True)):
-        X_dummy=([(1/2)*(sqrt(2)*exp((-1/2)*((ln(x)-mu)**2)/(sigma**2)))/
+        X_dummy=RV([(1/2)*(sqrt(2)*exp((-1/2)*((ln(x)-mu)**2)/(sigma**2)))/
                   (sqrt(pi)*x*sigma)],[0,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support
@@ -530,7 +530,7 @@ class LogNormalRV(RV):
 class LomaxRV(RV):
     def __init__(self,kappa=Symbol('kappa',positive=True),
                  theta=Symbol('theta',positive=True)):
-        X_dummy=([theta*kappa*(1+theta*x)**(-kappa-1)],[0,oo])
+        X_dummy=RV([theta*kappa*(1+theta*x)**(-kappa-1)],[0,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype

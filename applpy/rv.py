@@ -1488,7 +1488,7 @@ def MaximumIID(RVar,n):
     # Compute the iid maximum
     X_dummy=RVar
     X_final=X_dummy
-    for i in range(n-2):
+    for i in range(n-1):
         X_final=Maximum(X_final,X_dummy)
     return X_final
 
@@ -1564,7 +1564,7 @@ def MinimumIID(RVar,n):
     # Compute the iid minimum
     X_dummy=RVar
     X_final=X_dummy
-    for i in range(n-2):
+    for i in range(n-1):
         X_final=Minimum(X_final,X_dummy)
     return X_final
 
