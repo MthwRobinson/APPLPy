@@ -1490,7 +1490,7 @@ def MaximumIID(RVar,n):
     X_final=X_dummy
     for i in range(n-2):
         X_final=Maximum(X_final,X_dummy)
-    return X_dummy
+    return X_final
 
 def Mean(RVar):
     """
@@ -3019,15 +3019,15 @@ def PlotDist(RVar,suplist=None,opt=None):
             if i>lwindx and i<upindx:
                 plotsupp.append(RVar.support[i])
         plotsupp.append(suplist[1])
-
+        plt.ioff()
         initial_plot=plot(plotfunc[0],(x,plotsupp[0],plotsupp[1]),
-                          title=lab2)
+                          title=lab2,show=False)
         for i in range(1,len(plotfunc)):
             plot_extension=plot(plotfunc[i],
                                 (x,plotsupp[i],plotsupp[i+1]),
                                 show=False)
             initial_plot.append(plot_extension[0])
-        #initial_plot.show()
+        initial_plot.show()
 
         # Old PlotDist code before sympy created the
         #   plotting front-end
