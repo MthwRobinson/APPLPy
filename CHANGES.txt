@@ -1,4 +1,4 @@
-v0.1.3, xx xxxx xxxx
+v0.2.0, 17 SEPTEMBER 2014
 
 New Capabilities:
 	1. Bayesian statistics module has been added. Capabilities
