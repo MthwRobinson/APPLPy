@@ -26,7 +26,7 @@ Imports supporting ApplPy Modules
 from rv import *
 from dist_type import *
 from stats import *
-from bayes import *
+#from bayes import *
 
 def Menu():
     print 'ApplPy Procedures'
@@ -75,13 +75,6 @@ def Menu():
     print 'PlotDist(X,{[x1,x2]}),PlotDisplay([plotlist],{[x1,x2]})'
     print 'PPPlot(X,[sample]),QQPlot(X,[sample])'
     print ""
-
-    print 'Bayesian Procedures'
-    print 'CredibleSet(X,alpha), JeffreysPrior(X,low,high,param)'
-    print 'Posterior(X,Y,[data],param)'
-    print 'PosteriorPredictive(X,Y,[data],param)'
-    print ""
-    
 
     print 'Continuous Distributions'
     print 'ArcSinRV(),ArcTanRV(alpha,phi),BetaRV(alpha,beta)'
