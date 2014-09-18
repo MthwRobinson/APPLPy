@@ -2,14 +2,8 @@ A Probability Progamming Language (APPL) -- Python Edition
 
 ABOUT:
 
-ApplPy is a computational probability package written in Python. The project
-runs using the open source SymPy computer algebra system (CAS). Because all of
-the dependencies that ApplPy requires to run are open source, ApplPy is available
-free of charge. While still incomplete, ApplPy will eventually be capable of
-performing a wide range of random variable algebra operations on univariate
-probaility distributions. The package supports both continuous and discrete 
-distributions, as well as piece-wise distributions. The current capabilities of
-ApplPy include:
+APPLPy is a computational probability package written in Python. The project
+runs using the open source SymPy computer algebra system (CAS). Because all of the dependencies that APPLPy requires to run are open source, APPLPy is available free of charge. APPLPy is currently capable of performing a wide range of random variable algebra operations on univariate probaility distributions. The package supports both continuous and discrete distributions, as well as piece-wise distributions. The current capabilities of APPLPy include:
 
 1. Conversion between PDF,CDF,SF,HF,CHF and IDF representations of random variables
 2. Computation of expected values, with both numeric and symbolic output
@@ -27,10 +21,9 @@ for unknown parameters
 2. Derivation of Jeffrey's Priors
 3. Computation of credible sets
 
-ApplPy is derived from A Probability Programming Language (APPL), which runs
-in Maple. The idea behind ApplPy is to make the capabilites of APPL available
-on a free of charge, open source platform. This has the potential to make APPL
-much more effective, both as an educational resource and a research tool.
+APPLPy is derived from A Probability Programming Language (APPL), which runs
+in Maple. The idea behind APPLPy is to make the capabilites of APPL available
+on a free of charge, open source platform. This has the potential to make APPL much more effective, both as an educational resource and a research tool.
 
 INSTALLATION:
 
@@ -49,6 +42,6 @@ the following command
 
 $ python setup.py install
 
-If you have any comments or suggestions for ApplPy, feel free to contact the author
+If you have any comments or suggestions for APPLPy, feel free to contact the author
 at mthw.wm.robinson@gmail.com. Users with Python experience are encouraged to
 get in touch and contribute.
