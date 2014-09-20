@@ -17,9 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
+from __future__ import division
 from sympy import *
+x,y,z,t=symbols('x y z t')
+k,m,n=symbols('k m n',integers=True)
+f,g,h=symbols('f g h',cls=Function)
 from applpy import *
-init_session()
+#init_session()
 import sys
 sys.display_hook=pprint
 
