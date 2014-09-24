@@ -9,7 +9,7 @@ runs using the open source SymPy computer algebra system (CAS). Because all of t
 2. Computation of expected values, with both numeric and symbolic output
 3. Plotting distributions, including piece-wise distributions
 4. One-to-one and many-to-one transformations of piecewise distributions
-5. Convolutions of lifetime distributions
+5. Random Variable Algebra (Sums/Differences/Products/Division)
 6. Random sampling from distributions
 7. Bootstrapping data sets
 
