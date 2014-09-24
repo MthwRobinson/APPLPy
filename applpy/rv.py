@@ -222,6 +222,14 @@ class RV:
         """
         # If the random variable is continuous, verify the PDF
         if self.ftype[0]=='continuous':
+            # Check to ensure that the distribution is fully
+            #   specified
+                for piece in self.func:
+                    func_symbols=piece.atoms(Symbol)
+                    if len(func_symbols)>1:
+                        err_string='distribution must be fully'
+                        err_string+=' specified'
+                        raise RVError(err_string)
             # Convert the random variable to PDF form
             X_dummy=PDF(self)
             # Check to ensure that the area under the PDF is 1
@@ -234,6 +242,16 @@ class RV:
             print 'The area under f(x) is: %s'%(area)
             # Check absolute value
             print 'Now checking for absolute value...'
+            #
+            # The following code should work in future versions of SymPy
+            # Currently, Sympy is having difficulty consistently integrating
+            # the absolute value of a function symbolically
+            #
+            #abs_area=0
+            #for i in range(len(X_dummy.func)):
+                #val=integrate(Abs(X_dummy.func[i],(x,X_dummy.support[i],
+                #                                   X_dummy.support[i+1]))
+                #abs_area+=val
             abs_flag=True
             val_list=[]
             quant_list=[.1,.2,.3,.4,.5,.6,.7,.8,.9]
