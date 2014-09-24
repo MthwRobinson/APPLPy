@@ -1,6 +1,9 @@
 v0.2.1, XX XXX XXXX
 
 New Capabilities:
+	1. Pre-processing code has been added to the beginning
+		of several procedures. Errors will be raised
+		if a procedure receives bad input.
 
 Fixed Bugs:
 	1. Start-up script has been modified. The init_session()
