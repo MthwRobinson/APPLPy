@@ -224,7 +224,7 @@ class RV:
         if self.ftype[0]=='continuous':
             # Check to ensure that the distribution is fully
             #   specified
-                for piece in self.func:
+            for piece in self.func:
                     func_symbols=piece.atoms(Symbol)
                     if len(func_symbols)>1:
                         err_string='distribution must be fully'
