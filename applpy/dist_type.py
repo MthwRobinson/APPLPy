@@ -49,6 +49,14 @@ class ArcSinRV(RV):
 class ArcTanRV(RV):
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  phi=Symbol('phi')):
+        # Return an error if invalid parameters are entered
+        if alpha in [-oo,oo]:
+            if phi in [-oo,oo]:
+                err_string='Both parameters must be finite'
+                raise RVError(err_string)
+        if alpha <= 0:
+            err_string='Alpha must be positive'
+            raise RVError(err_string)
         X_dummy=RV(alpha/(atan(alpha*phi)+pi/2)*(1+alpha**2*(x-phi)**2),
                    [0,oo])
         self.func=X_dummy.func
@@ -58,6 +66,13 @@ class ArcTanRV(RV):
 class BetaRV(RV):
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta'),positive=True):
+        if alpha in [-oo,oo]:
+            if beta in [-oo,oo]:
+                err_string='Both parameters must be finite'
+                raise RVError(err_string)
+        if alpha<=0 or beta<=0:
+            err_string='Both parameters must be positive'
+            raise RVError(err_string)
         X_dummy=RV((gamma(alpha+beta)*(x**(alpha-1))*(1-x)**(beta-1))/
                (gamma(alpha)*gamma(beta)),[0,1])
         self.func=X_dummy.func
@@ -67,6 +82,13 @@ class BetaRV(RV):
 class CauchyRV(RV):
     def __init__(self,a=Symbol('a'),
                  alpha=Symbol('alpha'),positive=True):
+        if a in [-oo,oo]:
+            err_string='Both parameters must be finite'
+            if alpha in [-oo,oo]:
+                raise RVError(err_string)
+        if alpha<=0:
+            err_string='alpha must be positive'
+            raise RVError(err_string)
         X_dummy=RV((1)/(alpha*pi*(1+((x-a)**2/alpha**2))),[-oo,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support
@@ -92,7 +114,11 @@ class CauchyRV(RV):
         return varlist
 
 class ChiRV(RV):
-    def __init__(self,N=Symbol('N',positive=True)):
+    def __init__(self,N=Symbol('N',positive=True,
+                               integer=True)):
+        if N<=0 or type(N)!=int:
+            err_string='N must be a positive integer'
+            raise RVError(err_string)
         X_dummy=RV(((x**(N-1))*exp(-x**2/2))/
                    (2**((N/2)-1)*gamma(N/2)),[0,oo])
         self.func=X_dummy.func
@@ -100,7 +126,11 @@ class ChiRV(RV):
         self.ftype=X_dummy.ftype
 
 class ChiSquareRV(RV):
-    def __init__(self,N=Symbol('N',positive=True)):
+    def __init__(self,N=Symbol('N',positive=True,
+                               integer=True)):
+        if N<=0 or type(N)!=int:
+            err_string='N must be a positive integer'
+            raise RVError(err_string)
         X_dummy=RV((x**((N/2)-1)*exp(-x/2))/
                    (2**(N/2)*gamma(N/2)),[0,oo])
         self.func=X_dummy.func
@@ -109,7 +139,16 @@ class ChiSquareRV(RV):
 
 class ErlangRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
-                 N=Symbol('N',positive=True)):
+                 N=Symbol('N',positive=True,integer=True)):
+        if N<=0 or type(N)!=int:
+            err_string='N must be a positive integer'
+            raise RVError(err_string)
+        if theta<=0:
+            err_string='theta must be positive'
+            raise RVError(err_string)
+        if theta in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV((theta*(theta*x)**(N-1)*exp(-theta*x))/
                    (factorial(N-1)),[0,oo])
         self.func=X_dummy.func
@@ -119,6 +158,14 @@ class ErlangRV(RV):
 class ErrorRV(RV):
     def __init__(self,mu=Symbol('mu',positive=True),
                  alpha=Symbol('alpha'),d=Symbol('d')):
+        if mu<=0:
+            err_string='mu must be positive'
+            raise RVError(err_string)
+        if mu in [-oo,oo]:
+            if alpha in [-oo,oo]:
+                if d in [-oo,oo]:
+                    err_string='all parameters must be finite'
+                    raise RVError(err_string)
         X_dummy=RV(mu*exp(-abs(mu*(x-d1))**alpha)/
                    (2*gamma(1+1/alpha)),[-oo,oo])
         self.func=X_dummy.func
@@ -128,6 +175,11 @@ class ErrorRV(RV):
 class ErrorIIRV(RV):
     def __init__(self,a=Symbol('a'),b=Symbol('b'),
                  c=Symbol('c')):
+        if a in [-oo,oo]:
+            if b in [-oo,oo]:
+                if c in [-oo,oo]:
+                    err_string='all parameters must be finite'
+                    raise RVError(err_string)
         X_dummy=RV(exp(-((abs(x-a))**(2/c)/(2*b))/
                        ((b**(c/2))*2**(c/2+1)*gamma(c/2+1))),
                    [-oo,oo])
@@ -137,6 +189,12 @@ class ErrorIIRV(RV):
 
 class ExponentialRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True)):
+        if theta<=0:
+            err_string='theta must be positive'
+            raise RVError(err_string)
+        if theta in [-oo,oo]:
+            err_string='theta must be finite'
+            raise RVError(err_string)
         X_dummy=RV([theta*exp(-theta*x)],[0,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support
@@ -164,6 +222,9 @@ class ExponentialRV(RV):
 class ExponentialPowerRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
+        if theta<=0 or kappa<=0:
+            err_string='both parameters must be positive'
+            raise RVError(err_string)
         X_dummy=RV(exp(1-exp(theta*x**(kappa)))*exp(theta*x**(kappa))*
                    theta*kappa*x**(kappa-1),[0,oo])
         self.func=X_dummy.func
@@ -192,6 +253,10 @@ class ExponentialPowerRV(RV):
 
 class ExtremeValueRV(RV):
     def __init__(self,alpha=Symbol('alpha'),beta=Symbol('beta')):
+        if alpha in [-oo,oo]:
+            if beta in [-oo,oo]:
+                err_string='both parameters must be finite'
+                raise RVError(err_string)
         X_dummy=RV((beta*exp((x*beta)-((exp(x*beta))/alpha)))/
                    alpha,[-oo,oo])
         self.func=X_dummy.func
@@ -217,6 +282,12 @@ class ExtremeValueRV(RV):
 class FRV(RV):
     def __init__(self,n1=Symbol('n1',positive=True),
                  n2=Symbol('n2',positive=True)):
+        if n1<=0 or n2<=0:
+            err_string='both parameters must be positive'
+            raise RVError(err_string)
+        if n1 in [-oo,oo] or n2 in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV(gamma((n1+n2)/2)*(n1/n2)**(n/2)*x**(n/2-1)/
                    gamma(n1/2)*gamma(n2/2)*((n1/n2)*x+1)**((n1+n2)/2),
                    [0,oo])
@@ -226,6 +297,12 @@ class FRV(RV):
 
 class GammaRV(RV):
     def __init__(self,theta=Symbol('theta'),kappa=Symbol('kappa')):
+        if theta<=0 or kappa<=0:
+            err_string='both parameters must be positive'
+            raise RVError(err_string)
+        if theta in [-oo,oo] or kappa in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV((theta*(theta*x)**(kappa-1)*exp(-theta*x))/(gamma(kappa)),
                    [0,oo])
         self.func=X_dummy.func
@@ -236,6 +313,12 @@ class GammaRV(RV):
 class GeneralizedParetoRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
                  delta=Symbol('delta'),kappa=Symbol('kappa')):
+        if theta<=0:
+            err_string='theta must be positive'
+            raise RVError(err_string)
+        if theta in [-oo,oo] or delta in [-oo,oo] or kappa in [-oo,oo]:
+            err_string='all parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV((theta+kappa/(x+delta))*(1+x/delta)**(-kappa)*
                    exp(-theta*x),[0,oo])
         self.func=X_dummy.func
@@ -245,6 +328,12 @@ class GeneralizedParetoRV(RV):
 class GompertzRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa')):
+        if theta<=0:
+            err_string='theta must be positive'
+            raise RVError(err_string)
+        if theta in [-oo,oo] or kappa in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV([theta*kappa**(x)*exp(-(theta*(kappa**(x)-1))/ln(kappa))],
                    [0,oo])
         self.func=X_dummy.func
@@ -272,6 +361,9 @@ class GompertzRV(RV):
 class IDBRV(RV):
     def __init__(self,theta=Symbol('theta'),delta=Symbol('delta'),
                  kappa=Symbol('kappa')):
+        if theta in [-oo,oo] or delta in [-oo,oo] or kappa in [-oo,oo]:
+            err_string='all parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV(1-(1+kappa*x)**(-theta/kappa)*
                    exp(-delta*x**2/2),[0,oo])
         self.func=X_dummy.func
@@ -281,6 +373,12 @@ class IDBRV(RV):
 class InverseGaussianRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
                  mu=Symbol('mu',positive=True)):
+        if theta<=0 or mu<=0:
+            err_string='both parameters must be positive'
+            raise RVError(err_string)
+        if theta in [-oo,oo] or mu in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV([(1/2)*sqrt(2)*sqrt(theta/(pi*x**3))*
                     exp(-(1/2)*(theta*(x-mu)**2)/(mu**(2)*x))],
                    [0,oo])
@@ -292,6 +390,11 @@ class InverseGaussianRV(RV):
 class InverseGammaRV(RV):
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta',positive=True)):
+        if alpha<=0 or beta<=0:
+            err_string='both parameters must be positive'
+            raise RVError(err_string)
+        if alpha in [-oo,oo] or beta in [-oo,oo]:
+            err_string='both parameters must be finite'
         X_dummy=RV([(x**(1-alpha)*exp(-1/(x*beta)))/
                     (gamma(alpha)*beta**(alpha))],
                    [0,oo])
@@ -300,7 +403,12 @@ class InverseGammaRV(RV):
         self.ftype=X_dummy.ftype
 
 class KSRV(RV):
-    def __init__(self,n=Symbol('n',positive=True)):
+    def __init__(self,n=Symbol('n',positive=True,
+                               integer=True)):
+        if n<=0:
+            if type(n)!=int:
+                err_string='n must be a positive integer'
+                raise RVError(err_string)
         #Phase 1
         N=n
         m=floor(3*N/2)+(N%2)-1
@@ -452,6 +560,11 @@ class KSRV(RV):
 class LaPlaceRV(RV):
     def __init__(self,omega=Symbol('omega',positive=True),
                  theta=Symbol('theta')):
+        if omega<=0:
+            err_string='omega must be positive'
+        if omega in [-oo,oo] or theta in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV(exp(-abs(x-theta)/omega)/(2*omega),[-oo,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support
@@ -460,6 +573,12 @@ class LaPlaceRV(RV):
 class LogGammaRV(RV):
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta',positive=True)):
+        if alpha<=0 or beta<=0:
+            err_string='both parameters must be positive'
+            raise RVError(err_string)
+        if alpha in [-oo,oo] or beta in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV([(exp(x*beta)*exp(-exp(x)/alpha))/
                     (alpha**(beta)*gamma(beta))],[-oo,oo])
         self.func=X_dummy.func
@@ -469,6 +588,12 @@ class LogGammaRV(RV):
 class LogisticRV(RV):
     def __init__(self,kappa=Symbol('kappa',positive=True),
                  theta=Symbol('theta',positive=True)):
+        if kappa<=0 or theta<=0:
+            err_string='both parameters must be positive'
+            raise RVError(err_string)
+        if kappa in [-oo,oo] or theta in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV([(theta**(kappa)*kappa*exp(kappa*x))/
                     (1+(theta*exp(x))**kappa)**2],[-oo,oo])
         self.func=X_dummy.func
@@ -495,6 +620,12 @@ class LogisticRV(RV):
 class LogLogisticRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
+        if theta<=0 or kappa<=0:
+            err_string='both parameters must be positive'
+            raise RVError(err_string)
+        if theta in [-oo,oo] or kappa in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV([(theta*kappa*(theta*x)**(kappa-1))/
                     (1+(theta*x)**(kappa))**2],[0,oo])
         self.func=X_dummy.func
@@ -521,6 +652,12 @@ class LogLogisticRV(RV):
 class LogNormalRV(RV):
     def __init__(self,mu=Symbol('mu'),
                  sigma=Symbol('sigma',positive=True)):
+        if sigma<=0:
+            err_string='sigma must be positive'
+            raise RVError(err_string)
+        if mu in [-oo,oo] or sigma in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV([(1/2)*(sqrt(2)*exp((-1/2)*((ln(x)-mu)**2)/(sigma**2)))/
                   (sqrt(pi)*x*sigma)],[0,oo])
         self.func=X_dummy.func
@@ -530,6 +667,12 @@ class LogNormalRV(RV):
 class LomaxRV(RV):
     def __init__(self,kappa=Symbol('kappa',positive=True),
                  theta=Symbol('theta',positive=True)):
+        if kappa<=0 or theta<=0:
+            err_string='both parameters must be positive'
+            raise RVError(err_string)
+        if kappa in [-oo,oo] or theta in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV([theta*kappa*(1+theta*x)**(-kappa-1)],[0,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support
@@ -555,6 +698,12 @@ class MakehamRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
                  delta=Symbol('delta',positive=True),
                  kappa=Symbol('kappa')):
+        if alpha<=0 or delta<=0:
+            err_string='alpha and delta must be positive'
+            raise RVError(err_string)
+        if alpha in [-oo,oo] or delta in [-oo,oo] or kappa in [-oo,oo]:
+            err_string='all parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV((theta+delta*kappa**x)*
                    exp(-theta*x-delta*(kappa**x-1)/log(kappa)),[0,oo])
         self.func=X_dummy.func
@@ -563,6 +712,12 @@ class MakehamRV(RV):
 
 class MuthRV(RV):
     def __init__(self,kappa=Symbol('kappa',positive=True)):
+        if kappa<=0:
+            err_string='kappa must be positive'
+            raise RVError(err_string)
+        if kappa in [-oo,oo]:
+            err_string='kappa must be finite'
+            raise RVError(err_string)
         X_dummy=RV([(exp(kappa*x)-kappa)*exp((-exp(kappa*x)/kappa)+
                                              kappa*x+(1/kappa))]
                    [0,oo])
@@ -573,6 +728,12 @@ class MuthRV(RV):
 class NormalRV(RV):
     def __init__(self,mu=Symbol('mu'),
                  sigma=Symbol('sigma',positive=True)):
+        if sigma<=0:
+            err_string='sigma must be positive'
+            raise RVError(err_string)
+        if sigma in [-oo,oo] or mu in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV((exp((-(x-mu)**2)/(2*sigma**2))*sqrt(2))/(2*sigma*sqrt(pi))
                    ,[-oo,oo])
         self.func=X_dummy.func
@@ -583,6 +744,12 @@ class NormalRV(RV):
 class ParetoRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
+        if theta<=0 or kappa<=0:
+            err_string='both parameters must be positive'
+            raise RVError(err_string)
+        if theta in [-oo,oo] or kappa in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV([(kappa*theta**(kappa))/(x**(kappa+1))],[theta,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support
@@ -590,6 +757,12 @@ class ParetoRV(RV):
 
 class Rayleigh(RV):
     def __init__(self,theta=Symbol('theta',positive=True)):
+        if theta<=0:
+            err_string='theta must be positive'
+            raise RVError(err_string)
+        if theta in [-oo,oo]:
+            err_string='theta must be finite'
+            raise RVError(err_string)
         X_dummy=RV([2*theta**(2)*x*exp(-theta**(2)*x**2)],[0,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support
@@ -597,6 +770,12 @@ class Rayleigh(RV):
 
 class TriangularRV(RV):
     def __init__(self,a=Symbol('a'),b=Symbol('b'),c=Symbol('c')):
+        if a>=b or b>=c or a>=c:
+            err_string='the parameters must be in ascending order'
+            raise RVError(err_string)
+        if a in [-oo,oo] or b in [-oo,oo] or c in [-oo,oo]:
+            err_string='all parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV([(2*(x-a))/((c-a)*(b-a)),(2*(c-x))/((c-a)*(c-b))],[a,b,c])
         self.func=X_dummy.func
         a=Symbol('a');b=Symbol('b');c=Symbol('c')
@@ -605,7 +784,11 @@ class TriangularRV(RV):
         self.parameter=[a,b,c]
 
 class TRV(RV):
-    def __init__(self,N=Symbol('N'),positive=True):
+    def __init__(self,N=Symbol('N'),positive=True,integer=True):
+        if N<=0:
+            if type(N)!=int:
+                err_string='N must be a positive integer'
+                raise RVError(err_string)
         X_dummy=RV([(gamma(N/2+1/2)*(1+((x**2)/N))**(-(N/2)-1/2))/
                     (sqrt(N*pi)*gamma(N/2))],[-oo,oo])
         self.func=X_dummy.func
@@ -614,6 +797,12 @@ class TRV(RV):
 
 class UniformRV(RV):
     def __init__(self,a=Symbol('a'),b=Symbol('b')):
+        if a>=b:
+            err_string='the parameters must be in ascending order'
+            raise RVError(err_string)
+        if a in [-oo,oo] or b in [-oo,oo]:
+            err_string='all parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV(simplify((b-a)**(-1)),[a,b])
         self.func=X_dummy.func
         self.support=X_dummy.support
@@ -639,7 +828,14 @@ class UniformRV(RV):
         return varlist
 
 class WeibullRV(RV):   
-    def __init__(self,theta=Symbol('theta'),kappa=Symbol('kappa')):
+    def __init__(self,theta=Symbol('theta',positive=True),
+                 kappa=Symbol('kappa',positive=True)):
+        if theta<=0 or kappa<=0:
+            err_string='both parameters must be positive'
+            raise RVError(err_string)
+        if theta in [-oo,oo] or kappa in [-oo,oo]:
+            err_string='both parameters must be finite'
+            raise RVError(err_string)
         X_dummy=RV(kappa*theta**(kappa)*x**(kappa-1)*exp(-(theta*x)**kappa),
                    [0,oo])
         self.func=X_dummy.func
@@ -680,8 +876,15 @@ class BenfordRV(RV):
         self.ftype=X_dummy.ftype
 
 class BinomialRV(RV):
-    def __init__(self,N=Symbol('N',positive=True),
+    def __init__(self,N=Symbol('N',positive=True,integer=True),
                  p=Symbol('p',positive=True)):
+        if N<=0:
+            if type(N)!=int:
+                err_string='N must be a positive integer'
+                raise RVError(err_string)
+        if p<=0 or p>=1:
+            err_string='p must be between 0 and 1'
+            raise RVError(err_string)
         X_dummy=RV([(factorial(N)*p**(x)*(1-p)**(N-x))/
                     (factorial(N-x)*factorial(x))],[0,N],
                    ['Discrete','pdf'])
@@ -691,6 +894,9 @@ class BinomialRV(RV):
 
 class GeometricRV(RV):
     def __init__(self,p=Symbol('p',positive=True)):
+        if p<=0 or p>=1:
+            err_string='p must be between 0 and 1'
+            raise RVError(err_string)
         X_dummy=RV([p*(1-p)**(x-1)],[1,oo],['Discrete','pdf'])
         self.func=X_dummy.func
         self.support=X_dummy.support
@@ -698,6 +904,12 @@ class GeometricRV(RV):
 
 class PoissonRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True)):
+        if theta<=0:
+            err_string='theta must be positive'
+            raise RVError(err_string)
+        if theta in [-oo,oo]:
+            err_string='theta must be finite'
+            raise RVError(err_string)
         X_dummy=RV([(theta**(x)*exp(-theta))/factorial(x)],
                    [0,oo],['Discrete','pdf'])
         self.func=X_dummy.func
