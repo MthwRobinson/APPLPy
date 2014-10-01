@@ -28,11 +28,16 @@ Defines commonly used distributions as subclasses of the
 from rv import *
 
 def param_check(param):
-    for i in range(len(param)):
-        if type(param[i])!=int and type(param[i])!=float:
-            return False
-        else:
-            return True
+    flag=True
+    count=0
+    for element in param:
+        try:
+            if element.__class__.name=='Symbol':
+                flag=False
+        except:
+            if type(element)=='Symbol':
+                flag=False
+    return flag
 
 """
 Continuous Distributions
