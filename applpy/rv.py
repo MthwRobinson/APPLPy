@@ -2962,7 +2962,8 @@ def Histogram(Sample,Bins=None):
     plt.title('Histogram')
     plt.grid(True)
 
-def PlotDist(RVar,suplist=None,opt=None):
+def PlotDist(RVar,suplist=None,opt=None,color='red',
+             display=True):
     """
     Procedure: Plot Dist
     Purpose: Plot a random variable
@@ -3039,13 +3040,16 @@ def PlotDist(RVar,suplist=None,opt=None):
         plotsupp.append(suplist[1])
         plt.ioff()
         initial_plot=plot(plotfunc[0],(x,plotsupp[0],plotsupp[1]),
-                          title=lab2,show=False)
+                          title=lab2,show=False,line_color=color)
         for i in range(1,len(plotfunc)):
             plot_extension=plot(plotfunc[i],
                                 (x,plotsupp[i],plotsupp[i+1]),
-                                show=False)
+                                show=False,line_color=color)
             initial_plot.append(plot_extension[0])
-        initial_plot.show()
+        if display==True:
+            initial_plot.show()
+        else:
+            return initial_plot
 
         # Old PlotDist code before sympy created the
         #   plotting front-end
