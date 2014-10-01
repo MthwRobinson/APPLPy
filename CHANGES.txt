@@ -4,6 +4,9 @@ New Capabilities:
 	1. Pre-processing code has been added to the beginning
 		of several procedures. Errors will be raised
 		if a procedure receives bad input.
+	2. PlotDist has been improved to allow for more plotting
+		options. PlotDist is now capable of using different
+		colors and displaying multiple plots simultaneously
 
 Fixed Bugs:
 	1. Start-up script has been modified. The init_session()
