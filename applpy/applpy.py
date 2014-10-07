@@ -24,6 +24,7 @@ Imports supporting ApplPy Modules
 
 """
 from rv import *
+from rv_discrete import *
 from dist_type import *
 from stats import *
 #from bayes import *
