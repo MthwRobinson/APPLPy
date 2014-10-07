@@ -1,0 +1,64 @@
+v0.2.1, XX XXX XXXX
+
+New Capabilities:
+	1. Pre-processing code has been added to the beginning
+		of several procedures. Errors will be raised
+		if a procedure receives bad input.
+
+Fixed Bugs:
+	1. Start-up script has been modified. The init_session()
+		commands for SymPy are entered manually. APPLPy
+		can now be imported in an interactive command
+		line session
+
+v0.2.0, 17 SEPTEMBER 2014
+
+New Capabilities:
+	1. Bayesian statistics module has been added. Capabilities
+		include:
+		a. Computing posterior distributions
+		b. Computing posterior predictive distributions
+		c. Computing Jeffreys Priors
+		d. Credible Sets
+	2. Functionality added for discrete random variables in
+		functional forms for the following procedures:
+		a. All procedures for changing functional form
+			(i.e. CDF to PDF)
+		b. All expected value procedures
+	3. New Random Variable types added (new distributions are
+		listed in the startup menu)
+	4. KS Test added to the statistics module
+
+Fixed Bugs:
+	1. PlotDist now supports univariate discrete random
+		variables
+	2. Random Variables no longer default to floating point
+		numbers when it produces output. Computation of
+		exact distributions is now possible
+	3. PlotDist now appears in the iPython Notebook when the
+		command %pylab inline is entered
+
+v0.1.2, 30 JULY 2014
+
+New Capabilities:
+	1. Capability to work with RV's with symbolic supports was
+	added.
+
+v0.1.1, 29 JULY 2014
+
+Fixed Bugs:
+	1. Convolution/Product/MaximumIID procedures have been updated
+	so that they now function with all distributions. In the
+	initial release, they only worked with lifetime distributions.
+
+	2. Expected value procedures were modified to output
+	simplified expressions
+
+	3. init.py file modified so that all dependencies are
+	automatically imported
+
+	4. Plotting now takes place through the sympy plotting front-
+	end. The PlotDist procedure is now capable of plotting all
+	functions
+
+v0.1.0, 23 JULY 2014 -- Initial Release
