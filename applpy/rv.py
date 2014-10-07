@@ -1,5 +1,6 @@
 from __future__ import division
 from sympy import *
+import numpy as np
 import plot as plt
 from random import random
 x,y,z,t=symbols('x y z t')
@@ -1395,14 +1396,16 @@ Procedures:
     4. Kurtosis(RVar)
     5. MaximumIID(RVar,n)
     6. Mean(RVar)
-    7. MGF(RVar)
-    8. MinimumIID(RVar,n)
-    9. OrderStat(RVar,n,r)
-    10. ProductIID(RVar,n)
-    11. Skewness(RVar)
-    12. Transform(RVar,gX)
-    13. Truncate(RVar,[lw,up])
-    14. Variance(RVar)
+    7. MeanDiscrete(RVar)
+    8. MGF(RVar)
+    9. MinimumIID(RVar,n)
+    10. OrderStat(RVar,n,r)
+    11. ProductIID(RVar,n)
+    12. Skewness(RVar)
+    13. Transform(RVar,gX)
+    14. Truncate(RVar,[lw,up])
+    15. Variance(RVar)
+    16. VarDiscrete(RVar)
 """
 
 def ConvolutionIID(RVar,n):
@@ -1432,8 +1435,8 @@ def CoefOfVar(RVar):
     Output:     1. The coefficient of variation
     """
     # Compute the coefficient of varation
-    expect=Mean(RVar)
-    sig=Variance(RVar)
+    expect=MeanDiscrete(RVar)
+    sig=VarDiscrete(RVar)
     cov=(sqrt(sig))/expect
     return simplify(cov)
 
@@ -1471,7 +1474,7 @@ def ExpectedValue(RVar,gX=x):
         # Transform the random variable, and then use the
         #   mean procedure to find the expected value
         fx_trans=Transform(fx,[[gX],[-oo,oo]])
-        Expect=Mean(fx_trans)
+        Expect=MeanDiscrete(fx_trans)
         return simplify(Expect)
 
 def Kurtosis(RVar):
@@ -1482,8 +1485,8 @@ def Kurtosis(RVar):
     Output:     1. The kurtosis of a random variable
     """
     # Compute the kurtosis
-    expect=Mean(RVar)
-    sig=sqrt(Variance(RVar))
+    expect=MeanDiscrete(RVar)
+    sig=sqrt(VarDiscrete(RVar))
     Term1=ExpectedValue(RVar,x**4)
     Term2=4*expect*ExpectedValue(RVar,x**3)
     Term3=6*(expect**2)*ExpectedValue(RVar,x**2)
@@ -1547,16 +1550,50 @@ def Mean(RVar):
 
     # If the random variable is discrete, find and return the variance
     if RVar.ftype[0]=='discrete':
+        return MeanDiscrete(RVar)
+        #
+        # Legacy mean code ... update uses faster numpy implementation
+        #
         # Create a list of x*f(x)
-        meanlist=[]
-        for i in range(len(X_dummy.func)):
-            meanlist.append(X_dummy.func[i]*X_dummy.support[i])
+        #meanlist=[]
+        #for i in range(len(X_dummy.func)):
+        #    meanlist.append(X_dummy.func[i]*X_dummy.support[i])
         # Sum to find the mean
-        meanval=0
-        for i in range(len(meanlist)):
-            meanval+=meanlist[i]
-        return simplify(meanval)
+        #meanval=0
+        #for i in range(len(meanlist)):
+        #    meanval+=meanlist[i]
+        #return simplify(meanval)
 
+
+def MeanDiscrete(RVar):
+    """
+    Procedure Name: MeanDiscrete
+    Purpose: Compute the mean of a discrete random variable
+    Arguments:  1. RVar: A discrete random variable
+    Output:     1. The mean of the random variable
+    """
+    # Check the random variable to make sure it is discrete
+    if RVar.ftype[0]=='continuous':
+        raise RVError('the random variable must be continuous')
+    elif RVar.ftype[0]=='Discrete':
+        try:
+            RVar=Convert(RVar)
+        except:
+            err_string='the support of the random variable'
+            err_string+=' must be finite'
+            raise RVError(err_string)
+    # Convert the random variable to PDF form
+    X_dummy=PDF(RVar)
+    # Convert the value and the support of the pdf to numpy
+    #   matrices
+    support=np.matrix(X_dummy.support)
+    pdf=np.matrix(X_dummy.func)
+    # Use the numpy element wise multiplication function to
+    #   determine a vector of the values of f(x)*x
+    vals=np.multiply(support,pdf)
+    # Sum the values of f(x)*x to find the mean
+    meanval=vals.sum()
+    return meanval
 def MGF(RVar):
     """
     Procedure Name: MGF
@@ -1865,8 +1902,8 @@ def Skewness(RVar):
     Output:     1. The skewness of the random variable
     """
     # Compute the skewness
-    expect=Mean(RVar)
-    sig=sqrt(Variance(RVar))
+    expect=MeanDiscrete(RVar)
+    sig=sqrt(VarDiscrete(RVar))
     Term1=ExpectedValue(RVar,x**3)
     Term2=3*expect*ExpectedValue(RVar,x**2)
     Term3=2*expect**3
@@ -2180,6 +2217,10 @@ def Variance(RVar):
 
     # If the random variable is discrete, find and return the variance
     if RVar.ftype[0]=='discrete':
+        return VarDiscrete(RVar)
+        #
+        # Legacy variance code ... update uses faster numpy implementation
+        #
         # Find the mean of the random variable
         EX=Mean(X_dummy)
         # Find E(X^2)
@@ -2194,6 +2235,40 @@ def Variance(RVar):
         # Find Var(X)=E(X^2)-E(X)^2
         var=exxval-(EX**2)
         return simplify(var)
+
+def VarDiscrete(RVar):
+    """
+    Procedure Name: VarDiscrete
+    Purpose: Compute the variance of a discrete random variable
+    Arguments:  1. RVar: a discrete random variable
+    Output:     1. The variance of the random variable
+    """
+    # Check the random variable to make sure it is discrete
+    if RVar.ftype[0]=='continuous':
+        raise RVError('the random variable must be continuous')
+    elif RVar.ftype[0]=='Discrete':
+        try:
+            RVar=Convert(RVar)
+        except:
+            err_string='the support of the random variable'
+            err_string+=' must be finite'
+            raise RVError(err_string)
+    # Convert the random variable to PDF form
+    X_dummy=PDF(RVar)
+    # Mind the mean of the random variable
+    EX=MeanDiscrete(RVar)
+    # Convert the values and support of the random variable
+    #   to vector form
+    support=np.matrix(RVar.support)
+    pdf=np.matrix(RVar.func)
+    # Find E(X^2) by creating a vector containing the values
+    #   of f(x)*x**2 and summing the result
+    supportsqr=np.multiply(support,support)
+    EXXvals=np.multiply(supportsqr,pdf)
+    EXX=EXXvals.sum()
+    # Find Var(X)=E(X^2)-E(X)^2
+    var=EXX-(EX**2)
+    return var
 
 """
 Procedures on Two Random Variables
