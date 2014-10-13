@@ -2222,19 +2222,19 @@ def Variance(RVar):
         # Legacy variance code ... update uses faster numpy implementation
         #
         # Find the mean of the random variable
-        EX=Mean(X_dummy)
+        #EX=Mean(X_dummy)
         # Find E(X^2)
         # Create a list of (x**2)*f(x)
-        exxlist=[]
-        for i in range(len(X_dummy.func)):
-            exxlist.append(X_dummy.func[i]*(X_dummy.support[i])**2)
+        #exxlist=[]
+        #for i in range(len(X_dummy.func)):
+        #    exxlist.append(X_dummy.func[i]*(X_dummy.support[i])**2)
         # Sum to find E(X^2)
-        exxval=0
-        for i in range(len(exxlist)):
-            exxval+=exxlist[i]
+        #exxval=0
+        #for i in range(len(exxlist)):
+        #    exxval+=exxlist[i]
         # Find Var(X)=E(X^2)-E(X)^2
-        var=exxval-(EX**2)
-        return simplify(var)
+        #var=exxval-(EX**2)
+        #return simplify(var)
 
 def VarDiscrete(RVar):
     """
@@ -2998,6 +2998,61 @@ def Product(RVar1,RVar2):
         # Create and return the new random variable
         return RV(funclist3,prodlist3,['discrete','pdf'])
 
+def ProductDiscrete(RVar1,RVar2):
+    """
+    Procedure Name: ProductDiscrete
+    Purpose: Compute the product of two independent
+                discrete random variables
+    Arguments:  1. RVar1: A random variable
+                2. RVar2: A random variable
+    Output:     1. The product of RVar1 and RVar2        
+    """
+    # Ensure that both random variables are discrete
+    if RVar1.ftype[0]!='discrete' or RVar2.ftype[0]!='discrete':
+        raise RVError('both random variables must be discrete')
+    # Convert both random variables to pdf form
+    X_dummy1=PDF(RVar1)
+    X_dummy2=PDF(RVar2)
+    # Convert the support and the value of each random variable
+    #   into a numpy matrix
+    support1=np.matrix(X_dummy1.support)
+    support2=np.matrix(X_dummy2.support)
+    pdf1=np.matrix(X_dummy1.func)
+    pdf2=np.matrix(X_dummy2.func)
+    # Find all possible values of support1*support2 and val1*val2
+    #   by computing (X1)'*X2, flatten into a row vector
+    prodsupport=support1.T*support2
+    prodsupport=prodsupport.flatten()
+    prodpdf=pdf1.T*pdf2
+    prodpdf=prodpdf.flatten()
+    #
+    # Stack the support vector and the value vector into a matrix
+    #prodmatrix=np.vstack([prodsupport,prodpdf]).T
+    #
+    #
+    # Convert the resulting vectors into lists
+    supportlist=prodsupport.tolist()[0]
+    pdflist=prodpdf.tolist()[0]
+    # Sort the function and support lists for the product
+    sortlist=zip(supportlist,pdflist)
+    sortlist.sort()
+    prodlist2=[]
+    funclist2=[]
+    for i in range(len(sortlist)):
+        prodlist2.append(sortlist[i][0])
+        funclist2.append(sortlist[i][1])
+    # Remove redundant elements in the support list
+    prodlist3=[]
+    funclist3=[]
+    for i in range(len(prodlist2)):
+        if prodlist2[i] not in prodlist3:
+            prodlist3.append(prodlist2[i])
+            funclist3.append(funclist2[i])
+        else:
+            funclist3[prodlist3.index(prodlist2[i])]+=funclist2[i]
+    # Create and return the new random variable
+    return RV(funclist3,prodlist3,['discrete','pdf'])
+    
 """
 Utilities
 

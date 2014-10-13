@@ -1,7 +1,7 @@
 from __future__ import division
 
 from sympy import *
-from applpy import *
+from rv import *
 
 """
     A Probability Progamming Language (APPL) -- Python Edition

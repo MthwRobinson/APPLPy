@@ -25,7 +25,8 @@ Defines commonly used distributions as subclasses of the
 
 """
 
-from rv import *
+from sympy import (Symbol)
+from rv import RV
 
 def param_check(param):
     flag=True
