@@ -1,6 +1,7 @@
 from __future__ import division
 
-from sympy import *
+from pylab import (plot, xlabel, ylabel, title, grid, arange,
+                   ion, ioff)
 from rv import *
 
 """
@@ -29,12 +30,6 @@ Plotting Module
 Defines procedures for plotting random variables
 
 """
-try:
-    from pylab import *
-except:
-    print 'WARNING: Plotting not currently enabled'
-    print 'Download matplotlib to enable plotting.'
-    print ''
     
 def mat_plot(funclist,suplist,lab1=None,lab2=None,ftype='continuous'):
     """

@@ -24,7 +24,7 @@ Defines procedures for parameter estimation
 
 """
 
-from rv import *
+from .rv import RV
 
 """
 Parameter Estimation Procedures
