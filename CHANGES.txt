@@ -13,6 +13,9 @@ Fixed Bugs:
 		commands for SymPy are entered manually. APPLPy
 		can now be imported in an interactive command
 		line session
+	2. Updates have been made to the way the APPLPy package is
+		structured. Importing APPLPy is now les memory
+		instensive (does not import all of SymPy, etc)
 
 v0.2.0, 17 SEPTEMBER 2014
 
