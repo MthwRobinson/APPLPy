@@ -20,14 +20,13 @@
 from __future__ import division
 from sympy import *
 from rv import *
+from plot import *
 from dist_type import *
 from stats import *
 
 x,y,z,t=symbols('x y z t')
 k,m,n=symbols('k m n',integers=True)
 f,g,h=symbols('f g h',cls=Function)
-#from applpy import *
-#init_session()
 import sys
 sys.display_hook=pprint
 
@@ -85,7 +84,7 @@ def Menu():
 
     print 'Continuous Distributions'
     print 'ArcSinRV(),ArcTanRV(alpha,phi),BetaRV(alpha,beta)'
-    print 'CauchyRV(a,alpha)ChiRV(N),ChiSquareRV(N),ErlangRV(theta,N)'
+    print 'CauchyRV(a,alpha),ChiRV(N),ChiSquareRV(N),ErlangRV(theta,N)'
     print 'ErrorRV(mu,alpha,d),ErrorIIRV(a,b,c),ExponentialRV(theta)'
     print 'ExponentialPowerRV(theta,kappa),ExtremeValueRV(alpha,beta)'
     print 'FRV(n1,n2),GammaRV(theta,kappa),GompertzRV(theta,kappa)'

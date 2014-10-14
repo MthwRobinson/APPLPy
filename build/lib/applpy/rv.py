@@ -1,5 +1,7 @@
 from __future__ import division
-from sympy import *
+from sympy import (Symbol, symbols, oo, integrate, summation, diff,
+                   exp, pi, sqrt, factorial, ln, floor, simplify,
+                   solve, nan, plot)
 import numpy as np
 import plot as plt
 from random import random
@@ -411,9 +413,10 @@ def CDF(RVar,value=x):
 
     # Check to make sure the value given is within the random
     #   variable's support
-    if check_value(value,RVar.support)!=True:
-        string='Value is not within the support of the random variable'        
-        raise RVError(string)
+    if value.__class__.__name__!='Symbol':
+        if value>RVar.support[-1] or value<RVar.support[0]:
+            string='Value is not within the support of the random variable'        
+            raise RVError(string)
 
     # If the distribution is continous, find and return the distribution
     #   of the random variable
@@ -1435,8 +1438,8 @@ def CoefOfVar(RVar):
     Output:     1. The coefficient of variation
     """
     # Compute the coefficient of varation
-    expect=MeanDiscrete(RVar)
-    sig=VarDiscrete(RVar)
+    expect=Mean(RVar)
+    sig=Variance(RVar)
     cov=(sqrt(sig))/expect
     return simplify(cov)
 
@@ -1485,8 +1488,8 @@ def Kurtosis(RVar):
     Output:     1. The kurtosis of a random variable
     """
     # Compute the kurtosis
-    expect=MeanDiscrete(RVar)
-    sig=sqrt(VarDiscrete(RVar))
+    expect=Mean(RVar)
+    sig=sqrt(Variance(RVar))
     Term1=ExpectedValue(RVar,x**4)
     Term2=4*expect*ExpectedValue(RVar,x**3)
     Term3=6*(expect**2)*ExpectedValue(RVar,x**2)
@@ -1902,8 +1905,8 @@ def Skewness(RVar):
     Output:     1. The skewness of the random variable
     """
     # Compute the skewness
-    expect=MeanDiscrete(RVar)
-    sig=sqrt(VarDiscrete(RVar))
+    expect=Mean(RVar)
+    sig=sqrt(Variance(RVar))
     Term1=ExpectedValue(RVar,x**3)
     Term2=3*expect*ExpectedValue(RVar,x**2)
     Term3=2*expect**3
