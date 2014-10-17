@@ -29,7 +29,7 @@ Defines commonly used distributions as subclasses of the
 
 from sympy import (Symbol, symbols, oo, exp, pi, sqrt, atan,
                    gamma, factorial, ln, floor, integrate, diff,
-                   log, simplify, function, Mul, Add, Integer)
+                  log, simplify, function, Mul, Add, Integer)
 from sympy import *
 from .rv import RV
 x,y,z,t,v=symbols('x y z t v')
