@@ -18,7 +18,9 @@
 """
 
 from __future__ import division
+
 from sympy import *
+
 from rv import *
 from plot import *
 from dist_type import *
