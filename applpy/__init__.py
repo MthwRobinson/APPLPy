@@ -32,6 +32,8 @@ f,g,h=symbols('f g h',cls=Function)
 import sys
 sys.display_hook=pprint
 
+Menu()
+
 def Menu():
     print '-----------------'
     print 'Welcome to ApplPy'
