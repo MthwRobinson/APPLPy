@@ -1,3 +1,4 @@
+from __future__ import division
 """
     A Probability Progamming Language (APPL) -- Python Edition
     Copyright (C) 2001,2002,2008,2010,2014 Andrew Glen, Larry
@@ -25,9 +26,11 @@ Defines commonly used distributions as subclasses of the
 
 """
 
-from sympy import (Symbol, symbols, oo, exp, pi, sqrt, atan,
-                   gamma, factorial, ln, floor, integrate, diff,
-                   log, simplify)
+
+#from sympy import (Symbol, symbols, oo, exp, pi, sqrt, atan,
+#                   gamma, factorial, ln, floor, integrate, diff,
+#                   log, simplify, function, Mul, Add, Integer)
+from sympy import *
 from .rv import RV
 x,y,z,t,v=symbols('x y z t v')
 
@@ -445,10 +448,10 @@ class KSRV(RV):
         N=n
         m=floor(3*N/2)+(N%2)-1
         vv=range(m+1)
-        vval=[]
+        vvalue=[]
         for i in range(len(vv)):
-            vval.append(None)
-        vv=dict(zip(vv,vval))
+            vvalue.append(0)
+        vv=dict(zip(vv,vvalue))
         vv[0]=0
         g=1/(2*N)
         mm=0
@@ -474,7 +477,7 @@ class KSRV(RV):
         # Generate an NxN A array
         aidx=range(1,N+1);aval=[]
         for i in aidx:
-            aval.append(None)
+            aval.append(0)
         arow=dict(zip(aidx,aval));A=dict(zip(aidx,aval))
         for i in aidx:
             A[i]=arow
@@ -495,19 +498,19 @@ class KSRV(RV):
         Pidx=[];Pval=[]
         for i in range(1,m+1):
             Pidx.append(i)
-            Pval.append(None)
+            Pval.append(0)
         P=dict(zip(Pidx,Pval))
         # Create an NxN F array
         fidx=range(1,N+1);fval=[]
         for i in fidx:
-            fval.append(None)
+            fval.append(0)
         frow=dict(zip(fidx,fval));F=dict(zip(fidx,fval))
         for i in fidx:
             F[i]=frow
         # Create an NxN V array
         vidx=range(1,N+1);vval=[]
         for i in vidx:
-            vval.append(None)
+            vval.append(0)
         vrow=dict(zip(vidx,vval));V=dict(zip(vidx,vval))
         for i in vidx:
             V[i]=vrow
@@ -558,8 +561,8 @@ class KSRV(RV):
             S+=F[2][j]
             for j in reversed(range(max(2,z+1),min(N-1,l-1)+1,-1)):
                 F[1][j]=integrate(V[2][j]+S,
-                                  (u[1],(x[j]-v)*(floor(x[j]-c[k])+1),
-                               x[j+1]-v))
+                          (u[1],(x[j]-v)*(floor(x[j]-c[k])+1),
+                           x[j+1]-v))
                 S+=F[2][j]
             if z==0:
                 F[1][1]=integrate(S,(u[1],0,x[2]-v))
