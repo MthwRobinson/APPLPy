@@ -1,7 +1,7 @@
 from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, plot)
+                   solve, nan, plot, Add, Mul, Integer, function)
 import numpy as np
 import plot as plt
 from random import random
