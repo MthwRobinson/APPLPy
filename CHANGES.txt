@@ -14,8 +14,11 @@ Fixed Bugs:
 		can now be imported in an interactive command
 		line session
 	2. Updates have been made to the way the APPLPy package is
-		structured. Importing APPLPy is now les memory
+		structured. Importing APPLPy is now less memory
 		instensive (does not import all of SymPy, etc)
+	3. KSRV now runs properly ... arrays are no initialized
+		with 0 instead of None to avoid TypeErrors
+		when variables are summed
 
 v0.2.0, 17 SEPTEMBER 2014
 
