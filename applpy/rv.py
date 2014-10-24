@@ -2,9 +2,11 @@ from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, plot, Add, Mul, Integer, function)
+from random import random
 import numpy as np
 import plot as plt
-from random import random
+import pylab as pyplt
+#from .conversion import (CDF, CHF, HF, IDF, PDF, SF, Convert)
 x,y,z,t=symbols('x y z t')
 
 """
@@ -3212,7 +3214,13 @@ def PlotDist(RVar,suplist=None,opt=None,color='red',
                 RVar=Convert(RVar)
         if opt!='display':
             plt.ion()
-        plt.mat_plot(RVar.func,RVar.support,lab1,lab2,'discrete') 
+        #plt.mat_plot(RVar.func,RVar.support,lab1,lab2,'discrete')
+        pyplt.plot(RVar.support,RVar.func,'ro')
+        pyplt.xlabel('x')
+        if lab1!=None:
+            pyplt.ylabel(lab1)
+        if lab2!=None:
+            pyplt.ylabel(lab2)
 
 def PlotDisplay(plot_list,suplist=None):
     plt.ion()
