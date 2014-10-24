@@ -1,4 +1,11 @@
 from __future__ import division
+from sympy import (Symbol, symbols, oo, exp, pi, sqrt, atan,
+                   gamma, factorial, ln, floor, integrate, diff,
+                  log, simplify, function, Mul, Add, Integer)
+from random import random
+from .rv import RV, RVError
+x,y,z,t,v=symbols('x y z t v')
+
 """
     A Probability Progamming Language (APPL) -- Python Edition
     Copyright (C) 2001,2002,2008,2010,2014 Andrew Glen, Larry
@@ -26,13 +33,6 @@ Defines commonly used distributions as subclasses of the
 
 """
 
-
-from sympy import (Symbol, symbols, oo, exp, pi, sqrt, atan,
-                   gamma, factorial, ln, floor, integrate, diff,
-                  log, simplify, function, Mul, Add, Integer)
-from sympy import *
-from .rv import RV, RVError
-x,y,z,t,v=symbols('x y z t v')
 
 
 def param_check(param):
