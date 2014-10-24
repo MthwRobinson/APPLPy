@@ -3,6 +3,7 @@ from __future__ import division
 from pylab import (plot, xlabel, ylabel, title, grid, arange,
                    ion, ioff)
 from rv import *
+x,y,z,t,v=symbols('x y z t v')
 
 """
     A Probability Progamming Language (APPL) -- Python Edition
