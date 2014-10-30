@@ -1,9 +1,11 @@
 from __future__ import division
-from sympy import (Symbol, symbols, oo, exp, pi, sqrt, atan,
-                   gamma, factorial, ln, floor, integrate, diff,
-                  log, simplify, function, Mul, Add, Integer)
+from sympy import (Symbol, symbols, oo, integrate, summation, diff,
+                   exp, pi, sqrt, factorial, ln, floor, simplify,
+                   solve, nan, plot, Add, Mul, Integer, function,
+                   binomial)
 from random import random
-from .rv import RV, RVError
+from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
+                 BootstrapRV, Convert)
 x,y,z,t,v=symbols('x y z t v')
 
 """

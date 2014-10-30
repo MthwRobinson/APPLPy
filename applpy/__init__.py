@@ -22,6 +22,7 @@ from __future__ import division
 from sympy import *
 
 from rv import *
+from rv_algebra import *
 from plot import *
 from dist_type import *
 from stats import *
