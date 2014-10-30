@@ -7,6 +7,8 @@ New Capabilities:
 	2. PlotDist has been improved to allow for more plotting
 		options. PlotDist is now capable of using different
 		colors and displaying multiple plots simultaneously
+	3. Discrete and continuous plots can now be displayed in
+		the same overlay
 
 Fixed Bugs:
 	1. Start-up script has been modified. The init_session()
@@ -19,6 +21,9 @@ Fixed Bugs:
 	3. KSRV now runs properly ... arrays are no initialized
 		with 0 instead of None to avoid TypeErrors
 		when variables are summed
+	4. Minimum and Maximum procedures have been debugged for
+		discrete random variables. Old version had issues
+		recognizing floating point numbers in the support
 
 v0.2.0, 17 SEPTEMBER 2014
 
