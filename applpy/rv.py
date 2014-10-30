@@ -3200,6 +3200,7 @@ def PlotDist(RVar,suplist=None,opt=None,color='red',
                                 show=False,line_color=color)
             initial_plot.append(plot_extension[0])
         if display==True:
+            plt.ion()
             initial_plot.show()
         else:
             return initial_plot
@@ -3231,8 +3232,8 @@ def PlotDist(RVar,suplist=None,opt=None,color='red',
                 newsupport[-1]=i
                 RVar=RV(RVar.func,newsupport,RVar.ftype)
                 RVar=Convert(RVar)
-        if opt!='display':
-            plt.ion()
+        if display==True:
+            pyplt.ion()
         #plt.mat_plot(RVar.func,RVar.support,lab1,lab2,'discrete')
         pyplt.plot(RVar.support,RVar.func,'ro')
         pyplt.xlabel('x')
@@ -3241,11 +3242,14 @@ def PlotDist(RVar,suplist=None,opt=None,color='red',
         if lab2!=None:
             pyplt.title(lab2)
 
-def PlotDisplay(plot_list,suplist=None):
+def PlotDisplay(plot_list):
+    if len(plot_list)<2:
+        raise RVError('PlotDisplay requires a list with multiple plots')
     plt.ion()
-    # Create a plot of each random variable in the plot list
-    for i in range(len(plot_list)):
-        PlotDist(plot_list[i],suplist,'display')
+    totalplot=plot_list[0]
+    for graph in plot_list[1:]:
+        totalplot.append(graph[0])
+    totalplot.show()        
 
 def PlotEmpCDF(data):
     """
