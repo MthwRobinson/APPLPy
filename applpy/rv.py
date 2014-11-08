@@ -124,45 +124,6 @@ class RV:
         Creates a default print setting for the random variable class
         """
         if self.ftype[0] in ['continuous','Discrete']:
-            # Old display function using the built - in piecewise functions
-            # from sympy. The new display functions displays larger piecewise
-            # functions more nicely.
-            """
-            piece_list=[]
-            for i in range(len(self.func)):
-                f=self.func[i]
-                sup='x>=%s'%(self.support[i])
-                try:
-                    tup=(f,eval(sup))
-                except:
-                    tup=(f,sup)
-                piece_list.append(tup)
-            piece_list.append((0,True))
-            piece_input='Piecewise('+str(piece_list)+')'
-            piece2=piece_input.replace(piece_input[10],'')
-            n=len(piece2)-2
-            piece3=piece2.replace(piece2[n],'')
-            # Create symbols for use in the piecewise
-            #   function display
-            theta=Symbol('theta');kappa=Symbol('kappa');
-            a=Symbol('a');b=Symbol('b');c=Symbol('c');
-            p=Symbol('p');N=Symbol('N');alpha=Symbol('alpha')
-            beta=Symbol('beta');mu=Symbol('mu');sigma=Symbol('sigma')
-            try:
-                p=eval(piece3)
-                print '%s %s with support %s:'%(self.ftype[0],
-                                                self.ftype[1],
-                                                self.support)
-                if opt=='repr':
-                    return self.func
-                elif opt=='piecewise':
-                    return p
-            except:
-                print '%s %s with support %s:'%(self.ftype[0],
-                                                self.ftype[1],
-                                                self.support)
-                return self.func
-            """
             for i in range(len(self.func)):
                 print('for %s <= x <= %s'%(self.support[i],
                                            self.support[i+1]))
