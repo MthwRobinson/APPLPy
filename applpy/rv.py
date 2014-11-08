@@ -2,7 +2,7 @@ from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, plot, Add, Mul, Integer, function,
-                   binomial)
+                   binomial, pprint)
 from random import random
 import numpy as np
 import plot as plt
@@ -31,8 +31,11 @@ x,y,z,t=symbols('x y z t')
 """
 Main Random Variable Module
 
-Defines the random variable class
-Defines procedures for changing functional form
+1. The Random Variable class
+2. Procedures for changing functional form
+3. Operations on one random variable
+4. Operations on two random variables
+5. Plots
 
 """
 
@@ -121,7 +124,10 @@ class RV:
         Creates a default print setting for the random variable class
         """
         if self.ftype[0] in ['continuous','Discrete']:
-            # Generate the pieces of the piecewise function
+            # Old display function using the built - in piecewise functions
+            # from sympy. The new display functions displays larger piecewise
+            # functions more nicely.
+            """
             piece_list=[]
             for i in range(len(self.func)):
                 f=self.func[i]
@@ -156,6 +162,14 @@ class RV:
                                                 self.ftype[1],
                                                 self.support)
                 return self.func
+            """
+            for i in range(len(self.func)):
+                print('for %s <= x <= %s'%(self.support[i],
+                                           self.support[i+1]))
+                print('---------------------------')
+                pprint(self.func[i])
+                print('---------------------------')
+                print(' ');print(' ')
             
         if self.ftype[0]=='discrete':
             print '%s %s where {x->f(x)}:'%(self.ftype[0],
