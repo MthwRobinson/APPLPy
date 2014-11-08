@@ -22,10 +22,10 @@ from __future__ import division
 from sympy import *
 
 from rv import *
-from rv_algebra import *
 from plot import *
 from dist_type import *
 from stats import *
+from bayes import *
 
 x,y,z,t=symbols('x y z t')
 k,m,n=symbols('k m n',integers=True)
@@ -104,5 +104,3 @@ def Menu():
     print 'Discrete Distributions'
     print 'BenfordRV(),BinomialRV(n,p),GeometricRV(p),PoissonRV(theta)'
     print ''
-
-Menu()
