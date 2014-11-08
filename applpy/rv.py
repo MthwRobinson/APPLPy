@@ -1318,7 +1318,7 @@ def SF(RVar,value=x):
                     return Xsf.func[Xsf.support.index(value)]
         
 
-def BootstrapRV(varlist):
+def BootstrapRV(varlist,symbolic=False):
     """
     Procedure Name: Bootstrap RV
     Purpose: Generate a discrete random variable from a list of variates
