@@ -2,7 +2,7 @@ from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, plot, Add, Mul, Integer, function,
-                   binomial, pprint)
+                   binomial, pprint,log)
 from random import random
 import numpy as np
 import plot as plt
@@ -1379,19 +1379,20 @@ Procedures:
     1. ConvolutionIID(RVar,n)
     2. CoefOfVar(RVar)
     3. ExpectedValue(RVar,gX)
-    4. Kurtosis(RVar)
-    5. MaximumIID(RVar,n)
-    6. Mean(RVar)
-    7. MeanDiscrete(RVar)
-    8. MGF(RVar)
-    9. MinimumIID(RVar,n)
-    10. OrderStat(RVar,n,r)
-    11. ProductIID(RVar,n)
-    12. Skewness(RVar)
-    13. Transform(RVar,gX)
-    14. Truncate(RVar,[lw,up])
-    15. Variance(RVar)
-    16. VarDiscrete(RVar)
+    4. Entropy(RVar)
+    5. Kurtosis(RVar)
+    6. MaximumIID(RVar,n)
+    7. Mean(RVar)
+    8. MeanDiscrete(RVar)
+    9. MGF(RVar)
+    10. MinimumIID(RVar,n)
+    11. OrderStat(RVar,n,r)
+    12. ProductIID(RVar,n)
+    13. Skewness(RVar)
+    14. Transform(RVar,gX)
+    15. Truncate(RVar,[lw,up])
+    16. Variance(RVar)
+    17. VarDiscrete(RVar)
 """
 
 def ConvolutionIID(RVar,n):
@@ -1462,6 +1463,16 @@ def ExpectedValue(RVar,gX=x):
         fx_trans=Transform(fx,[[gX],[-oo,oo]])
         Expect=MeanDiscrete(fx_trans)
         return simplify(Expect)
+
+def Entropy(RVar):
+    """
+    Procedure Name: Entropy
+    Purpose: Compute the entory of a random variable
+    Arguments:  1. RVar: A random variable
+    Output:     1. The entropy of a random variable
+    """
+    entropy=ExpectedValue(RVar,log(x,2))
+    return simplify(entropy)
 
 def Kurtosis(RVar):
     """
