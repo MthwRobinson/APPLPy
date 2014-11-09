@@ -12,6 +12,7 @@ New Capabilities:
 	4. Improved display implemented for continuous random variables.
 		Displays large piecewise random variabls more cleanly
 	5. MLE and MOM now have options for numerical solving
+	6. Procedure added for computing the entropy of random variables
 
 Fixed Bugs:
 	1. Start-up script has been modified. The init_session()
