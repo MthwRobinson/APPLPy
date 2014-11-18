@@ -1,4 +1,4 @@
-v0.2.1, XX XXX XXXX
+v0.2.1, 18 NOV 2014
 
 New Capabilities:
 	1. Pre-processing code has been added to the beginning
