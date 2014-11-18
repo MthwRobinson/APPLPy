@@ -6,7 +6,8 @@ from sympy import (Symbol, symbols, oo, integrate, summation, diff,
 from sympy.mpmath import (nsum,nprod)
 from random import random
 from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
-                 BootstrapRV, Convert)
+                 BootstrapRV, Convert, Mean, Convolution, Mixture)
+from .dist_type import (ErlangRV, ExponentialRV)
 x,y,z,t,v=symbols('x y z t v')
 
 """
@@ -62,28 +63,125 @@ def QueueMenu():
     print ""
 
 
+"""
+Procedures:
+    1. Queue(X,Y,n,k,s)
+"""
+
+def Queue(X,Y,n,k,s):
+    """
+    Procedure Name: Queue
+    Purpose: Computes the sojourn time distribution for the nth
+                customer in an M/M/s queue, given k customers are
+                in the system at time 0.
+    Arguments:  1. X: the distribution of the time between arrivals
+                        (must be an ExponentialRV)
+                2. Y: the service time distribution
+                        (must be an ExponentialRV)
+                3. n: the total number of customers in the system
+                4. k: the number of customers in the system at time 0
+                5. s: the number of identical parallel servers
+    Output:   
+    """
+    rho=Symbol('rho')
+    rho_subs=(1/Mean(X))/(s*(1/Mean(Y)))
+    lst=BuildDist(X,Y,n,k,s)
+    probs=MMSQprob(n,k,s)
+    # Substitute the value of rho into the probability list
+    sub_probs=[]
+    for element in probs:
+        sub_element=element.subs(rho,rho_subs)
+        sub_probs.append(sub_element)
+    TIS=Mixture(sub_probs,lst)
+    return TIS
+    
+
 '''
 The following procedures are used to build the Queue, Cov and kCov
-    procedures. They are not intended for end use for the user.
+    procedures. They are not intended for end use for the user. _Q
+    does not import into the APPLPy namespace to avoid conflict with
+    the sympy.assumptions procedure Q.
 '''
+
+"""
+Procedures:
+    1. BuildDist(X,Y,n,k,s)
+    1. MMSQprob(n,k,s)
+    2. _Q(n,i,k,s)
+"""
+
+def BuildDist(X,Y,n,k,s):
+    """
+    Procedure Name: BuildDist
+    Purpose: Creates the appropriate conditional sojourn time
+                distribution for each case where a customer
+                arrives to find i=1 to i=n+k customers present
+                in an M/M/s queue with k customers initially present
+    Arguments:  1. X: the distribution of the time between arrivals
+                        (must be an ExponentialRV)
+                2. Y: the service time distribution
+                3. n: the total number of customers in the system
+                4. k: the numober of customers in the system at time 0
+                5. s: the number of identical parallel servers
+    Output:     1. lst: the sojourn time distributions in segments
+                    (a list of APPLPy random variables)
+    """
+    # Raise an error if both either of the distributions are not
+    #   exponential
+    if X.__class__.__name__!='ExponentialRV':
+        err_string='both distributions in the queue must be'
+        err_string+='exponential'
+        raise RVError(err_string)
+
+    if Y.__class__.__name__!='ExponentialRV':
+        err_string='both distributions in the queue must be'
+        err_string+='exponential'
+        raise RVError(err_string)
+
+    # Pre-compute the mean of y to avoid multiple integrations
+    meany=Mean(Y)
+    # Place positive assumptions on x to simplify output
+    x=Symbol('x',positive=True)
+    
+    lst=[]
+    for i in range(1,n+k+1):
+        if s==1:
+            lst.append(ErlangRV(1/meany,i))
+        else:
+            if i<=s or s>n+k:
+                lst.append(Y)
+            else:
+                lst.append(Convolution(ErlangRV(s*(1/meany),i-s),Y))
+    return lst
+
+def MMSQprob(n,k,s):
+    """
+    Procedure Name: MMSQprob
+    Purpose: Computes Pk(n,i) for an M/M/s queue, which is the
+                probability that customer n will see i customers
+                in the system counting himself at time T_n with
+                k customers initially in the system at time 0.
+    Arguments:  1. n: The total number of customers in the system
+                2. k: The number of customers in the system at time 0
+                3. s: The number of parallel servers
+    Output:     1. Pk: A list of ordered probabilities
+    """
+    lst=[]
+    for i in range(1,n+k+1):
+        lst.append(_Q(n,i,k,s))
+    return lst
 
 def _Q(n,i,k,s):
     """
     Procedure Name: _Q
     Purpose: Computes the single probability Pk(n,i) for an M/M/s
-                queue recursively
+                queue recursively.
     Arguments:  1. n: The total number of customers in the system
                 2. i: An integer value
                 3. k: The number of customers in the system at time 0
                 4. s: The number of parallel servers
     Output:     1. Pk: A single probability for an M/M/s queue
     """
-    # Check to make sure all the parameters for the procedure are
-    #   integers
-    #param_list=[n,i,k,s]
-    #for element in param_list:
-    #    if type(element)!=int:
-    #        raise RVError('all parameters in Q must be integers')
     rho=Symbol('rho')
     if k>=1 and i==k+n:
         if k>=s:
@@ -122,7 +220,7 @@ def _Q(n,i,k,s):
                            _Q(n-1,j,k,s),[i-1,s-1]) +
                 nprod(lambda h: 1-rho/(rho+(s-h)/s),[1,s-i]) *
                 nsum(lambda j: (1/(rho+1))**(j-s+1)*_Q(n-1,j,k,s),[s,k+n-1]))
-    return p
+    return simplify(p)
                 
         
     
