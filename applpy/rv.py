@@ -2302,9 +2302,11 @@ def Convolution(RVar1,RVar2):
         # If the two distributions are both lifetime distributions, treat
         #   as a special case
         if RVar1.support==[0,oo] and RVar2.support==[0,oo]:
+            #x=Symbol('x',positive=True)
+            #z=Symbol('z',positive=True)
             func1=X1_dummy.func[0]
             func2=X2_dummy.func[0].subs(x,z-x)
-            conv=integrate(func1*func2,(x,0,z))
+            conv=integrate(func1*func2,(x,0,z),conds='none')
             return RV([conv.subs(z,x)],[0,oo],['continuous','pdf'])
         # Otherwise, compute the convolution using the product method
         else:
@@ -2589,6 +2591,7 @@ def Mixture(MixParameters,MixRVs):
         raise RVError('Mix parameter and RV lists must be the same length')
     # Check to make sure that the mix parameters are numeric
     # and sum to 1
+    '''
     total=0
     for i in range(len(MixParameters)):
         if type(MixParameters[i])==Symbol:
@@ -2596,6 +2599,7 @@ def Mixture(MixParameters,MixRVs):
         total+=MixParameters[i]
     if total<.9999 or total>1.0001:
         raise RVError('Mix parameters must sum to one')
+    '''
     # Check to ensure that the mix rv's are all of the same type
     #   (discrete or continuous)
     for i in range(len(MixRVs)):
