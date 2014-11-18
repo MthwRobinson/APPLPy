@@ -1,3 +1,12 @@
+v0.3.0, XX XXX XXXX
+
+New Capabilities:
+	1. The Queue procedure computes the sojourn time distribution
+		for an M/M/s Queue for customer n, given k customers
+		initially in the queue.
+
+Fixed Bugs:
+
 v0.2.1, 18 NOV 2014
 
 New Capabilities:
