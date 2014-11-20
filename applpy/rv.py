@@ -124,6 +124,7 @@ class RV:
         Creates a default print setting for the random variable class
         """
         if self.ftype[0] in ['continuous','Discrete']:
+            print ('%s %s'%(self.ftype[0],self.ftype[1]))
             for i in range(len(self.func)):
                 print('for %s <= x <= %s'%(self.support[i],
                                            self.support[i+1]))
@@ -1412,7 +1413,7 @@ def ConvolutionIID(RVar,n):
     X_final=X_dummy
     for i in range(n-1):
         X_final+=X_dummy
-    return X_final
+    return PDF(X_final)
 
 def CoefOfVar(RVar):
     """
@@ -1508,7 +1509,7 @@ def MaximumIID(RVar,n):
     X_final=X_dummy
     for i in range(n-1):
         X_final=Maximum(X_final,X_dummy)
-    return X_final
+    return PDF(X_final)
 
 def Mean(RVar):
     """
@@ -1591,6 +1592,7 @@ def MeanDiscrete(RVar):
     # Sum the values of f(x)*x to find the mean
     meanval=vals.sum()
     return meanval
+
 def MGF(RVar):
     """
     Procedure Name: MGF
@@ -1618,7 +1620,7 @@ def MinimumIID(RVar,n):
     X_final=X_dummy
     for i in range(n-1):
         X_final=Minimum(X_final,X_dummy)
-    return X_final
+    return PDF(X_final)
 
 def NextCombination(Previous,N):
     """
@@ -1889,7 +1891,7 @@ def ProductIID(RVar,n):
     X_final=X_dummy
     for i in range(n-1):
         X_final*=X_dummy
-    return X_final
+    return PDF(X_final)
 
 def Skewness(RVar):
     """
@@ -2379,8 +2381,9 @@ def Maximum(RVar1,RVar2):
             cdf1=cdf_dummy1.func[0]
             cdf2=cdf_dummy2.func[0]
             maxfunc=cdf1*cdf2
-            return RV(simplify(maxfunc),[0,oo],['continuous','cdf'])
-        # Otherwise, compute the min using the full algorithm
+            return PDF(RV(simplify(maxfunc),[0,oo],['continuous','cdf']))
+        # Otherwise, compute the max using the full algorithm
+        # Set up the support for X
         Fx=CDF(RVar1)
         Fy=CDF(RVar2)
         # Create a support list for the 
@@ -2399,25 +2402,25 @@ def Maximum(RVar1,RVar2):
             if max_supp[i]>=lowval:
                 max_supp2.append(max_supp[i])
         # Compute the maximum function for each segment
-        xindx=0
-        yindx=0
+
+        # Compute the maximum function for each segment
         max_func=[]
         for i in range(len(max_supp2)-1):
-            if max_supp2[i]>Fx.support[0]:
-                currFx=0
-            elif max_supp2[i]==Fx.support[xindx]:
-                currFx=Fx.func[xindx]
-                xindx+=1
-            if max_supp2[i]>Fy.support[yindx]:
-                currFy=0
-            elif max_supp2[i]==Fy.support[yindx]:
-                currFy=Fy.func[yindx]
-                yindx+=1
-            Fmax=-(1-currFx)*(1-currFy)
+            value=max_supp2[i]
+            currFx=1
+            for j in range(len(Fx.func)):
+                if value>=Fx.support[j] and value<Fx.support[j+1]:
+                    currFx=Fx.func[j]
+                    break
+            currFy=1
+            for j in range(len(Fy.func)):
+                if value>=Fy.support[j] and value<Fy.support[j+1]:
+                    currFy=Fy.func[j]   
+            Fmax=currFx*currFy
             max_func.append(simplify(Fmax))
-        # Return the random variable
-        return RV(max_func,max_supp2,['continuous','cdf'])
-    
+        return PDF(RV(max_func,max_supp2,['continuous','cdf']))
+        
+
     # If the distributions are discrete, find and return
     #   the maximum of the two rv's
     if RVar1.ftype[0]=='discrete':
@@ -2440,11 +2443,11 @@ def Maximum(RVar1,RVar2):
         #    val=PDF(fx,combo_list[i][0])*PDF(fy,combo_list[j][1])
         #    prob_list.append(val)
         
-        # Find the min value for each combo
+        # Find the max value for each combo
         max_list=[]
         for i in range(len(combo_list)):
             max_list.append(max(combo_list[i][0],combo_list[i][1]))
-        # Compute the probability for each possible min
+        # Compute the probability for each possible max
         max_supp=[]
         max_func=[]
         for i in range(len(max_list)):
@@ -2463,7 +2466,7 @@ def Maximum(RVar1,RVar2):
             max_supp.append(zip_list[i][0])
             max_func.append(zip_list[i][1])
         # Return the minimum random variable
-        return RV(max_func,max_supp,['discrete','pdf'])
+        return PDF(RV(max_func,max_supp,['discrete','pdf']))
 
 def Minimum(RVar1,RVar2):
     """
@@ -2488,7 +2491,7 @@ def Minimum(RVar1,RVar2):
             sf1=sf_dummy1.func[0]
             sf2=sf_dummy2.func[0]
             minfunc=1-(sf1*sf2)
-            return RV(simplify(minfunc),[0,oo],['continuous','cdf'])
+            return PDF(RV(simplify(minfunc),[0,oo],['continuous','cdf']))
         # Otherwise, compute the min using the full algorithm
         Fx=CDF(RVar1)
         Fy=CDF(RVar2)
@@ -2501,31 +2504,32 @@ def Minimum(RVar1,RVar2):
             if Fy.support[i] not in min_supp:
                 min_supp.append(Fy.support[i])
         min_supp.sort()
+        
         # Remove any elements that are above the lower support max
-        highval=min(max(Fx.support),max(Fy.support))
-        min_supp2=[]
+        highval=min(max(Fx.support),max(Fy.support))        
+        min_supp2=[]        
         for i in range(len(min_supp)):
             if min_supp[i]<=highval:
                 min_supp2.append(min_supp[i])
+                
         # Compute the minimum function for each segment
-        xindx=0
-        yindx=0
         min_func=[]
         for i in range(len(min_supp2)-1):
-            if min_supp2[i]<Fx.support[0]:
-                currFx=0
-            elif min_supp2[i]==Fx.support[xindx]:
-                currFx=Fx.func[xindx]
-                xindx+=1
-            if min_supp2[i]<Fy.support[yindx]:
-                currFy=0
-            elif min_supp2[i]==Fy.support[yindx]:
-                currFy=Fy.func[yindx]
-                yindx+=1
-            Fmin=1-(1-currFx)*(1-currFy)
+            value=min_supp2[i]
+            currFx=0
+            for j in range(len(Fx.func)):
+                if value>=Fx.support[j] and value<=Fx.support[j+1]:
+                    currFx=Fx.func[j]
+                    break
+            currFy=0
+            for j in range(len(Fy.func)):
+                if value>=Fy.support[j] and value<=Fy.support[j+1]:
+                    currFy=Fy.func[j] 
+            Fmin=1-((1-currFx)*(1-currFy))
             min_func.append(simplify(Fmin))
+        
         # Return the random variable
-        return RV(min_func,min_supp2,['continuous','cdf'])
+        return PDF(RV(min_func,min_supp2,['continuous','cdf']))
 
     # If the distributions are discrete, find and return
     #   the minimum of the two rv's
@@ -2572,7 +2576,7 @@ def Minimum(RVar1,RVar2):
             min_supp.append(zip_list[i][0])
             min_func.append(zip_list[i][1])
         # Return the minimum random variable
-        return RV(min_func,min_supp,['discrete','pdf'])
+        return PDF(RV(min_func,min_supp,['discrete','pdf']))
 
 def Mixture(MixParameters,MixRVs):
     """
