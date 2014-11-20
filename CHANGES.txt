@@ -6,6 +6,10 @@ New Capabilities:
 		initially in the queue.
 
 Fixed Bugs:
+	1. Maximum and Minimum are now working properly for piecewise
+		distributions. Boundary conditions caused to the procedures
+		to use the incorrect segments in the earlier
+		implementation
 
 v0.2.1, 18 NOV 2014
 
