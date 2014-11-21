@@ -132,7 +132,7 @@ def MLE(RVar,data,parameters,guess=None,numeric=False,censor=None):
                     a right censored value
                 5. guess: An initial guess for the unknown parameters,
                     required if numerical methods are being used
-                6. numeric: A binary variable. If True, MOM will attempt
+                6. numeric: A binary variable. If True, MLE will attempt
                     to solve for unknown parameters using numerical
                     methods
     Output:     1. A list of parameter estimates
