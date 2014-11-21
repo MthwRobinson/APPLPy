@@ -10,6 +10,8 @@ Fixed Bugs:
 		distributions. Boundary conditions caused to the procedures
 		to use the incorrect segments in the earlier
 		implementation
+	2. The gamma function is now loaded into the namespace in the
+		dist_rv module.
 
 v0.2.1, 18 NOV 2014
 
