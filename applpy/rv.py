@@ -1,8 +1,9 @@
 from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, plot, Add, Mul, Integer, function,
+                   solve, nan, Add, Mul, Integer, function,
                    binomial, pprint,log)
+from sympy.plotting.plot import plot
 from random import random
 import numpy as np
 import plot as plt
@@ -117,6 +118,9 @@ class RV:
         2. __repr__(self)
         3. __len__(self)
         4. __add__(self,other)
+        5. __sub__(self,other)
+        6. __mul__(self,other)
+        7. __truediv__(self,other)
     """
 
     def display(self,opt='repr'):
@@ -187,6 +191,7 @@ class RV:
         gX=[[1/x,1/x],[-oo,0,oo]]
         RVar=Transform(other,gX)
         return Product(self,RVar)
+
 
     """
     Utility Methods
@@ -2401,8 +2406,6 @@ def Maximum(RVar1,RVar2):
         for i in range(len(max_supp)):
             if max_supp[i]>=lowval:
                 max_supp2.append(max_supp[i])
-        # Compute the maximum function for each segment
-
         # Compute the maximum function for each segment
         max_func=[]
         for i in range(len(max_supp2)-1):

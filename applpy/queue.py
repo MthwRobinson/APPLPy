@@ -1,10 +1,11 @@
 from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, plot, Add, Mul, Integer, function,
+                   solve, nan, Add, Mul, Integer, function,
                    binomial)
 from sympy.mpmath import (nsum,nprod)
 from random import random
+import numpy as np
 from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
                  BootstrapRV, Convert, Mean, Convolution, Mixture)
 from .dist_type import (ErlangRV, ExponentialRV)
@@ -104,7 +105,7 @@ The following procedures are used to build the Queue, Cov and kCov
 '''
 
 """
-Procedures:
+Queue Sub-Procedures:
     1. BuildDist(X,Y,n,k,s)
     1. MMSQprob(n,k,s)
     2. _Q(n,i,k,s)
@@ -222,9 +223,134 @@ def _Q(n,i,k,s):
                 nsum(lambda j: (1/(rho+1))**(j-s+1)*_Q(n-1,j,k,s),[s,k+n-1]))
     return simplify(p)
                 
+
+"""
+Queue Sub-Procedures:
+    1. cases(n)
+    2. ini(n)
+    3. okay(n,E)
+    4. swapa(n,A)
+    5. swapb(n,B)
+"""
+
+def cases(n):         
+    """
+    Procedure Name: cases
+    Purpose: Generates all possible arrival/departure sequences for
+                n customers in an M/M/1 queue initially empty and
+                idle.
+    Arguments:  1. n: the total number of customers in the system
+    Output:     1. C: a list of sequences consisting of 1s and -1s,
+                        where 1s represent an arrival and -1s
+                        represent a departure
+    """
+    # Compute the nth Catalan number
+    c=factorial(2*n)/factorial(n)/factorial(n+1)
+    C=np.zeros((c,2*n))
+    for i in range(c):
+        # Initialize the matrix C
+        if i==0:
+            C[i]=ini(n)
+        # Produce the successor the C[i]
+        else:
+            C[i]=swapa(n,C[i-1])
+        # Check to see if the successor is legal
+        #   If not, call swapb
+        if okay(n,C[i])==False:
+            C[i]=swapb(n,C[i-1])
+    return C
         
-    
-            
+
+def ini(n):
+    """
+    Procedure Name: ini
+    Purpose: Initializes a matrix C according to Ruskey and Williams
+                Returns the first row of C to enable use of prefix
+                shift algorithm.
+    Arguments:  1. n: the total number of customers in the system
+    Output:     1. L: a row vector, the first row of C
+    """
+    L=-np.ones(2*n)
+    L[0]=1
+    for i in range(2,n+1):
+        L[i]=1
+    for i in range(n+1,2*n):
+        L[i]=-1
+    return L
+
+def okay(n,E):
+    """
+    Procedure Name: okay
+    Purpose: Checks the output of swapa for an illegal prefix shift,
+                meaning the result contains an impossible arrival/
+                service sequence.
+    Arguments:  1. n: the total number of customers in the system
+                2. E: the vector resulting from swapa
+    Output:     1. test: a binary indicator where True signfies the
+                    successor is legal and False signifies that the
+                    successor is illegal
+    """
+    test=True
+    s=0
+    for i in range(2*n-1):
+        s+=E[i]
+        if s<0:
+            test=False
+            break
+    return test
+
+
+def swapa(n,A):
+    """
+    Procedure Name: swapa
+    Purpose: Conducts the (k+1)st prefix shift in creating all
+                instances of the case matrix, C, according
+                to Ruskey and Williams
+    Arguments:  1. n: the total number of customers in the system
+                2. A: row i of matrix C
+    Output:     1. R: the successor of C
+    """
+    R=A
+    check=1
+    for i in range(1,2*n-1):
+        if R[i]==-1 and R[i+1]==1:
+            temp1=R[i+2]
+            R[2:(i+2)]=R[1:(i+1)]
+            check=0
+            R[1]=temp1
+        if check==0:
+            break
+    return R
+
+def swapb(n,B):
+    """
+    Procedure Name: swapb
+    Purpose: Conducts the kth prefix shift in creating all
+                instances of the case matrix, C, accoring
+                to Ruskey and Williams
+    Arguments:  1. n: the number of customers in the system
+                2. B: row i of matrix C
+    Output:     1. R: the successor of C
+    """
+    R=B
+    check=1
+    for i in range(1,2*n-2):
+        if R[i]==-1 and R[i+1]==1:
+            temp=R[i+1]
+            R[2:(i+1)]=R[1:i]
+            check=0
+            R[1]=temp
+        if check==0:
+            break
+    return R
+
+
+
+
+
+
+
+
 
     
 
@@ -234,11 +360,3 @@ def _Q(n,i,k,s):
 
 
 
-
-
-
-
-
-
-
-    

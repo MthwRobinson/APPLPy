@@ -1,8 +1,8 @@
 from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, plot, Add, Mul, Integer, function,
-                   binomial)
+                   solve, nan, Add, Mul, Integer, function,
+                   binomial,gamma)
 from random import random
 from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
                  BootstrapRV, Convert)
