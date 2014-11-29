@@ -1,6 +1,26 @@
+"""
+Bayesian Statistics Module
+
+Defines procedures for Bayesian parameter estimation
+
+Bayesian Procedures:
+
+Procedures:
+    1. BayesUpdate(LikeRV,PriorRV,data,param)
+    2. CredibleSet(X,alpha)
+    3. JeffreysPrior(LikeRV,low,high,param)
+    4. Posterior(LikeRV,PriorRV,data,param)
+    5. PosteriorPredictive(LikeRV,PriorRV,data,param)
+    
+"""
+
 from __future__ import division
-from sympy import *
-from rv import *
+from sympy import (Symbol, symbols, oo, integrate, summation, diff,
+                   exp, pi, sqrt, factorial, ln, floor, simplify,
+                   solve, nan, Add, Mul, Integer, function,
+                   binomial, pprint, log)
+from .rv import (RV, RVError, CDF, PDF, BootstrapRV,
+                 ExpectedValue,Mean, Variance, Truncate)
 x,y,z,t=symbols('x y z t')
 
 """
@@ -20,27 +40,6 @@ x,y,z,t=symbols('x y z t')
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
-"""
-
-
-"""
-Bayesian Statistics Module
-
-Defines procedures for Bayesian parameter estimation
-
-"""
-
-"""
-Bayesian Procedures:
-
-Procedures:
-    1. BayesUpdate(LikeRV,PriorRV,data,param)
-    2. CredibleSet(X,alpha)
-    2. JeffreysPrior(LikeRV,low,high,param)
-    3. Posterior(LikeRV,PriorRV,data,param)
-    4. PosteriorPredictive(LikeRV,PriorRV,data,param)
-    
-
 """
 
 def BayesMenu():

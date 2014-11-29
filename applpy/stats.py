@@ -1,11 +1,25 @@
+"""
+Statistics Module
+
+Defines procedures for parameter estimation
+
+Procedures:
+    1. KSTest(RVar,data)
+    2. MOM(RVar,data,parameters)
+    3. MLE(RVar,data,parameters,censor)
+    4. MLEExponential(data)
+    5. MLENormal(data,mu,sigma)
+    6. MLEPoisson(data)
+    7. MLEWeibull(data,censor)
+"""
 from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan,Add, Mul, Integer, function,
-                   binomial, pprint, nsolve)
+                   binomial, pprint, nsolve,log)
 from random import random
 from .rv import (RV, RVError, CDF, PDF, BootstrapRV,
-                 ExpectedValue)
+                 ExpectedValue,Mean,Variance)
 x,y,z,t=symbols('x y z t')
 
 """
@@ -25,24 +39,6 @@ x,y,z,t=symbols('x y z t')
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
-"""
-
-"""
-Statistics Module
-
-Defines procedures for parameter estimation
-
-"""
-
-
-
-"""
-Parameter Estimation Procedures
-
-Procedures:
-    1. KSTest(RVar,data)
-    1. MOM(RVar,data,parameters)
-    2. MLE(RVar,data,parameters,censor)
 """
 
 def KSTest(RVar,data):
@@ -141,6 +137,23 @@ def MLE(RVar,data,parameters,guess=None,numeric=False,censor=None):
     # Return an error message if the distribution is piece-wiwse
     if len(RVar.func)!=1:
         raise RVError('MLE does not accept piecewise models')
+    # If the random variable has a hard-coded MLE procedure, use
+    #   the corresponding procedure
+    if RVar.__class__.__name__=='NormalRV':
+        if censor==None:
+            if len(parameters)==2:
+                return MLENormal(data)
+            if len(parameters)==1:
+                string='MLE is estimating mu and sigma parameters'
+                string+=' for the Normal distribution'
+                print(string)
+                return MLENormal(data)
+    if RVar.__class__.__name__=='ExponentialRV':
+        return MLEExponential(data)
+    if RVar.__class__.__name__=='WeibullRV':
+        return MLEWeibull(data,censor)
+    if RVar.__class__.__name__=='PoissonRV':
+        return MLEPoisson(data)
     # Convert the random variable to its PDF form
     fx=PDF(RVar)   
     if censor==None:
@@ -204,3 +217,131 @@ def MLE(RVar,data,parameters,guess=None,numeric=False,censor=None):
         guess_tup=tuple(guess)
         soln=nsolve(diff_tup,param_tup,guess_tup)
     return soln
+
+def MLEExponential(data):
+    """
+    Procedure Name: MLEExponential
+    Purpose: Conduct maximul likelihood estimation on an
+                exponential distribution
+    Input:  1. data: a data set
+    Output: 1. soln: an estimation for the unknown parameter
+    """
+    Xstar=BootstrapRV(data)
+    theta=1/Mean(Xstar)
+    soln=[theta]
+    return soln
+
+def MLENormal(data,mu=None,sigma=None):
+    """
+    Procedure Name: MLENormal
+    Purpose: Conduct maximum likelihood estimation on a normal
+                distribution with at least one unknown parameter
+    Input:  1. data: a data set
+            2. mu: an optional parameter that holds mu constant. If a
+                value is entered, MLENormal will estimate sigma given
+                a fixed mu
+            3. sigma: an optional parameter that holds sigma constant
+    Output: 1. soln: a list of estimates for the unknown parameters
+                in the form [mu,sigma]
+    """
+    Xstar=BootstrapRV(data)
+    if mu==None:
+        mu=Mean(Xstar)
+    if sigma==None:
+        sigma=sqrt(Variance(Xstar))
+    soln=[mu,sigma]
+    return soln
+
+def MLEPoisson(data):
+    """
+    Procedure Name: MLEPoisson
+    Purpose: Conduct maximum likelihood estimation for the Poisson
+                distribution
+    Input:  1. data: a data set
+    Output: 1. soln: a list of estimates for the unknown parameter
+                in the form [theta]
+    """
+    Xstar=BootstrapRV(data)
+    meanX=Mean(Xstar)
+    soln=[meanX]
+    return soln
+
+def MLEWeibull(data,censor=None):
+    """
+    Procedure Name: MLEWeibull
+    Purpose: Conduct maximum likelihood estimation for the Weibull
+                distribution with arbitrary right censor
+    Input:  1. data: a data set
+            2. censor: a indicator list where 1 is an observed data
+                point and 0 is an unobserved data point
+    Output: 1. soln: a list of estimates for the unknown parameters
+                in the form [theta,kappa]
+    """
+    # If a list of right censored values is not provided, set
+    #   the right censor list to contain all 1's, indicating
+    #   that every value was observed
+    n=len(data)
+    if censor!=None:
+        Delta=censor
+    else:
+        Delta=[1 for obs in data]
+    # Set tolerance and initial estimate
+    epsilon=0.000000001
+    c=1
+    # Compute the number of observed failures
+    r=sum(Delta)
+    
+    # Calculate s1
+    s1=0
+    for i in range(n):
+        if Delta[i]==1:
+            s1+=log(data[i])
+    # Calculate s2 (beginning of random censoring adjustment)
+    s2=0
+    for i in range(n):
+        s2+=data[i]**c
+    # Calculate s3
+    s3=0
+    for i in range(n):
+        s3+=data[i]**c*log(data[i])
+    while r*s3-s1*s2<=0:
+        c=c*1.1
+        s2=0
+        for i in range(n):
+            s2+=data[i]**c
+        s3=0
+        for i in range(n):
+            s3+=data[i]**c*log(data[i])
+    # Calculate s2 (beginning of first iteration of while loop)
+    s2=0
+    for i in range(n):
+        s2+=data[i]**c
+    # Calculate s3
+    s3=0
+    for i in range(n):
+        s3+=data[i]**c*log(data[i])
+        
+    # Calculate q and c
+    q=r*s2/(r*s3-s1*s2)
+    c=(c+q)/2
+    counter=0
+    while abs(c-q)>epsilon and counter<100:
+        counter+=1
+        s2=0
+        for i in range(n):
+            s2+=data[i]**c
+        s3=0
+        for i in range(n):
+            s3+=data[i]**c*log(data[i])
+        q=r*s2/(r*s3-s1*s2)
+        c=(c+q)/2
+        
+    # Calculate the MLEs
+    chat=c
+    s2=0
+    for i in range(n):
+        s2+=data[i]**c
+    bhat=(s2/r)**(1/c)
+    soln=[1/bhat,chat]
+    return soln
+    

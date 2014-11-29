@@ -1,3 +1,19 @@
+"""
+Queuing Module
+
+Defines an extension for computing the sojourn time distribution for the
+    nth customer in an M/M/s queue
+
+The algorithms implemented in this module were developed by
+    William Kaczynski and originally implemented in Maple
+
+2012. W Kaczynski, L Leemis and J Drew. 'Transient Queuing Analysis'.
+    INFORMS Journal on Computing Vol. 24, No. 1.
+
+Procedures:
+    1. Queue(X,Y,n,k,s)
+"""
+
 from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
@@ -30,20 +46,6 @@ x,y,z,t,v=symbols('x y z t v')
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-"""
-Queuing Module
-
-Defines an extension for computing the sojourn time distribution for the
-    nth customer in an M/M/s queue
-
-The algorithms implemented in this module were developed by
-    William Kaczynski and originally implemented in Maple
-
-2012. W Kaczynski, L Leemis and J Drew. 'Transient Queuing Analysis'.
-    INFORMS Journal on Computing Vol. 24, No. 1.
-
-"""
-
 def QueueMenu():
     print 'ApplPy Procedures'
     print ""
@@ -63,11 +65,6 @@ def QueueMenu():
     print 'Queue(X,Y,n,k,s), Cov(X,Y,a,b), kCov(X,Y,a,b,n,k)'
     print ""
 
-
-"""
-Procedures:
-    1. Queue(X,Y,n,k,s)
-"""
 
 def Queue(X,Y,n,k,s):
     """
@@ -225,13 +222,27 @@ def _Q(n,i,k,s):
                 
 
 """
-Queue Sub-Procedures:
+Cov/kCov Sub-Procedures:
     1. cases(n)
-    2. ini(n)
-    3. okay(n,E)
-    4. swapa(n,A)
-    5. swapb(n,B)
+    2. caseprob(n,P,meanX,meanY)
+    3. Cprime(n,C)
+    4. ini(n)
+    5. kcases(n,k)
+    6. kcaseprob(n,k,P,meanX,meanY)
+    7. kpath(n,k,A)
+    8. kprobvec(n,k,meanX,meanY)
+    9. okay(n,E)
+    10. path(n,A)
+    11. probvec(n,meanX,meanY)
+    12. swapa(n,A)
+    13. swapb(n,B)
 """
+
+'''
+Re-look code for cases,kcases,ini,swapa,swapb and okay for errors
+    probvec does not sum to 1, error is most likely in one of those
+    procedures
+'''
 
 def cases(n):         
     """
@@ -259,7 +270,77 @@ def cases(n):
         if okay(n,C[i])==False:
             C[i]=swapb(n,C[i-1])
     return C
-        
+
+def caseprob(n,P,meanX,meanY):
+    """
+    Procedure Name: caseprob
+    Purpose: Computes the probability associated with a given row of
+                the case matrix C as represented by the path created
+                by path(n,A)
+    Input:  1. n: the total number of customers in the system
+            2. P: the path of a given case
+            3. meanX: the mean of the arrival distribution
+            4. meanY: the mean of the service time distribution
+    Output:  1. p: the probability of the case passed to the procedure
+    """
+    
+    p=1
+    row=n
+    col=1
+    for j in range(2*n-1):
+        if P[row-1][col]==1 and col<n:
+            row-=1
+            p=p*1/meanY/(1/meanX+1/meanY)
+        elif P[row-1][col]==1 and col==n:
+            row-=1
+        elif P[row][col+1]==1 and row+col>n+1:
+            col+=1
+            p=p*1/meanX/(1/meanX+1/meanY)
+        else:
+            col+=1
+    return p
+
+def Cprime(n,C):
+    """
+    Procedure Name: Cprime
+    Purpose: Produces a matrix C' that is the distribution segment
+                matrix where each row represents the distribution
+                segments for the case represented by the corresponding
+                row in the case matrix C. The elements of C' are
+                limited to a 0, 1 and 2. 0 implies no sojourn time
+                distribution segment due to an empyting of the system.
+                1 implies a copeting risk of an arrival or completion of
+                service and is distributed Exp(theta+mu) and 2 implies a
+                service completion distribution leg, which is distributed
+                Exp(mu).
+    Input:      1. n: the total number of customers in the system
+                2. C: the case matrix
+    Output:     1. prime: a matrix with the same number of rows as C and
+                            2n-1 columns
+    """
+
+    prime=np.zeros((np.size(C,1),2*n-1))
+    for i in range(np.size(C,1)):
+        row=n
+        col=1
+        pat=path(n,C[i])
+        dist=np.zeros((1,2*n-1))
+        for j in range(2*n-1):
+            if pat[row-1][col]==1 and col<n:
+                row-=1
+                dist[0][j]=1
+            elif pat[row-1][col]==1 and col==n:
+                row-=1
+                dist[0][j]=2
+            elif pat[row-1][col]==1 and row+col>n+1:
+                col+=1
+                dist[0][j]=1
+            else:
+                col+=1
+                dist[0][j]=0
+        prime[i]=dist
+    return prime
+    
 
 def ini(n):
     """
@@ -277,6 +358,155 @@ def ini(n):
     for i in range(n+1,2*n):
         L[i]=-1
     return L
+
+def kcases(n,k):
+    """
+    Procedure Name: kcases
+    Purpose: Generates all possible arrival/departure sequences for n
+                customers in an M/M/1 queue with k customers initially
+                present.
+    Arguments:  1. n: the total number of customers in the system
+                2. k: the number of customers initially present in the
+                        system.
+    Output:     1. C: a list of sequences consiting of 1's and -1s where
+                        1 represents an arrival and -1 represents a
+                        departure.
+    """
+    C=cases(n+k)
+    j=0
+    while j<np.size(C,1):
+        # if the sum of row j of C from column 1 to k != k
+        if np.sum(C[j,0:k])!=k:
+            # delete the jth row of C
+            C=np.delete(C,j,0)
+        else:
+            j+=1
+    # delete column 1st through kth column of C
+    C=np.delete(C,np.s_[0:k],1)
+    return C
+
+
+def kcaseprob(n,k,P,meanX,meanY):
+    """
+    Procedure Name: caseprob
+    Purpose: Computes the probability associated with a given row of
+                the case matrix C as represented by the path created
+                by kpath(n,k,A)
+    Input:  1. n: the total number of customers in the system
+            2. k: the total number of customers initially present
+                    in the system
+            3. P: the path of a given case
+            4. meanX: the mean of the arrival distributon
+            5. meanY: the mean of the service time distribution
+    Output:  1. p: the probability of the case passed to the procedure
+    """
+    
+    p=1
+    row=n+k
+    col=0
+    for j in range(2*n+k):
+        if P[row-1][col]==1 and col<n:
+            row-=1
+            p=p*1/meanY/(1/meanX+1/meanY)
+        elif P[row-1][col]==1 and col==n:
+            row-=1
+        elif P[row][col+1]==1 and row+col>n+1:
+            col+=1
+            p=p*1/meanX/(1/meanX+1/meanY)
+        else:
+            col+=1
+    return p
+    
+
+def kCprime(n,k,C):
+    """
+    Procedure Name: Cprime
+    Purpose: Produces a matrix C' that is the distribution segment
+                matrix where each row represents the distribution
+                segments for the case represented by the corresponding
+                row in the case matrix C. The elements of C' are
+                limited to a 0, 1 and 2. 0 implies no sojourn time
+                distribution segment due to an empyting of the system.
+                1 implies a copeting risk of an arrival or completion of
+                service and is distributed Exp(theta+mu) and 2 implies a
+                service completion distribution leg, which is distributed
+                Exp(mu).
+    Input:      1. n: the total number of customers in the system
+                2. k: the number of customers initially in the system
+                2. C: the case matrix
+    Output:     1. prime: a matrix with the same number of rows as C and
+                            2*(n+1)+k columns
+    """
+
+    prime=np.zeros((np.size(C,1),2*n+k))
+    for i in range(np.size(C,1)):
+        row=n+k
+        col=0
+        pat=kpath(n,k,C[i])
+        dist=np.zeros((1,2*n+k))
+        for j in range(2*n+k):
+            if pat[row-1][col]==1 and col<n:
+                row-=1
+                dist[0][j]=1
+            elif pat[row-1][col]==1 and col==n:
+                row-=1
+                dist[0][j]=2
+            elif pat[row-1][col+1]==1 and row+col>n+1:
+                col+=1
+                dist[0][j]=1
+            else:
+                col+=1
+                dist[0][j]=0
+        prime[i]=dist
+    return prime
+    
+
+def kpath(n,k,A):
+    """
+    Procedures Name: kpath
+    Purpose: Creates a path that starts at the lower left corner
+                of the matrix and moves to the upper right corner.
+                The first leg of the path is always the arrival of
+                customer 1. A 1 to the right of the previous 1
+                signifies an arrival, while a 1 above the previous
+                1 signifies a service completion.
+    Arugments:  1. n: the total number of customers in the system
+                2. k: the number of customers initially present in
+                        the system
+                3. A: A row from the case matrix C.
+    Output:     1. pat: A path matrix of size (n+k+1)x(n+1)
+    """
+
+    row=n+k
+    col=0
+    pat=np.zeros((n+k+1,n+1))
+    pat[n+k][0]=1
+    for j in range(2*n+k):
+        if A[j]==1:
+            col+=1
+            pat[row][col]=1
+        else:
+            row-=1
+            pat[row][col]=1
+    return pat
+
+
+def kprobvec(n,k,meanX,meanY):
+    """
+    Procedure Name: probvec
+    Purpose: Uses the caseprob procedure to successivly build a vector
+                of probabilities, one for each case of the C matrix.
+    Input:  1. n: the total number of customers in the system
+            2. meanX: the mean of the arrival distribution
+            3. meanY: the mean of the service time distribution
+    Output: 1. p: a probability vector of length 2n!/n!/(n+1)!
+    """
+    C=kcases(n,k)
+    p=np.zeros(np.size(C,1))
+    for i in range(np.size(C,1)):
+        p[i]=kcaseprob(n,k,kpath(n,k,C[i]),meanX,meanY)
+    return p
+    
 
 def okay(n,E):
     """
@@ -298,6 +528,52 @@ def okay(n,E):
             test=False
             break
     return test
+
+def path(n,A):
+    """
+    Procedure Name: path
+    Purpose: Creates a path that starts at the lower left corner
+                of the matrix and moves to the upper right corner.
+                The first leg of the path is always the arrival of
+                customer 1. A 1 to the right of the previous 1 signifies
+                an arrival, while a 1 above the previous 1 signifies
+                a service completion.
+    Arguments:  1. n: the total number of customers in the system
+                2. A: a row from the case matrix C.
+    Output:     1. pat: A path matrix of size (n+1)x(n+1)
+    """
+
+    row=n
+    col=1
+    pat=np.zeros((n+1,n+1))
+    pat[n,0]=1
+    pat[n,1]=1
+    for j in range(1,2*n):
+        if A[j]==1:
+            col+=1
+            pat[row,col]=1
+        else:
+            row-=1
+            pat[row,col]=1
+    return pat   
+
+
+def probvec(n,meanX,meanY):
+    """
+    Procedure Name: probvec
+    Purpose: Uses the caseprob procedure to successivly build a vector
+                of probabilities, one for each case of the C matrix.
+    Input:  1. n: the total number of customers in the system
+            2. meanX: the mean of the arrival distribution
+            3. meanY: the mean of the service time distribution
+    Output: 1. p: a probability vector of length 2n!/n!/(n+1)!
+    """
+
+    c=factorial(2*n)/factorial(n)/factorial(n+1)
+    p=np.zeros(c)
+    for i in range(c):
+        p[i]=caseprob(n,path(n,cases(n)[i]),meanX,meanY)
+    return p
 
 
 def swapa(n,A):
@@ -343,20 +619,4 @@ def swapb(n,B):
         if check==0:
             break
     return R
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
 

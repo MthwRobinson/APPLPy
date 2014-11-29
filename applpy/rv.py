@@ -1,3 +1,62 @@
+"""
+Main Random Variable Module
+
+1. The Random Variable class
+2. Procedures for changing functional form
+3. Operations on one random variable
+4. Operations on two random variables
+5. Plots
+
+Class Procedures:
+    1. display()
+    1. verifyPDF()
+    2. variate(n)
+
+Functional Form Conversion:
+    1. CDF(RVar,value)
+    2. CHF(RVar,value)
+    3. HF(RVar,value)
+    4. IDF(RVar,value)
+    5. PDF(RVar,value)
+    6. SF(RVar,value)
+    7. BootstrapRV(varlist)
+    8. Convert(RVar,inc)
+
+Procedures On One Random Variable:
+    1. ConvolutionIID(RVar,n)
+    2. CoefOfVar(RVar)
+    3. ExpectedValue(RVar,gX)
+    4. Entropy(RVar)
+    5. Kurtosis(RVar)
+    6. MaximumIID(RVar,n)
+    7. Mean(RVar)
+    8. MeanDiscrete(RVar)
+    9. MGF(RVar)
+    10. MinimumIID(RVar,n)
+    11. OrderStat(RVar,n,r)
+    12. ProductIID(RVar,n)
+    13. Skewness(RVar)
+    14. Transform(RVar,gX)
+    15. Truncate(RVar,[lw,up])
+    16. Variance(RVar)
+    17. VarDiscrete(RVar)
+
+Procedures On Two Random Variables:
+    1. Convolution(RVar1,RVar2)
+    2. Maximum(RVar1,RVar2)
+    3. Minimum(RVar1,RVar2)
+    4. Mixture(MixParameters,MixRVs)
+    5. Product(RVar1,RVar2)
+
+Plotting Procedures:
+    1. Histogram(Sample,bins)
+    2. PlotDist(RVar,suplist)
+    3. PlotDisplay(plot_list,suplist)
+    4. PlotEmpCDF(data)
+    5. PPPlot(RVar,Sample)
+    6. QQPlot(RVar,Sample)
+"""
+
 from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
@@ -27,17 +86,6 @@ x,y,z,t=symbols('x y z t')
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
-"""
-
-"""
-Main Random Variable Module
-
-1. The Random Variable class
-2. Procedures for changing functional form
-3. Operations on one random variable
-4. Operations on two random variables
-5. Plots
-
 """
 
 class RVError(Exception):
@@ -1500,7 +1548,7 @@ def Kurtosis(RVar):
 def MaximumIID(RVar,n):
     """
     Procedure Name: MaximumIID
-    Purpose: Comput the maximum of n iid random variables
+    Purpose: Compute the maximum of n iid random variables
     Arguments:  1. RVar: A random variable
                 2. n: an integer
     Output:     1. The maximum of n iid random variables

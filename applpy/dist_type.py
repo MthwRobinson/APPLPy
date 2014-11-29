@@ -1,3 +1,29 @@
+"""
+Distribution Subclass Module
+
+Defines commonly used distributions as subclasses of the
+    RV class
+
+Continuous Distributions:
+    ArcSinRV(),ArcTanRV(alpha,phi),BetaRV(alpha,beta)
+    CauchyRV(a,alpha),ChiRV(N),ChiSquareRV(N),ErlangRV(theta,N)
+    ErrorRV(mu,alpha,d),ErrorIIRV(a,b,c),ExponentialRV(theta)
+    ExponentialPowerRV(theta,kappa),ExtremeValueRV(alpha,beta)
+    FRV(n1,n2),GammaRV(theta,kappa),GompertzRV(theta,kappa)
+    GeneralizedParetoRV(theta,delta,kappa),IDBRV(theta,delta,kappa)
+    InverseGaussianRV(theta,mu),InverseGammaRV(alpha,beta)
+    KSRV(n),LaPlaceRV(omega,theta), LogGammaRV(alpha,beta)
+    LogisticRV(kappa,theta),LogLogisticRV(theta,kappa)
+    LogNormalRV(mu,sigma),LomaxRV(kappa,theta)
+    MakehamRV(theta,delta,kappa),MuthRV(kappa),NormalRV(mu,sigma)
+    ParetoRV(theta,kappa),RayleighRV(theta),TriangularRV(a,b,c)
+    TRV(N),UniformRV(a,b),WeibullRV(theta,kappa)
+
+
+Discrete Distributions
+    BenfordRV(),BinomialRV(n,p),GeometricRV(p),PoissonRV(theta)
+"""
+
 from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
@@ -26,16 +52,6 @@ x,y,z,t,v=symbols('x y z t v')
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
-
-"""
-Distribution Subclass Module
-
-Defines commonly used distributions as subclasses of the
-    RV class
-
-"""
-
-
 
 def param_check(param):
     flag=True
