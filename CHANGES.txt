@@ -4,6 +4,9 @@ New Capabilities:
 	1. The Queue procedure computes the sojourn time distribution
 		for an M/M/s Queue for customer n, given k customers
 		initially in the queue.
+	2. Special MLE algorithms implemented for the Normal, Exponential,
+		Poisson and Weibull distributions
+	3. Thorough doc strings added for each applpy module
 
 Fixed Bugs:
 	1. Maximum and Minimum are now working properly for piecewise
