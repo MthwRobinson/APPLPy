@@ -1475,6 +1475,11 @@ def CoefOfVar(RVar):
     Arguments:  1. RVar: A random variable
     Output:     1. The coefficient of variation
     """
+    # If the input is a list of data, compute the CoefofVar
+    #   for the data set
+    if type(RVar)==list:
+        Xstar=BootstrapRV(RVar)
+        return CoefOfVar(Xstar)
     # Compute the coefficient of varation
     expect=Mean(RVar)
     sig=Variance(RVar)
@@ -1489,7 +1494,12 @@ def ExpectedValue(RVar,gX=x):
                 2. gX: A transformation of x
     Output:     1. E(gX)
     """
-    # Conver the random variable to its PDF form
+    # If the input is a list of data, compute the Expected Value
+    #   for the data set
+    if type(RVar)==list:
+        Xstar=BootstrapRV(RVar)
+        return ExpectedValue(Xstar,gX)
+    # Convert the random variable to its PDF form
     fx=PDF(RVar)
     # If the distribution is continuous, compute the expected
     #   value
@@ -1525,6 +1535,11 @@ def Entropy(RVar):
     Arguments:  1. RVar: A random variable
     Output:     1. The entropy of a random variable
     """
+    # If the input is a list of data, compute the entropy
+    #   for the data set
+    if type(RVar)==list:
+        Xstar=BootstrapRV(RVar)
+        return Entropy(Xstar)
     entropy=ExpectedValue(RVar,log(x,2))
     return simplify(entropy)
 
@@ -1535,6 +1550,11 @@ def Kurtosis(RVar):
     Arguments:  1. RVar: A random variable
     Output:     1. The kurtosis of a random variable
     """
+    # If the input is a list of data, compute the kurtosis
+    #   for the data set
+    if type(RVar)==list:
+        Xstar=BootstrapRV(RVar)
+        return Kurtosis(Xstar)
     # Compute the kurtosis
     expect=Mean(RVar)
     sig=sqrt(Variance(RVar))
@@ -1571,6 +1591,11 @@ def Mean(RVar):
     Arguments: 1. RVar: A random variable
     Output:    1. The mean of a random variable
     """
+    # If the input is a list of data, compute the mean
+    #   for the data set
+    if type(RVar)==list:
+        Xstar=BootstrapRV(RVar)
+        return Mean(Xstar)
     # Find the PDF of the random variable
     X_dummy=PDF(RVar)
     # If the random variable is continuous, find and return the mean
@@ -1953,6 +1978,11 @@ def Skewness(RVar):
     Arguments:  1. RVar: A random variable
     Output:     1. The skewness of the random variable
     """
+    # If the input is a list of data, compute the Skewness
+    #   for the data set
+    if type(RVar)==list:
+        Xstar=BootstrapRV(RVar)
+        return Skewness(Xstar)
     # Compute the skewness
     expect=Mean(RVar)
     sig=sqrt(Variance(RVar))
@@ -2229,6 +2259,11 @@ def Variance(RVar):
     Arguments: 1. RVar: A random variable
     Output:    1. The variance of a random variable
     """
+    # If the input is a list of data, compute the variance
+    #   for the data set
+    if type(RVar)==list:
+        Xstar=BootstrapRV(RVar)
+        return Variance(Xstar)
     # Find the PDF of the random variable
     X_dummy=PDF(RVar)
     # If the random variable is continuous, find and return the variance
