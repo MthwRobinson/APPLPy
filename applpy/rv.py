@@ -157,6 +157,7 @@ class RV:
         self.func=func
         self.support=support
         self.ftype=ftype
+        self.cache=None
 
     """
     Special Class Methods
@@ -173,7 +174,11 @@ class RV:
 
     def display(self,opt='repr'):
         """
-        Creates a default print setting for the random variable class
+        Procedure Name: display
+        Purpose: Displays the random variable in an interactive environment
+        Arugments:  1. self: the random variable
+        Output:     1. A print statement for each piece of the distribution
+                        indicating the function and the relevant support
         """
         if self.ftype[0] in ['continuous','Discrete']:
             print ('%s %s'%(self.ftype[0],self.ftype[1]))
@@ -206,7 +211,9 @@ class RV:
     def __len__(self):
         """
         Sets the behavior for the len() procedure when an instance
-            of the random variable class is given as input
+            of the random variable class is given as input. This
+            procedure will return the number of pieces if the distribution
+            is piecewise.
         """
         return len(self.func)
 
@@ -245,12 +252,54 @@ class RV:
     Utility Methods
 
     Procedures:
-        1. verifyPDF(self)
-        2. variate(self,n)
+        1. add_to_cache(self,object_name,object)
+        2. init_cache(self)
+        3. verifyPDF(self)
+        4. variate(self,n)
     """
+
+    def add_to_cache(self,object_name,obj):
+        """
+        Procedure Name: add_to_cache
+        Purpose: Stores properties of the random variable (i.e. mean, variance,
+                    cdf, sf) in memory. The next time a function is called to
+                    compute that property, APPLPy will retrieve the object
+                    from memory.
+        Arguments:  1. self: the random variable
+                    2. object_name: the key for the object in the cache
+                        dictionary
+                    3. obj: the object to be stored in memory.
+        Output:     1. No output. The self.cache property of the random
+                        variable is modified to include the specified
+                        object.
+        """
+        # If a cache for the random variable does not exist, initialize it
+        if self.cache==None:
+            self.init_cache()
+        # Add an object to the cache dictionary
+        self.cache[object_name]=obj
+
+    def init_cache(self):
+        """
+        Procedure Name: init_cache
+        Purpose: Initializes the cache for the random variable
+        Arguments:  1. self: the random variable
+        Output:     1. The cache attribute for the random variable
+                            is initialized
+        """
+        self.cache={}
+    
     def verifyPDF(self):
         """
-        Checks whether of not the pdf of a random variable is valid
+        Procedure Name: verifyPDF
+        Purpose: Verifies whether or not the random variable is valid. It first
+                    checks to make sure the pdf of the random variable
+                    integrates to one. It then checks to make sure the random
+                    variable is strictly positive.
+        Arguments:  1. self: the random variable.
+        Output:     1. A print statement indicating the area under the pdf
+                        and a print statement indicating whether or not the
+                        random variable is valid.
         """
         # If the random variable is continuous, verify the PDF
         if self.ftype[0]=='continuous':
@@ -355,8 +404,15 @@ class RV:
 
     def variate(self,n=1,s='sim',sensitivity=.00001):
         """
-        Generates a list of n random variates from the random variable
-            using the Newton-Raphson Method
+        Procedure Name: variate
+        Purpose: Generates a list of n random variates from the random variable
+                    using the Newton-Raphson Method
+        Arguments:  1. self: the random variable
+                    2. n: the number of variates (default is n=1)
+                    3. s: the percentile of the variate (default is random)
+                    4. sensitivity: value indicating how close two interations
+                            must be for the variate generator to reach
+                            convergence. (default is .00001)
         """   
         # Find the cdf and pdf functions (to avoid integrating for
             # each variate
@@ -426,12 +482,14 @@ def check_value(value,sup):
         else:
             return True
 
-def CDF(RVar,value=x):
+def CDF(RVar,value=x,cache=False):
     """
     Procedure Name: CDF
     Purpose: Compute the cdf of a random variable
     Arguments:  1. RVar: A random variable
                 2. value: An integer or floating point number
+                3. cache: A binary variable. If True, the result will
+                    be stored in memory for later use. (default is False)
     Output:     1. CDF of a random variable (if value not specified)
                 2. Value of the CDF at a given point
                     (if value is specified)
@@ -443,6 +501,11 @@ def CDF(RVar,value=x):
         if value>RVar.support[-1] or value<RVar.support[0]:
             string='Value is not within the support of the random variable'        
             raise RVError(string)
+
+    # If the CDF of the random variable is already cached in memory,
+    #   retriew the value of the CDF and return in.
+    if RVar.cache != None and 'cdf' in RVar.cache:
+        return RVar.cache['cdf']
 
     # If the distribution is continous, find and return the distribution
     #   of the random variable
@@ -467,7 +530,10 @@ def CDF(RVar,value=x):
                 cdflist.append(1-X_dummy.func[i])
             # If no value is specified, return the sf function
             if value==x:
-                return RV(cdflist,X_dummy.support,['continuous','cdf'])
+                cdf_func=RV(cdflist,X_dummy.support,['continuous','cdf'])
+                if cache==True:
+                    RVar.add_to_cache('cdf',cdffunc)
+                return cdffunc
             # If not, return the value of the cdf at the specified value
             else:
                 for i in range(len(X_dummy.support)):
@@ -499,7 +565,10 @@ def CDF(RVar,value=x):
                 cdflist.append(simplify(cdffunc))
             # If no value is specified, return the cdf
             if value==x:
-                return RV(cdflist,X_dummy.support,['continuous','cdf'])
+                cdffunc=RV(cdflist,X_dummy.support,['continuous','cdf'])
+                if cache==True:
+                    RVar.add_to_cache('cdf',cdffunc)
+                return cdffunc
             # If a value is specified, return the value of the cdf
             if value!=x:
                 for i in range(len(RVar.support)):
@@ -530,7 +599,10 @@ def CDF(RVar,value=x):
                 cdflist.append(1-X_dummy.func[i])
             # If no value is specified, return the sf function
             if value==x:
-                return RV(cdflist,X_dummy.support,['continuous','cdf'])
+                cdffunc=RV(cdflist,X_dummy.support,['Discrete','cdf'])
+                if cache==True:
+                    RVar.add_to_cache('cdf',cdffunc)
+                return cdffunc
             # If not, return the value of the cdf at the specified value
             else:
                 for i in range(len(X_dummy.support)):
@@ -547,7 +619,7 @@ def CDF(RVar,value=x):
             for i in range(len(X_dummy.func)):
                 newfunc=X_dummy.func[i].subs(x,t)
                 funclist.append(newfunc)
-            # Integrate to find the cdf
+            # Sum to find the cdf
             cdflist=[]
             for i in range(len(funclist)):
                 cdffunc=summation(funclist[i],(t,X_dummy.support[i],x))
@@ -562,7 +634,10 @@ def CDF(RVar,value=x):
                 cdflist.append(simplify(cdffunc))
             # If no value is specified, return the cdf
             if value==x:
-                return RV(cdflist,X_dummy.support,['Discrete','cdf'])
+                cdffunc=RV(cdflist,X_dummy.support,['Discrete','cdf'])
+                if cache==True:
+                    RVar.add_to_cache('cdf',cdffunc)
+                return cdffunc
             # If a value is specified, return the value of the cdf
             if value!=x:
                 for i in range(len(RVar.support)):
@@ -594,6 +669,8 @@ def CDF(RVar,value=x):
                 newfunc.append(X_dummy.func[i])
             Xsf=RV(newfunc,X_dummy.support,['discrete','cdf'])
             if value==x:
+                if cache==True:
+                    RVar.add_to_cache('cdf',Xsf)
                 return Xsf
             if value!=x:
                 X_dummy=CDF(X_dummy)
@@ -613,7 +690,10 @@ def CDF(RVar,value=x):
                 area+=X_dummy.func[i]
                 cdffunc.append(area)
             if value==x:
-                return RV(cdffunc,X_dummy.support,['discrete','cdf'])
+                cdffunc=RV(cdffunc,X_dummy.support,['discrete','cdf'])
+                if cache==True:
+                    RVar.add_to_cache('cdf',cdffunc)
+                return cdffunc
             if value!=x:
                 X_dummy=CDF(X_dummy)
                 for i in range(len(X_dummy.support)):
@@ -624,7 +704,7 @@ def CDF(RVar,value=x):
                             return X_dummy.func[i]
                 
 
-def CHF(RVar,value=x):
+def CHF(RVar,value=x,cache=False):
     """
     Procedure Name: CHF
     Purpose: Compute the chf of a random variable
@@ -642,7 +722,12 @@ def CHF(RVar,value=x):
         if value>RVar.support[-1] or value<RVar.support[0]:
             string='Value is not within the support of the random variable'        
             raise RVError(string)
-
+        
+    # If the CHF of the random variable is already cached in memory,
+    #   retriew the value of the CHF and return in.
+    if RVar.cache != None and 'chf' in RVar.cache:
+        return RVar.cache['chf']
+    
     # If the distribution is continuous, find and return the chf of
     #   the random variable
     if RVar.ftype[0]=='continuous':
@@ -672,7 +757,10 @@ def CHF(RVar,value=x):
             # If a value is not specified, return the chf of the
             #   random variable
             if value==x:
-                return RV(chffunc,X_dummy.support,['continuous','chf'])
+                chffunc=RV(chffunc,X_dummy.support,['continuous','chf'])
+                if cache==True:
+                    RVar.add_to_cache('chf',chffunc)
+                return chffunc
             if value!=x:
                 for i in range(len(RVar.support)):
                     if value>=RVar.func[i]:
@@ -709,7 +797,10 @@ def CHF(RVar,value=x):
             # If a value is not specified, return the chf of the
             #   random variable
             if value==x:
-                return RV(chffunc,X_dummy.support,['Discrete','chf'])
+                chfrv=RV(chffunc,X_dummy.support,['Discrete','chf'])
+                if cache==True:
+                    RVar.add_to_cache('chf',chfrv)
+                return chfrv
             if value!=x:
                 for i in range(len(RVar.support)):
                     if value>=RVar.func[i]:
@@ -736,7 +827,10 @@ def CHF(RVar,value=x):
             for i in range(len(X_sf.func)):
                 chffunc.append(-log(X_sf.func[i]))
             if value==x:
-                return RV(chffunc,X_sf.support,['discrete','chf'])
+                chfrv=RV(chffunc,X_sf.support,['discrete','chf'])
+                if cache==True:
+                    RVar.add_to_cache('chf',chfrv)
+                return chfrv
             if value!=x:
                 if value not in RVar.support:
                     return 0
@@ -744,7 +838,7 @@ def CHF(RVar,value=x):
                     return chffunc[RVar.support.index(value)]
                     
 
-def HF(RVar,value=x):
+def HF(RVar,value=x,cache=False):
     """
     Procedure Name: HF
     Purpose: Compute the hf of a random variable
@@ -762,6 +856,11 @@ def HF(RVar,value=x):
         if value>RVar.support[-1] or value<RVar.support[0]:
             string='Value is not within the support of the random variable'        
             raise RVError(string)
+        
+    # If the HF of the random variable is already cached in memory,
+    #   retriew the value of the HF and return in.
+    if RVar.cache != None and 'hf' in RVar.cache:
+        return RVar.cache['hf']
 
     # If the distribution is continuous, find and return the hf of
     #   the random variable
@@ -787,7 +886,10 @@ def HF(RVar,value=x):
                 newfunc=diff(X_dummy.func[i],x)
                 hflist.append(newfunc)
             if value==x:
-                return RV(hflist,X_dummy.support,['continuous','hf'])
+                hfrv=RV(hflist,X_dummy.support,['continuous','hf'])
+                if cache==True:
+                    RVar.add_to_cache('hf',hfrv)
+                return hfrv
             if value!=x:
                 for i in range(len(RVar.support)):
                     if value>=RVar.support[i]:
@@ -804,7 +906,10 @@ def HF(RVar,value=x):
                 hfunc=(X_pdf[i])/(X_sf[i])
                 hflist.append(simplify(hfunc))
             if value==x:
-                return RV(hflist,RVar.support,['continuous','hf'])
+                hfrv=RV(hflist,RVar.support,['continuous','hf'])
+                if cache==True:
+                    RVar.add_to_cache('hf',hfrv)
+                return hfrv
             if value!=x:
                 for i in range(len(RVar.support)):
                     if value>=RVar.support[i]:
@@ -836,7 +941,10 @@ def HF(RVar,value=x):
                 hfunc=(X_pdf[i])/(X_sf[i])
                 hflist.append(simplify(hfunc))
             if value==x:
-                return RV(hflist,RVar.support,['Discrete','hf'])
+                hfrv=RV(hflist,RVar.support,['Discrete','hf'])
+                if cache==True:
+                    RVar.add_to_cache('hf',hfrv)
+                return hfrv
             if value!=x:
                 for i in range(len(RVar.support)):
                     if value>=RVar.support[i]:
@@ -864,7 +972,10 @@ def HF(RVar,value=x):
             for i in range(len(X_pdf.func)):
                 hffunc.append(X_pdf.func[i]/X_sf.func[i])
             if value==x:
-                return RV(hffunc,X_pdf.support,['discrete','hf'])
+                hfrv=RV(hffunc,X_pdf.support,['discrete','hf'])
+                if cache==True:
+                    RVar.add_to_cache('hf',hfrv)
+                return hfrv
             if value!=x:
                 if value not in X_pdf.support:
                     return 0
@@ -872,7 +983,7 @@ def HF(RVar,value=x):
                     return hffunc[X_pdf.support.index(value)]
 
 
-def IDF(RVar,value=x):
+def IDF(RVar,value=x,cache=False):
     """
     Procedure Name: IDF
     Purpose: Compute the idf of a random variable
@@ -890,6 +1001,12 @@ def IDF(RVar,value=x):
         if value>RVar.support[-1] or value<RVar.support[0]:
             string='Value is not within the support of the random variable'        
             raise RVError(string)
+
+    # If the IDF of the random variable is already cached in memory,
+    #   retriew the value of the IDF and return in.
+    if RVar.cache != None and 'idf' in RVar.cache:
+        return RVar.cache['idf']
+        
     # If the distribution is continuous, find and return the idf
     #   of the random variable
     if RVar.ftype[0]=='continuous':
@@ -939,7 +1056,10 @@ def IDF(RVar,value=x):
                 func=idffunc[i].subs(t,x)
                 idffunc2.append(simplify(func))
             # Return the IDF
-            return RV(idffunc2,idfsup,['continuous','idf'])
+            idfrv=RV(idffunc2,idfsup,['continuous','idf'])
+            if cache==True:
+                RVar.add_to_cache('idf',idfrv)
+            return idfrv
                     
             
         # If a value is specified, use the newton-raphson method to generate a random variate
@@ -1001,7 +1121,10 @@ def IDF(RVar,value=x):
                 func=idffunc[i].subs(t,x)
                 idffunc2.append(simplify(func))
             # Return the IDF
-            return RV(idffunc2,idfsup,['Discrete','idf'])
+            idfrv=RV(idffunc2,idfsup,['Discrete','idf'])
+            if cache==True:
+                RVar.add_to_cache('idf',idfrv)
+            return idfrv
                     
             
         # If a value is specified, use the newton-raphson method to generate a random variate
@@ -1043,7 +1166,7 @@ def IDF(RVar,value=x):
             
 
 
-def PDF(RVar,value=x):
+def PDF(RVar,value=x,cache=False):
     """
     Procedure Name: PDF
     Purpose: Compute the pdf of a random variable
@@ -1059,6 +1182,11 @@ def PDF(RVar,value=x):
         if value>RVar.support[-1] or value<RVar.support[0]:
             string='Value is not within the support of the random variable'        
             raise RVError(string)
+
+    # If the PDF of the random variable is already cached in memory,
+    #   retriew the value of the PDF and return in.
+    if RVar.cache != None and 'pdf' in RVar.cache:
+        return RVar.cache['pdf']
     
     # If the distribution is continuous, find and return the pdf of the random variable
     if RVar.ftype[0]=='continuous':
@@ -1097,7 +1225,10 @@ def PDF(RVar,value=x):
                 newfunc=X_dummy.func[i]*exp(-intlist[i])
                 pdffunc.append(simplify(newfunc))
             if value==x:
-                return RV(pdffunc,RVar.support,['continuous','pdf'])
+                pdfrv=RV(pdffunc,RVar.support,['continuous','pdf'])
+                if cache==True:
+                    RVar.add_to_cache('pdf',pdfrv)
+                return pdfrv
             if value!=x:
                 for i in range(len(X_dummy.support)):
                     if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
@@ -1110,7 +1241,10 @@ def PDF(RVar,value=x):
                 pdflist=[]
                 for i in range(len(X_dummy.func)):
                     pdflist.append(diff(X_dummy.func[i],x))
-                return RV(pdflist,RVar.support,['continuous','pdf'])
+                pdfrv=RV(pdflist,RVar.support,['continuous','pdf'])
+                if cache==True:
+                    RVar.add_to_cache('pdf',pdfrv)
+                return pdfrv
             if value!=x:
                 for i in range(len(X_dummy.support)):
                     for i in range(len(X_dummy.support)):
@@ -1156,7 +1290,10 @@ def PDF(RVar,value=x):
                 newfunc=X_dummy.func[i]*exp(-sumlist[i])
                 pdffunc.append(simplify(newfunc))
             if value==x:
-                return RV(pdffunc,RVar.support,['Discrete','pdf'])
+                pdfrv=RV(pdffunc,RVar.support,['Discrete','pdf'])
+                if cache==True:
+                    RVar.add_to_cache('pdf',pdfrv)
+                return pdfrv
             if value!=x:
                 for i in range(len(X_dummy.support)):
                     if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
@@ -1173,7 +1310,10 @@ def PDF(RVar,value=x):
                     funcX0=X_dummy.func[i].subs(x,x-1)
                     pmf=simplify(funcX1-funcX0)
                     pdflist.append(pmf)
-                return RV(pdflist,RVar.support,['Discrete','pdf'])
+                pdfrv=RV(pdflist,RVar.support,['Discrete','pdf'])
+                if cache==True:
+                    RVar.add_to_cache('pdf',pdfrv)
+                return pdfrv
             if value!=x:
                 for i in range(len(X_dummy.support)):
                     for i in range(len(X_dummy.support)):
@@ -1206,14 +1346,17 @@ def PDF(RVar,value=x):
                 else:
                     pdffunc.append(X_dummy.func[i]-X_dummy.func[i-1])
             if value==x:
-                return RV(pdffunc,X_dummy.support,['discrete','pdf'])
+                pdfrv=RV(pdffunc,X_dummy.support,['discrete','pdf'])
+                if cache==True:
+                    RVar.add_to_cache('pdf',pdfrv)
+                return pdfrv
             if value!=x:
                 if value not in X_dummy.support:
                     return 0
                 else:
                     return pdffunc.func[X_dummy.support.index(value)]
 
-def SF(RVar,value=x):
+def SF(RVar,value=x,cache=False):
     """
     Procedure Name: SF
     Purpose: Compute the SF of a random variable
@@ -1229,6 +1372,11 @@ def SF(RVar,value=x):
         if value>RVar.support[-1] or value<RVar.support[0]:
             string='Value is not within the support of the random variable'        
             raise RVError(string)
+
+    # If the PDF of the random variable is already cached in memory,
+    #   retriew the value of the PDF and return in.
+    if RVar.cache != None and 'sf' in RVar.cache:
+        return RVar.cache['sf']
         
     # If the distribution is continuous, find and return the sf of the random variable
     if RVar.ftype[0]=='continuous':
@@ -1250,7 +1398,10 @@ def SF(RVar,value=x):
             for i in range(len(X_dummy.func)):
                 sflist.append(1-X_dummy.func[i])
             if value==x:
-                return RV(sflist,RVar.support,['continuous','sf'])
+                sfrv=RV(sflist,RVar.support,['continuous','sf'])
+                if cache==True:
+                    RVar.add_to_cache('sf',sfrv)
+                return sfrv
             if value!=x:
                 return 1-CDF(RVar,value)
                 #for i in range(len(X_dummy.support)):
@@ -1258,8 +1409,8 @@ def SF(RVar,value=x):
                 #        sfvalue=sflist[i].subs(x,value)
                 #        return simplify(sfvalue)
 
-    # If the distribution is continuous, find and return the sf of the random variable
-    if RVar.ftype[0]=='continuous':
+    # If the distribution is discrete, find and return the sf of the random variable
+    if RVar.ftype[0]=='Discrete':
         # If the distribution is already a sf, nothing needs to be done
         if RVar.ftype[1]=='sf':
             if value==x:
@@ -1278,7 +1429,10 @@ def SF(RVar,value=x):
             for i in range(len(X_dummy.func)):
                 sflist.append(1-X_dummy.func[i])
             if value==x:
-                return RV(sflist,RVar.support,['continuous','sf'])
+                sfrv=RV(sflist,RVar.support,['continuous','sf'])
+                if cache==True:
+                    RVar.add_to_cache('sf',sfrv)
+                return sfrv
             if value!=x:
                 return 1-CDF(RVar,value)
                 #for i in range(len(X_dummy.support)):
@@ -1306,7 +1460,10 @@ def SF(RVar,value=x):
             for i in range(len(X_dummy.func)):
                 sflist.append(1-X_dummy.func[i])
             if value==x:
-                return RV(sflist,RVar.support,['Discrete','sf'])
+                sfrv=RV(sflist,RVar.support,['Discrete','sf'])
+                if cache==True:
+                    RVar.add_to_cache('sf',sfrv)
+                return sfrv
             if value!=x:
                 return 1-CDF(RVar,value)
                 #for i in range(len(X_dummy.support)):
@@ -1332,7 +1489,10 @@ def SF(RVar,value=x):
             for i in range(len(X_dummy.func)):
                 sffunc.append(exp(-(X_dummy.func[i])))
             if value==x:
-                return RV(sffunc,X_dummy.support,['discrete','sf'])
+                sfrv=RV(sffunc,X_dummy.support,['discrete','sf'])
+                if cache==True:
+                    RVar.add_to_cache('sf',sfrv)
+                return sfrv
             if value!=x:
                 if value not in RVar.support:
                     return 0
@@ -1346,7 +1506,10 @@ def SF(RVar,value=x):
             for i in range(len(RVar.func)):
                 sffunc.append(X_pdf.func[i]/X_hf.func[i])
             if value==x:
-                return RV(sffunc,RVar.support,['discrete','sf'])
+                sfrv=RV(sffunc,RVar.support,['discrete','sf'])
+                if cache==True:
+                    RVar.add_to_cache('sf',sfrv)
+                return sfrv
             if value!=x:
                 if value not in RVar.support:
                     return 0
@@ -1364,6 +1527,8 @@ def SF(RVar,value=x):
                     newfunc.append(1-X_dummy.func[i-1])
             Xsf=RV(newfunc,X_dummy.support,['discrete','sf'])
             if value==x:
+                if cache==True:
+                    RVar.add_to_cache('sf',Xsf)
                 return Xsf
             if value!=x:
                 if value not in Xsf.support:
