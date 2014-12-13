@@ -7,6 +7,11 @@ New Capabilities:
 	2. Special MLE algorithms implemented for the Normal, Exponential,
 		Poisson and Weibull distributions
 	3. Thorough doc strings added for each applpy module
+	4. Cache option has been added for functional form conversion and
+		expected value procedure. If cache=True, APPLPy stores the
+		values in memory to be retrieve later if the function is
+		called again. This save significant CPU time on future
+		function calls
 
 Fixed Bugs:
 	1. Maximum and Minimum are now working properly for piecewise
