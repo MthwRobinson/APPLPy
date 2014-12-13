@@ -76,6 +76,7 @@ class ArcSinRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class ArcTanRV(RV):
     def __init__(self,alpha=Symbol('alpha',positive=True),
@@ -93,6 +94,7 @@ class ArcTanRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class BetaRV(RV):
     def __init__(self,alpha=Symbol('alpha',positive=True),
@@ -110,6 +112,7 @@ class BetaRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class CauchyRV(RV):
     def __init__(self,a=Symbol('a'),
@@ -127,6 +130,7 @@ class CauchyRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[a,alpha]
+        self.cache=None
 
     def variate(self,n=1,s='sim'):
         # If no parameter is specified, return an error
@@ -158,6 +162,7 @@ class ChiRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class ChiSquareRV(RV):
     def __init__(self,N=Symbol('N',positive=True,
@@ -171,6 +176,7 @@ class ChiSquareRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class ErlangRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
@@ -191,6 +197,7 @@ class ErlangRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class ErrorRV(RV):
     def __init__(self,mu=Symbol('mu',positive=True),
@@ -209,6 +216,7 @@ class ErrorRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class ErrorIIRV(RV):
     def __init__(self,a=Symbol('a'),b=Symbol('b'),
@@ -224,6 +232,7 @@ class ErrorIIRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class ExponentialRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True)):
@@ -239,6 +248,7 @@ class ExponentialRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta]
+        self.cache=None
 
     def variate(self,n=1,s='sim'):
         # If no parameter is specified, return an error
@@ -272,6 +282,7 @@ class ExponentialPowerRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+        self.cache=None
 
     def variate(self,n=1,s='sim'):
         # If no parameter is specified, return an error
@@ -304,6 +315,7 @@ class ExtremeValueRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[alpha,beta]
+        self.cache=None
 
     def variate(self,n=1,s='sim'):
         if param_check(self.parameter)==False:
@@ -337,6 +349,7 @@ class FRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class GammaRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
@@ -355,6 +368,7 @@ class GammaRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+        self.cache=None
 
 class GeneralizedParetoRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
@@ -371,6 +385,7 @@ class GeneralizedParetoRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class GompertzRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
@@ -388,6 +403,7 @@ class GompertzRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+        self.cache=None
 
     def variate(self,n=1,s='sim'):
         if param_check(self.parameter)==False:
@@ -417,6 +433,7 @@ class IDBRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class InverseGaussianRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
@@ -435,6 +452,7 @@ class InverseGaussianRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 
 class InverseGammaRV(RV):
@@ -453,6 +471,7 @@ class InverseGammaRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class KSRV(RV):
     def __init__(self,n=Symbol('n',positive=True,
@@ -609,6 +628,7 @@ class KSRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class LaPlaceRV(RV):
     def __init__(self,omega=Symbol('omega',positive=True),
@@ -623,6 +643,7 @@ class LaPlaceRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
         
 class LogGammaRV(RV):
     def __init__(self,alpha=Symbol('alpha',positive=True),
@@ -640,6 +661,7 @@ class LogGammaRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class LogisticRV(RV):
     def __init__(self,kappa=Symbol('kappa',positive=True),
@@ -658,6 +680,7 @@ class LogisticRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[kappa,theta]
+        self.cache=None
 
     def variate(self,n=1,s='sim'):
         if param_check(self.parameter)==False:
@@ -692,6 +715,7 @@ class LogLogisticRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+        self.cache=None
 
     def variate(self,n=1,s='sim'):
         if param_check(self.parameter)==False:
@@ -724,6 +748,7 @@ class LogNormalRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class LomaxRV(RV):
     def __init__(self,kappa=Symbol('kappa',positive=True),
@@ -741,6 +766,7 @@ class LomaxRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameters=[kappa,theta]
+        self.cache=None
 
     def variate(self,n=1,s='sim'):
         if param_check(self.parameter)==False:
@@ -774,6 +800,7 @@ class MakehamRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class MuthRV(RV):
     def __init__(self,kappa=Symbol('kappa',positive=True)):
@@ -790,6 +817,7 @@ class MuthRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class NormalRV(RV):
     def __init__(self,mu=Symbol('mu'),
@@ -807,6 +835,7 @@ class NormalRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[mu,sigma]
+        self.cache=None
 
 class ParetoRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
@@ -823,6 +852,7 @@ class ParetoRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class RayleighRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True)):
@@ -836,6 +866,7 @@ class RayleighRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class TriangularRV(RV):
     def __init__(self,a=Symbol('a'),b=Symbol('b'),c=Symbol('c')):
@@ -854,6 +885,7 @@ class TriangularRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[a,b,c]
+        self.cache=None
 
 class TRV(RV):
     def __init__(self,N=Symbol('N'),positive=True,integer=True):
@@ -867,6 +899,7 @@ class TRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class UniformRV(RV):
     def __init__(self,a=Symbol('a'),b=Symbol('b')):
@@ -883,6 +916,7 @@ class UniformRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[a,b]
+        self.cache=None
 
     def variate(self,n=1,s='sim'):
         # If no parameter is specified, return an error
@@ -919,6 +953,7 @@ class WeibullRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+        self.cache=None
 
 
     def variate(self,n=1,s='sim'):
@@ -951,6 +986,7 @@ class BenfordRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class BinomialRV(RV):
     def __init__(self,N=Symbol('N',positive=True,integer=True),
@@ -970,6 +1006,7 @@ class BinomialRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class GeometricRV(RV):
     def __init__(self,p=Symbol('p',positive=True)):
@@ -981,6 +1018,7 @@ class GeometricRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
 class PoissonRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True)):
@@ -996,4 +1034,5 @@ class PoissonRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache=None
 
