@@ -1373,8 +1373,8 @@ def SF(RVar,value=x,cache=False):
             string='Value is not within the support of the random variable'        
             raise RVError(string)
 
-    # If the PDF of the random variable is already cached in memory,
-    #   retriew the value of the PDF and return in.
+    # If the SF of the random variable is already cached in memory,
+    #   retriew the value of the SF and return in.
     if RVar.cache != None and 'sf' in RVar.cache:
         return RVar.cache['sf']
         
@@ -1633,7 +1633,7 @@ def ConvolutionIID(RVar,n):
         X_final+=X_dummy
     return PDF(X_final)
 
-def CoefOfVar(RVar):
+def CoefOfVar(RVar,cache=False):
     """
     Procedure Name: CoefOfVar
     Purpose: Compute the coefficient of variation of a random variable
@@ -1645,11 +1645,20 @@ def CoefOfVar(RVar):
     if type(RVar)==list:
         Xstar=BootstrapRV(RVar)
         return CoefOfVar(Xstar)
+
+    # If the COV of the random variable is already cached in memory,
+    #   retriew the value of the COV and return in.
+    if RVar.cache != None and 'cov' in RVar.cache:
+        return RVar.cache['cov']
+    
     # Compute the coefficient of varation
     expect=Mean(RVar)
     sig=Variance(RVar)
     cov=(sqrt(sig))/expect
-    return simplify(cov)
+    cov=simplify(cov)
+    if cache==True:
+        RVar.add_to_cache('cov',cov)
+    return cov
 
 def ExpectedValue(RVar,gX=x):
     """
@@ -1664,6 +1673,7 @@ def ExpectedValue(RVar,gX=x):
     if type(RVar)==list:
         Xstar=BootstrapRV(RVar)
         return ExpectedValue(Xstar,gX)
+    
     # Convert the random variable to its PDF form
     fx=PDF(RVar)
     # If the distribution is continuous, compute the expected
@@ -1693,7 +1703,7 @@ def ExpectedValue(RVar,gX=x):
         Expect=MeanDiscrete(fx_trans)
         return simplify(Expect)
 
-def Entropy(RVar):
+def Entropy(RVar,cache=False):
     """
     Procedure Name: Entropy
     Purpose: Compute the entory of a random variable
@@ -1705,10 +1715,19 @@ def Entropy(RVar):
     if type(RVar)==list:
         Xstar=BootstrapRV(RVar)
         return Entropy(Xstar)
-    entropy=ExpectedValue(RVar,log(x,2))
-    return simplify(entropy)
 
-def Kurtosis(RVar):
+    # If the entropy of the random variable is already cached in memory,
+    #   retriew the value of the entropy and return in.
+    if RVar.cache != None and 'entropy' in RVar.cache:
+        return RVar.cache['entropy']
+    
+    entropy=ExpectedValue(RVar,log(x,2))
+    entropy=simplify(entropy)
+    if cache==True:
+        RVar.add_to_cache('entropy',entropy)
+    return entropy
+
+def Kurtosis(RVar,cache=False):
     """
     Procedure Name: Kurtosis
     Purpose: Compute the Kurtosis of a random variable
@@ -1720,6 +1739,12 @@ def Kurtosis(RVar):
     if type(RVar)==list:
         Xstar=BootstrapRV(RVar)
         return Kurtosis(Xstar)
+    
+    # If the kurtosis of the random variable is already cached in memory,
+    #   retriew the value of the kurtosis and return in.
+    if RVar.cache != None and 'kurtosis' in RVar.cache:
+        return RVar.cache['kurtosis']
+    
     # Compute the kurtosis
     expect=Mean(RVar)
     sig=sqrt(Variance(RVar))
@@ -1728,7 +1753,11 @@ def Kurtosis(RVar):
     Term3=6*(expect**2)*ExpectedValue(RVar,x**2)
     Term4=3*expect**4
     kurt=(Term1-Term2+Term3-Term4)/(sig**4)
-    return simplify(kurt)
+    kurt=simplify(kurt)
+
+    if cache==True:
+        RVar.add_to_cache('kurtosis',kurt)
+    return kurt
 
 def MaximumIID(RVar,n):
     """
@@ -1749,7 +1778,7 @@ def MaximumIID(RVar,n):
         X_final=Maximum(X_final,X_dummy)
     return PDF(X_final)
 
-def Mean(RVar):
+def Mean(RVar,cache=False):
     """
     Procedure Name: Mean
     Purpose: Compute the mean of a random variable
@@ -1761,6 +1790,12 @@ def Mean(RVar):
     if type(RVar)==list:
         Xstar=BootstrapRV(RVar)
         return Mean(Xstar)
+
+    # If the mean of the random variable is already cached in memory,
+    #   retriew the value of the mean and return in.
+    if RVar.cache != None and 'mean' in RVar.cache:
+        return RVar.cache['mean']
+    
     # Find the PDF of the random variable
     X_dummy=PDF(RVar)
     # If the random variable is continuous, find and return the mean
@@ -1774,7 +1809,10 @@ def Mean(RVar):
         for i in range(len(X_dummy.func)):
             val=integrate(meanfunc[i],(x,X_dummy.support[i],X_dummy.support[i+1]))
             meanval+=val
-        return simplify(meanval)
+        meanval=simplify(meanval)
+        if cache==True:
+            RVar.add_to_cache('mean',meanval)
+        return meanval
 
     # If the random variable is a discrete function, find and return the mean
     if RVar.ftype[0]=='Discrete':
@@ -1787,11 +1825,18 @@ def Mean(RVar):
         for i in range(len(X_dummy.func)):
             val=summation(meanfunc[i],(x,X_dummy.support[i],X_dummy.support[i+1]))
             meanval+=val
-        return simplify(meanval)
+
+        meanval=simplify(meanval)
+        if cache==True:
+            RVar.add_to_cache('mean',meanval)
+        return meanval
 
     # If the random variable is discrete, find and return the variance
     if RVar.ftype[0]=='discrete':
-        return MeanDiscrete(RVar)
+        meanval=MeanDiscrete(RVar)
+        if cache==True:
+            RVar.add_to_cache('mean',meanval)
+        return meanval
         #
         # Legacy mean code ... update uses faster numpy implementation
         #
@@ -1836,15 +1881,23 @@ def MeanDiscrete(RVar):
     meanval=vals.sum()
     return meanval
 
-def MGF(RVar):
+def MGF(RVar,cache=False):
     """
     Procedure Name: MGF
     Purpose: Compute the moment generating function of a random variable
     Arguments:  1. RVar: A random variable
     Output:     1. The moment generating function
     """
+    # If the MGF of the random variable is already cached in memory,
+    #   retriew the value of the MGF and return in.
+    if RVar.cache != None and 'mgf' in RVar.cache:
+        return RVar.cache['mgf']
+    
     mgf=ExpectedValue(RVar,exp(t*x))
-    return simplify(mgf)
+    mgf=simplify(mgf)
+    if cache==True:
+        RVar.add_to_cache('mgf',mgf)
+    return mgf
 
 def MinimumIID(RVar,n):
     """
@@ -2136,7 +2189,7 @@ def ProductIID(RVar,n):
         X_final*=X_dummy
     return PDF(X_final)
 
-def Skewness(RVar):
+def Skewness(RVar,cache=False):
     """
     Procedure Name: Skewness
     Purpose: Compute the skewness of a random variable
@@ -2148,6 +2201,12 @@ def Skewness(RVar):
     if type(RVar)==list:
         Xstar=BootstrapRV(RVar)
         return Skewness(Xstar)
+
+    # If the skewness of the random variable is already cached in memory,
+    #   retriew the value of the skewness and return in.
+    if RVar.cache != None and 'skewness' in RVar.cache:
+        return RVar.cache['skewness']
+    
     # Compute the skewness
     expect=Mean(RVar)
     sig=sqrt(Variance(RVar))
@@ -2155,7 +2214,10 @@ def Skewness(RVar):
     Term2=3*expect*ExpectedValue(RVar,x**2)
     Term3=2*expect**3
     skew=(Term1-Term2+Term3)/(sig**3)
-    return simplify(skew)
+    skew=simplify(skew)
+    if cache==True:
+        RVar.add_to_cache('skewness',skew)
+    return skew
                             
 
 def Transform(RVar,gXt):
@@ -2417,7 +2479,7 @@ def Truncate(RVar,supp):
         return RV(truncfunc,truncsupp,['discrete','pdf'])     
 
 
-def Variance(RVar):
+def Variance(RVar,cache=False):
     """
     Procedure Name: Variance
     Purpose: Compute the variance of a random variable
@@ -2429,6 +2491,12 @@ def Variance(RVar):
     if type(RVar)==list:
         Xstar=BootstrapRV(RVar)
         return Variance(Xstar)
+
+    # If the variance of the random variable is already cached in memory,
+    #   retriew the value of the variance and return in.
+    if RVar.cache != None and 'variance' in RVar.cache:
+        return RVar.cache['variance']
+    
     # Find the PDF of the random variable
     X_dummy=PDF(RVar)
     # If the random variable is continuous, find and return the variance
@@ -2447,7 +2515,10 @@ def Variance(RVar):
             exxval+=val
         # Find Var(X)=E(X^2)-E(X)^2
         var=exxval-(EX**2)
-        return simplify(var)
+        var=simplify(var)
+        if cache==True:
+            RVar.add_to_cache('variance',var)
+        return var
 
     # If the random variable is a discrete function, find and return the variance
     if RVar.ftype[0]=='Discrete':
@@ -2465,11 +2536,17 @@ def Variance(RVar):
             exxval+=val
         # Find Var(X)=E(X^2)-E(X)^2
         var=exxval-(EX**2)
-        return simplify(var)
+        var=simplify(var)
+        if cache==True:
+            RVar.add_to_cache('variance',var)
+        return var
 
     # If the random variable is discrete, find and return the variance
     if RVar.ftype[0]=='discrete':
-        return VarDiscrete(RVar)
+        var=VarDiscrete(RVar)
+        if cache==True:
+            RVar.add_to_cache('variance',var)
+        return var
         #
         # Legacy variance code ... update uses faster numpy implementation
         #
