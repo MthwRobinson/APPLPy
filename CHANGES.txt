@@ -12,6 +12,7 @@ New Capabilities:
 		values in memory to be retrieve later if the function is
 		called again. This save significant CPU time on future
 		function calls
+	5. Doc Strings added for each distribution type
 
 Fixed Bugs:
 	1. Maximum and Minimum are now working properly for piecewise
