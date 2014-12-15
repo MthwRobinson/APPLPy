@@ -221,31 +221,92 @@ class RV:
 
     def __add__(self,other):
         """
-        Sets the behavior of the '+' operator
+        Procedure Name: __add__
+        Purpose: If two random variables are passed to the + operator,
+                    the convolution of those random variables is returned.
+                    If a constant is added to the random variable, the
+                    random variable is shifted by that constant
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
         """
-        return Convolution(self,other)
+        # If the random variable is added to another random variable,
+        #   return the convolution of the two random variables
+        if 'RV' in other.__class__.__name__:
+            return Convolution(self,other)
+        # If the random variable is added to a constant, shift
+        # the random variable
+        if type(other) in [float,int]:
+            gX=[[x+other],[-oo,oo]]
+            return Transform(self,gX)
+        
 
     def __sub__(self,other):
         """
-        Sets the behavior of the '-' operator
+        Procedure Name: __sub__
+        Purpose: If two random variables are passed to the - operator,
+                    the difference of those random variables is returned.
+                    If a constant is subracted from the random variable, the
+                    random variable is shifted by that constant
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
         """
-        gX=[[-x],[-oo,oo]]
-        RVar=Transform(other,gX)
-        return Convolution(self,RVar)
+        # If the random variable is subtracted by another random variable,
+        #   return the difference of the two random variables
+        if 'RV' in other.__class__.__name__:
+            gX=[[-x],[-oo,oo]]
+            RVar=Transform(other,gX)
+            return Convolution(self,RVar)
+        # If the random variable is subtracted by a constant, shift
+        # the random variable
+        if type(other) in [float,int]:
+            gX=[[x-other],[-oo,oo]]
+            return Transform(self,gX)
 
     def __mul__(self,other):
         """
-        Sets the behavior of the '*' operator
+        Procedure Name: __mul__
+        Purpose: If two random variables are passed to the * operator,
+                    the product of those random variables is returned.
+                    If a constant is multiplied by the random variable, the
+                    random variable is scaled by that constant
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
         """
-        return Product(self,other)
+        # If the random variable is multiplied by another random variable,
+        #   return the product of the two random variables
+        if 'RV' in other.__class__.__name__:
+            return Product(self,other)
+        # If the random variable is multiplied by a constant, scale
+        # the random variable
+        if type(other) in [float,int]:
+            gX=[[x*other],[-oo,oo]]
+            return Transform(self,gX)
 
     def __truediv__(self,other):
         """
-        Sets the behavior of the '/' operator
+        Procedure Name: __truediv__
+        Purpose: If two random variables are passed to the / operator,
+                    the quotient of those random variables is returned.
+                    If a constant is multiplied by the random variable, the
+                    random variable is scaled by the inverse of that constant
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
         """
-        gX=[[1/x,1/x],[-oo,0,oo]]
-        RVar=Transform(other,gX)
-        return Product(self,RVar)
+        # If the random variable is divided by another random variable,
+        #   return the quotient of the two random variables
+        if 'RV' in other.__class__.__name__:
+            gX=[[1/x,1/x],[-oo,0,oo]]
+            RVar=Transform(other,gX)
+            return Product(self,RVar)
+        # If the random variable is divided by a constant, scale
+        # the random variable by theinverse of the constant
+        if type(other) in [float,int]:
+            gX=[[x/other],[-oo,oo]]
+            return Transform(self,gX)
 
 
     """
