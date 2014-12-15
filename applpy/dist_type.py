@@ -71,6 +71,12 @@ Continuous Distributions
 """
 
 class ArcSinRV(RV):
+    """
+    Procedure Name: ArcSinRV
+    Purpose: Creates an instance of the arc sin distribution
+    Arguments:  1. None
+    Output:     1. An arc sin random variable
+    """
     def __init__(self):
         X_dummy=RV(1/(pi*sqrt(x*(1-x))),[0,1])
         self.func=X_dummy.func
@@ -79,6 +85,12 @@ class ArcSinRV(RV):
         self.cache=None
 
 class ArcTanRV(RV):
+    """
+    Procedure Name: ArcTanRV
+    Purpose: Creates an instance of the arc tan distribution
+    Arguments:  1. alpha: a strictly positive parameter
+    Output:     1. An arc tan random variable
+    """
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  phi=Symbol('phi')):
         # Return an error if invalid parameters are entered
@@ -97,6 +109,13 @@ class ArcTanRV(RV):
         self.cache=None
 
 class BetaRV(RV):
+    """
+    Procedure Name: BetaRV
+    Purpose: Creates an instance of the beta distribution
+    Arguments:  1. alpha: a strictly positive parameter
+                2. beta: a strictly positive parameter
+    Output:     1. A beta random variable
+    """
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta'),positive=True):
         if alpha in [-oo,oo]:
@@ -115,6 +134,13 @@ class BetaRV(RV):
         self.cache=None
 
 class CauchyRV(RV):
+    """
+    Procedure Name: CauchyRV
+    Purpose: Creates an instance of the Cauchy distribution
+    Arguments:  1. a: a real valued parameter
+                2. alpha: a stictly positive parameter
+    Output:     1. A Cauchy random variable
+    """
     def __init__(self,a=Symbol('a'),
                  alpha=Symbol('alpha'),positive=True):
         if a in [-oo,oo]:
@@ -151,6 +177,12 @@ class CauchyRV(RV):
         return varlist
 
 class ChiRV(RV):
+    """
+    Procedure Name: ChiRV
+    Purpose: Creates an instance of the chi distribution
+    Arguments:  1. N: a positive integer parameter
+    Output:     1. A chi random variable
+    """
     def __init__(self,N=Symbol('N',positive=True,
                                integer=True)):
         if N.__class__.__name__!='Symbol':
@@ -165,6 +197,12 @@ class ChiRV(RV):
         self.cache=None
 
 class ChiSquareRV(RV):
+    """
+    Procedure Name: ChiSquareRV
+    Purpose: Creates an instance of the chi square distribution
+    Arguments:  1. N: a positive integer parameter
+    Output:     1. A chi squared random variable
+    """
     def __init__(self,N=Symbol('N',positive=True,
                                integer=True)):
         if N.__class__.__name__!='Symbol':
@@ -179,6 +217,13 @@ class ChiSquareRV(RV):
         self.cache=None
 
 class ErlangRV(RV):
+    """
+    Procedure Name: ErlangRV
+    Purpose: Creates an instance of the Erlang distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. N: a positive integer parameter
+    Output:     1. An erlang random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  N=Symbol('N',positive=True,integer=True)):
         if N.__class__.__name__!='Symbol':
@@ -200,6 +245,14 @@ class ErlangRV(RV):
         self.cache=None
 
 class ErrorRV(RV):
+    """
+    Procedure Name: ErrorRV
+    Purpose: Creates an instance of the error distribution
+    Arguments:  1. mu: a strictly positive parameter
+                2. alpha: a real valued parameter
+                3. d: a real valued parameter
+    Output:     1. An error random variable
+    """
     def __init__(self,mu=Symbol('mu',positive=True),
                  alpha=Symbol('alpha'),d=Symbol('d')):
         if mu.__class__.__name__!='Symbol':
@@ -219,6 +272,14 @@ class ErrorRV(RV):
         self.cache=None
 
 class ErrorIIRV(RV):
+    """
+    Procedure Name: ErrorIIRV
+    Purpose: Creates an instance of the error II distribution
+    Arguments:  1. a: a real valued parameter
+                2. b: a real valued parameter
+                3. c: a real valued parameter
+    Output:     1. An error II random variable
+    """
     def __init__(self,a=Symbol('a'),b=Symbol('b'),
                  c=Symbol('c')):
         if a in [-oo,oo]:
@@ -235,6 +296,12 @@ class ErrorIIRV(RV):
         self.cache=None
 
 class ExponentialRV(RV):
+    """
+    Procedure Name: ExponentialRV
+    Purpose: Creates an instance of the exponential distribution
+    Arguments:  1. theta: a strictly positive parameter
+    Output:     1. An exponential random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True)):
         if theta.__class__.__name__!='Symbol':
             if theta<=0:
@@ -269,6 +336,13 @@ class ExponentialRV(RV):
         return varlist
 
 class ExponentialPowerRV(RV):
+    """
+    Procedure Name: ExponentialPowerRV
+    Purpose: Creates an instance of the exponential power distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a strictly positive parameter
+    Output:     1. An exponential power random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
         if theta.__class__.__name__!='Symbol':
@@ -304,6 +378,13 @@ class ExponentialPowerRV(RV):
         return varlist
 
 class ExtremeValueRV(RV):
+    """
+    Procedure Name: ExtremeValueRV
+    Purpose: Creates an instance of the extreme value distribution
+    Arguments:  1. alpha: a real valued parameter
+                2. beta: a real valued parameter
+    Output:     1. An extreme value random variable
+    """
     def __init__(self,alpha=Symbol('alpha'),beta=Symbol('beta')):
         if alpha in [-oo,oo]:
             if beta in [-oo,oo]:
@@ -333,6 +414,13 @@ class ExtremeValueRV(RV):
         return varlist
 
 class FRV(RV):
+    """
+    Procedure Name: FRV
+    Purpose: Creates an instance of the f distribution
+    Arguments:  1. n1: a strictly positive parameter
+                2. n2: a strictly positive parameter
+    Output:     1. A chi squared random variable
+    """
     def __init__(self,n1=Symbol('n1',positive=True),
                  n2=Symbol('n2',positive=True)):
         if n1.__class__.__name__!='Symbol':
@@ -352,6 +440,13 @@ class FRV(RV):
         self.cache=None
 
 class GammaRV(RV):
+    """
+    Procedure Name: GammaRV
+    Purpose: Creates an instance of the gamma distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a strictly positive parameter
+    Output:     1. A chi squared random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
         if theta.__class__.__name__!='Symbol':
@@ -371,6 +466,14 @@ class GammaRV(RV):
         self.cache=None
 
 class GeneralizedParetoRV(RV):
+    """
+    Procedure Name: GeneralizedParetoRV
+    Purpose: Creates an instance of the generalized pareto distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. delta: a real valued parameter
+                3. kappa: a real valued parameter
+    Output:     1. A generalized pareto random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  delta=Symbol('delta'),kappa=Symbol('kappa')):
         if theta.__class__.__name__!='Symbol':
@@ -388,6 +491,13 @@ class GeneralizedParetoRV(RV):
         self.cache=None
 
 class GompertzRV(RV):
+    """
+    Procedure Name: GompertzRV
+    Purpose: Creates an instance of the gompertz distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a real valued parameter
+    Output:     1. A gompertz random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa')):
         if theta.__class__.__name__!='Symbol':
@@ -423,6 +533,14 @@ class GompertzRV(RV):
         return varlist
 
 class IDBRV(RV):
+    """
+    Procedure Name: IDBRV
+    Purpose: Creates an instance of the idb distribution
+    Arguments:  1. theta: a real valued parameter
+                2. delta: a real valued parameter
+                3. kappa: a real valued parameter
+    Output:     1. An idb random variable
+    """
     def __init__(self,theta=Symbol('theta'),delta=Symbol('delta'),
                  kappa=Symbol('kappa')):
         if theta in [-oo,oo] or delta in [-oo,oo] or kappa in [-oo,oo]:
@@ -436,6 +554,13 @@ class IDBRV(RV):
         self.cache=None
 
 class InverseGaussianRV(RV):
+    """
+    Procedure Name: InverseGaussianRV
+    Purpose: Creates an instance of the inverse gaussian distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. mu: a strictly positive parameter
+    Output:     1. An inverse gaussian random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  mu=Symbol('mu',positive=True)):
         if theta.__class__.__name__!='Symbol':
@@ -456,6 +581,13 @@ class InverseGaussianRV(RV):
 
 
 class InverseGammaRV(RV):
+    """
+    Procedure Name: InverseGammaRV
+    Purpose: Creates an instance of the inverse gamma distribution
+    Arguments:  1. alpha: a strictly positive parameter
+                2. beta: a strictly positive parameter
+    Output:     1. An inverse gamma random variable
+    """
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta',positive=True)):
         if alpha.__class__.__name__!='Symbol':
@@ -474,6 +606,12 @@ class InverseGammaRV(RV):
         self.cache=None
 
 class KSRV(RV):
+    """
+    Procedure Name: KSRV
+    Purpose: Creates an instance of the kolmogoroff-smirnov distribution
+    Arguments:  1. n: a positive integer parameter
+    Output:     1. A kolmogoroff-smirnov random variable
+    """
     def __init__(self,n=Symbol('n',positive=True,
                                integer=True)):
         if n.__class__.__name__!='Symbol':
@@ -631,6 +769,13 @@ class KSRV(RV):
         self.cache=None
 
 class LaPlaceRV(RV):
+    """
+    Procedure Name: LaPlaceRV
+    Purpose: Creates an instance of the LaPlace distribution
+    Arguments:  1. omega: a strictly positive parameter
+                2. theta: a real valued parameter
+    Output:     1. A LaPlace random variable
+    """
     def __init__(self,omega=Symbol('omega',positive=True),
                  theta=Symbol('theta')):
         if omega.__class__.__name__!='Symbol':
@@ -646,6 +791,13 @@ class LaPlaceRV(RV):
         self.cache=None
         
 class LogGammaRV(RV):
+    """
+    Procedure Name: LogGammaRV
+    Purpose: Creates an instance of the log gamma distribution
+    Arguments:  1. alpha: a strictly positive parameter
+                2. beta: a strictly positive parameter
+    Output:     1. A log gamma random variable
+    """
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta',positive=True)):
         if alpha.__class__.__name__!='Symbol':
@@ -664,6 +816,13 @@ class LogGammaRV(RV):
         self.cache=None
 
 class LogisticRV(RV):
+    """
+    Procedure Name: LogisticRV
+    Purpose: Creates an instance of the logistic distribution
+    Arguments:  1. kappa: a strictly positive parameter
+                2. theta: a strictly positive parameter
+    Output:     1. A logistic random variable
+    """
     def __init__(self,kappa=Symbol('kappa',positive=True),
                  theta=Symbol('theta',positive=True)):
         if kappa.__class__.__name__!='Symbol':
@@ -699,6 +858,13 @@ class LogisticRV(RV):
         return varlist
 
 class LogLogisticRV(RV):
+    """
+    Procedure Name: LogLogisticRV
+    Purpose: Creates an instance of the log logistic distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a strictly positive parameter
+    Output:     1. A chi squared random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
         if kappa.__class__.__name__:
@@ -734,6 +900,13 @@ class LogLogisticRV(RV):
         return varlist
     
 class LogNormalRV(RV):
+    """
+    Procedure Name: LogNormalRV
+    Purpose: Creates an instance of the log normal distribution
+    Arguments:  1. mu: a real valued parameter
+                2. sigma: a strictly positive parameter
+    Output:     1. A log normal random variable
+    """
     def __init__(self,mu=Symbol('mu'),
                  sigma=Symbol('sigma',positive=True)):
         if sigma.__class__.__name__!='Symbol':
@@ -751,6 +924,13 @@ class LogNormalRV(RV):
         self.cache=None
 
 class LomaxRV(RV):
+    """
+    Procedure Name: LomaxRV
+    Purpose: Creates an instance of the lomax distribution
+    Arguments:  1. kappa: a strictly positive parameter
+                2. theta: a strictly positive parameter
+    Output:     1. A lomax random variable
+    """
     def __init__(self,kappa=Symbol('kappa',positive=True),
                  theta=Symbol('theta',positive=True)):
         if kappa.__class__.__name__!='Symbol':
@@ -784,6 +964,14 @@ class LomaxRV(RV):
         return varlist
 
 class MakehamRV(RV):
+    """
+    Procedure Name: MakehamRV
+    Purpose: Creates an instance of the Makeham distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. delta: a strictly positive parameter
+                3: kappa: a strictly positive parameter
+    Output:     1. A log normal random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  delta=Symbol('delta',positive=True),
                  kappa=Symbol('kappa')):
@@ -803,6 +991,12 @@ class MakehamRV(RV):
         self.cache=None
 
 class MuthRV(RV):
+    """
+    Procedure Name: MuthRV
+    Purpose: Creates an instance of the Muth distribution
+    Arguments:  1. kappa: a strictly positive parameter
+    Output:     1. A log normal random variable
+    """
     def __init__(self,kappa=Symbol('kappa',positive=True)):
         if kappa.__class__.__name__!='Symbol':
             if kappa<=0:
@@ -820,6 +1014,13 @@ class MuthRV(RV):
         self.cache=None
 
 class NormalRV(RV):
+    """
+    Procedure Name: NormalRV
+    Purpose: Creates an instance of the normal distribution
+    Arguments:  1. mu: a real valued parameter
+                2. sigma: a strictly positive parameter
+    Output:     1. A normal random variable
+    """
     def __init__(self,mu=Symbol('mu'),
                  sigma=Symbol('sigma',positive=True)):
         if sigma.__class__.__name__!='Symbol':
@@ -838,6 +1039,13 @@ class NormalRV(RV):
         self.cache=None
 
 class ParetoRV(RV):
+    """
+    Procedure Name: ParetoRV
+    Purpose: Creates an instance of the pareto distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a strictly positive parameter
+    Output:     1. A Paerto random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
         if theta.__class__.__name__!='Symbol':
@@ -855,6 +1063,12 @@ class ParetoRV(RV):
         self.cache=None
 
 class RayleighRV(RV):
+    """
+    Procedure Name: RayleighRV
+    Purpose: Creates an instance of the Rayleigh distribution
+    Arguments:  1. theta: a strictly positive parameter
+    Output:     1. A log normal random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True)):
         if theta.__class__.__name__!='Symbol':
             if theta<=0:
@@ -869,6 +1083,15 @@ class RayleighRV(RV):
         self.cache=None
 
 class TriangularRV(RV):
+    """
+    Procedure Name: TriangularRV
+    Purpose: Creates an instance of the triangular distribution
+    Arguments:  1. a: a real valued parameter
+                2. b: a real valued parameter
+                3. c: a real valued parameter
+                ** Note: a<b<c ***
+    Output:     1. A triangular variable
+    """
     def __init__(self,a=Symbol('a'),b=Symbol('b'),c=Symbol('c')):
         if a.__class__.__name__!='Symbol':
             if b.__class__.__name__!='Symbol':
@@ -888,6 +1111,12 @@ class TriangularRV(RV):
         self.cache=None
 
 class TRV(RV):
+    """
+    Procedure Name: TRV
+    Purpose: Creates an instance of the t distribution
+    Arguments:  1. N: a positive integer parameter
+    Output:     1. A log normal random variable
+    """
     def __init__(self,N=Symbol('N'),positive=True,integer=True):
         if N.__class__.__name__!='Symbol':
             if N<=0:
@@ -902,6 +1131,14 @@ class TRV(RV):
         self.cache=None
 
 class UniformRV(RV):
+    """
+    Procedure Name: UniformRV
+    Purpose: Creates an instance of the uniform distribution
+    Arguments:  1. a: a real valued parameter
+                2. b: a real valued parameter
+                ** Note: b>a **
+    Output:     1. A uniform random variable
+    """
     def __init__(self,a=Symbol('a'),b=Symbol('b')):
         if a.__class__.__name__!='Symbol':
             if b.__class__.__name__!='Symbol':
@@ -936,7 +1173,14 @@ class UniformRV(RV):
         varlist.sort()
         return varlist
 
-class WeibullRV(RV):   
+class WeibullRV(RV):
+    """
+    Procedure Name: WeibullRV
+    Purpose: Creates an instance of the weibull distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a strictly positive parameter
+    Output:     1. A weibull random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
         if theta.__class__.__name__!='Symbol':
@@ -981,6 +1225,12 @@ Discrete Distributions
 """
 
 class BenfordRV(RV):
+    """
+    Procedure Name: BenfordRV
+    Purpose: Creates an instance of the Benford distribution
+    Arguments:  1. None
+    Output:     1. A Benford random variable
+    """
     def __init__(self):
         X_dummy=RV([(ln((1/x)+1))/(ln(10))],[1,9],['Discrete','pdf'])
         self.func=X_dummy.func
@@ -989,6 +1239,13 @@ class BenfordRV(RV):
         self.cache=None
 
 class BinomialRV(RV):
+    """
+    Procedure Name: BinomialRV
+    Purpose: Creates an instance of the binomial distribution
+    Arguments:  1. N: a positive integer parameter
+                2. p: a positive parameter between 0 and 1
+    Output:     1. A binomial random variable
+    """
     def __init__(self,N=Symbol('N',positive=True,integer=True),
                  p=Symbol('p',positive=True)):
         if N.__class__.__name__!='Symbol':
@@ -1009,6 +1266,12 @@ class BinomialRV(RV):
         self.cache=None
 
 class GeometricRV(RV):
+    """
+    Procedure Name: GeometricRV
+    Purpose: Creates an instance of the geometric distribution
+    Arguments:  1. p: a positive parameter between 0 and 1
+    Output:     1. A geometric random variable
+    """
     def __init__(self,p=Symbol('p',positive=True)):
         if p.__class__.__name__!='Symbol':
             if p<=0 or p>=1:
@@ -1021,6 +1284,12 @@ class GeometricRV(RV):
         self.cache=None
 
 class PoissonRV(RV):
+    """
+    Procedure Name: PoissonRV
+    Purpose: Creates an instance of the poisson distribution
+    Arguments:  1. theta: a strictly positive parameter
+    Output:     1. A poisson random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True)):
         if theta.__class__.__name__!='Symbol':
             if theta<=0:
