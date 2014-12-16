@@ -2,7 +2,7 @@ from __future__ import division
 
 from pylab import (plot, xlabel, ylabel, title, grid, arange,
                    ion, ioff)
-from rv import *
+from sympy import (symbols)
 x,y,z,t,v=symbols('x y z t v')
 
 """
