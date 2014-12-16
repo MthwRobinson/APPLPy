@@ -13,6 +13,10 @@ New Capabilities:
 		called again. This save significant CPU time on future
 		function calls
 	5. Doc Strings added for each distribution type
+	6. Behavior of +,-,*,/ set to allow random variables to interact
+		with floats and ints
+	7. == operator will now test for the equality of two random variables
+	8. Maximum and Minimum will now accept a variable number of arguments
 
 Fixed Bugs:
 	1. Maximum and Minimum are now working properly for piecewise
