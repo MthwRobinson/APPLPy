@@ -2920,9 +2920,31 @@ def Convolution(RVar1,RVar2):
         # Create and return the new random variable
         return RV(funclist3,convlist3,['discrete','pdf'])
 
-def Maximum(RVar1,RVar2):
+def Maximum(*argv):
     """
     Procedure Name: Maximum
+    Purpose: Compute the maximum of a list of random variables
+    Arugments:  1. *argv: a series of random variables
+    Output:     1. The maximum distribution
+    """
+    # Loop over the arguments and compute the distribution of the maximum
+    #   of each argument
+    i=0
+    for rv in argv:
+        # For the first argument, create a temporary variable containing
+        #   that rv
+        if i==0:
+            temp=rv
+        # For all others, find the maximum of the temporary variable and
+        #   the rv
+        else:
+            temp=MaximumRV(temp,rv)
+        i+=1
+    return temp
+
+def MaximumRV(RVar1,RVar2):
+    """
+    Procedure Name: MaximumRV
     Purpose: Compute cdf of the maximum of RVar1 and RVar2
     Arguments:  1. RVar1: A random variable
                 2. RVar2: A random variable
@@ -3028,9 +3050,31 @@ def Maximum(RVar1,RVar2):
         # Return the minimum random variable
         return PDF(RV(max_func,max_supp,['discrete','pdf']))
 
-def Minimum(RVar1,RVar2):
+def Minimum(*argv):
     """
     Procedure Name: Minimum
+    Purpose: Compute the minimum of a list of random variables
+    Arugments:  1. *argv: a series of random variables
+    Output:     1. The minimum distribution
+    """
+    # Loop over the arguments and compute the distribution of the maximum
+    #   of each argument
+    i=0
+    for rv in argv:
+        # For the first argument, create a temporary variable containing
+        #   that rv
+        if i==0:
+            temp=rv
+        # For all others, find the minimum of the temporary variable and
+        #   the rv
+        else:
+            temp=MinimumRV(temp,rv)
+        i+=1
+    return temp
+
+def MinimumRV(RVar1,RVar2):
+    """
+    Procedure Name: MinimumRV
     Purpose: Compute the distribution of the minimum of RVar1 and RVar2
     Arguments:  1. RVar1: A random variable
                 2. RVar2: A random variable
