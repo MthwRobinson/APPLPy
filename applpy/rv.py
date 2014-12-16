@@ -61,7 +61,7 @@ from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
-                   binomial, pprint,log)
+                   binomial, pprint,log,expand)
 from sympy.plotting.plot import plot
 from random import random
 import numpy as np
@@ -163,14 +163,324 @@ class RV:
     Special Class Methods
 
     Procedures:
-        1. display(self)
-        2. __repr__(self)
-        3. __len__(self)
-        4. __add__(self,other)
-        5. __sub__(self,other)
-        6. __mul__(self,other)
-        7. __truediv__(self,other)
+        1. __repr__(self)
+        2. __len__(self)
+        3. __pos__(self)
+        4. __neg__(self)
+        5. __abs__(self)
+        6. __add__(self,other)
+        7. __radd__(self,other)
+        8. __sub__(self,other)
+        9. __rsub__(self,other)
+        10. __mul__(self,other)
+        11. __rmul__(self,other)
+        12. __truediv__(self,other)
+        13. __rtruediv__(self,other)
+        14. __pow__(self,n)
+        15. __eq__(self,other)
     """
+
+    def __repr__(self):
+        """
+        Procedure Name: __repr__
+        Purpose: Sets the default string display setting for the random
+                    variable class
+        Arguments:  1. self: the random variable
+        Output:     1. A series of print statements describing
+                        each segment of the random variable
+        """
+        return repr(self.display(opt='repr'))
+
+    def __len__(self):
+        """
+        Procedure Name: __len__
+        Purpose: Sets the behavior for the len() procedure when an instance
+                    of the random variable class is given as input. This
+                    procedure will return the number of pieces if the
+                    distribution is piecewise.
+        Arguments:  1. self: the random variable
+        Output:     1. the number of segments in the random variable
+        """
+        return len(self.func)
+
+    # The following procedures set the behavior for the +,-,* and / operators,
+    #  as well as the behavior for negation and absolute value. If the
+    #   operators are used with two random variables are used, APPLPy calls
+    #   the product or convolution commands. If the operators are used
+    #   with a random variable and a constant, the random variable can be
+    #   shifted or scaled.
+
+    def __pos__(self):
+        """
+        Procedure Name: __pos__
+        Purpose: Implements the behavior for the positive operator
+        Arguments:  1. self: the random variable
+        Output:     1. The same random variable
+        """
+        return(self)
+
+    def __neg__(self):
+        """
+        Procedure Name: __neg__
+        Purpose: Implements the behavior for negation
+        Arguments:  1. self: the random variable
+        Output:     1. The negative transformation of the random variable
+        """
+        gX=[[-x],[-oo,oo]]
+        neg=Transform(self,gX)
+        return(neg)
+
+    def __abs__(self):
+        """
+        Procedure Name: __abs__
+        Purpose: Implements the behavior of random variables passed to the
+                    abs() function
+        Arguments:  1. self: the random variable
+        Output:     1. The absolute value of the random variable
+        """
+        gX=[[abs(x)],[-oo,oo]]
+        abs_rv=Transform(self,gX)
+        return(abs_rv)
+
+    def __add__(self,other):
+        """
+        Procedure Name: __add__
+        Purpose: If two random variables are passed to the + operator,
+                    the convolution of those random variables is returned.
+                    If a constant is added to the random variable, the
+                    random variable is shifted by that constant
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
+        """
+        # If the random variable is added to another random variable,
+        #   return the convolution of the two random variables
+        if 'RV' in other.__class__.__name__:
+            return Convolution(self,other)
+        # If the random variable is added to a constant, shift
+        # the random variable
+        if type(other) in [float,int]:
+            gX=[[x+other],[-oo,oo]]
+            return Transform(self,gX)
+
+    def __radd__(self,other):
+        """
+        Procedure Name: __radd__
+        Purpose: If two random variables are passed to the + operator,
+                    the convolution of those random variables is returned.
+                    If a constant is added to the random variable, the
+                    random variable is shifted by that constant.
+
+                    __radd__ implements the reflection of __add__
+                    
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
+        """
+        return self.__add__(other)
+
+    def __sub__(self,other):
+        """
+        Procedure Name: __sub__
+        Purpose: If two random variables are passed to the - operator,
+                    the difference of those random variables is returned.
+                    If a constant is subracted from the random variable, the
+                    random variable is shifted by that constant
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
+        """
+        # If the random variable is subtracted by another random variable,
+        #   return the difference of the two random variables
+        if 'RV' in other.__class__.__name__:
+            gX=[[-x],[-oo,oo]]
+            RVar=Transform(other,gX)
+            return Convolution(self,RVar)
+        # If the random variable is subtracted by a constant, shift
+        # the random variable
+        if type(other) in [float,int]:
+            gX=[[x-other],[-oo,oo]]
+            return Transform(self,gX)
+
+    def __rsub__(self,other):
+        """
+        Procedure Name: __rsub__
+        Purpose: If two random variables are passed to the - operator,
+                    the difference of those random variables is returned.
+                    If a constant is subracted from the random variable, the
+                    random variable is shifted by that constant
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
+        """
+        # Perform an negative transformation of the random variable
+        neg_self=-self
+        # Add the two components
+        return neg_self.__add__(other)
+        
+
+    def __mul__(self,other):
+        """
+        Procedure Name: __mul__
+        Purpose: If two random variables are passed to the * operator,
+                    the product of those random variables is returned.
+                    If a constant is multiplied by the random variable, the
+                    random variable is scaled by that constant
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
+        """
+        # If the random variable is multiplied by another random variable,
+        #   return the product of the two random variables
+        if 'RV' in other.__class__.__name__:
+            return Product(self,other)
+        # If the random variable is multiplied by a constant, scale
+        # the random variable
+        if type(other) in [float,int]:
+            gX=[[x*other],[-oo,oo]]
+            return Transform(self,gX)
+
+    def __rmul__(self,other):
+        """
+        Procedure Name: __rmul__
+        Purpose: If two random variables are passed to the * operator,
+                    the product of those random variables is returned.
+                    If a constant is multiplied by the random variable, the
+                    random variable is scaled by that constant
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
+        """
+        return self.__mul__(other)
+
+    def __truediv__(self,other):
+        """
+        Procedure Name: __truediv__
+        Purpose: If two random variables are passed to the / operator,
+                    the quotient of those random variables is returned.
+                    If a constant is multiplied by the random variable, the
+                    random variable is scaled by the inverse of that constant
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
+        """
+        # If the random variable is divided by another random variable,
+        #   return the quotient of the two random variables
+        if 'RV' in other.__class__.__name__:
+            gX=[[1/x,1/x],[-oo,0,oo]]
+            RVar=Transform(other,gX)
+            return Product(self,RVar)
+        # If the random variable is divided by a constant, scale
+        # the random variable by theinverse of the constant
+        if type(other) in [float,int]:
+            gX=[[x/other],[-oo,oo]]
+            return Transform(self,gX)
+
+    def __rtruediv__(self,other):
+        """
+        Procedure Name: __rtruediv__
+        Purpose: If two random variables are passed to the / operator,
+                    the quotient of those random variables is returned.
+                    If a constant is multiplied by the random variable, the
+                    random variable is scaled by the inverse of that constant
+        Arguments:  1. self: the random variable
+                    2. other: a constant or random variable
+        Output:     1. A new random variable
+        """
+        ## Invert the random variable
+        gX=[[1/x,1/x],[-oo,0,oo]]
+        invert=Transform(self,gX)
+        ## Call the multiplication function
+        div_rv=invert.__mul__(other)
+        return div_rv
+
+    def __pow__(self,n):
+        """
+        Procedure Name: __pow__
+        Purpose: If the '**' operator is used on a random variable, the
+            IID product of the random variable is returned
+        Arguments:  1. self: the random variable
+                    2. n: the number of iid random variables
+        Output:     1. The distribution of n iid random variables
+        """
+        # Raise an error if a non-integer value is passed to n
+        if type(n)!=int:
+            error_string='a random variable can only be raised to an'
+            error_string+=' integer value'
+            raise RVError(error_string)
+
+        pow_rv=ProductIID(self,n)
+        return pow_rv
+
+    def __eq__(self,other):
+        """
+        Procedure Name: __eq__
+        Purpose: Checks for equality of the two random variables by using
+                    the following algorithm:
+                        1. Test if the support of both random variables
+                            are equal
+                        2. Test to see if each section of the random variable
+                            simplifies to zero when subtracted from the
+                            corresponding segment of the second random
+                            variables
+        Arguments:  1. self: the random variable
+                    2. other: a second random variable
+        Output:     1. True if the the random variables are equal, False
+                        otherwise
+        """
+        # If the other is not a random variable, return an error
+        if 'RV' not in other.__class__.__name__:
+            error_string='a random variable can only be checked for'
+            error_string+=' equality with another random variable'
+            raise RVError(error_string)
+        # Check to see if the supports of the random variables are
+        #   equal
+        if not self.support==other.support:
+            return False
+        # Subtract each each segment from self from the corresponding
+        #   segment from other, check to see if the difference
+        #   simplifies to zero
+        for i in range(len(self.func)):
+            difference=self.func[i]-other.func[i]
+            difference=simplify(difference)
+            difference=expand(difference)
+            if not difference==0:
+                return False
+        # If all of the segments simplify to zero, return True
+        return True
+
+        
+    """
+    Utility Methods
+
+    Procedures:
+        1. add_to_cache(self,object_name,object)
+        2. display(self)
+        3. init_cache(self)
+        4. verifyPDF(self)
+        5. variate(self,n)
+    """
+
+    def add_to_cache(self,object_name,obj):
+        """
+        Procedure Name: add_to_cache
+        Purpose: Stores properties of the random variable (i.e. mean, variance,
+                    cdf, sf) in memory. The next time a function is called to
+                    compute that property, APPLPy will retrieve the object
+                    from memory.
+        Arguments:  1. self: the random variable
+                    2. object_name: the key for the object in the cache
+                        dictionary
+                    3. obj: the object to be stored in memory.
+        Output:     1. No output. The self.cache property of the random
+                        variable is modified to include the specified
+                        object.
+        """
+        # If a cache for the random variable does not exist, initialize it
+        if self.cache==None:
+            self.init_cache()
+        # Add an object to the cache dictionary
+        self.cache[object_name]=obj
 
     def display(self,opt='repr'):
         """
@@ -200,145 +510,6 @@ class RV:
                 else:
                     print '{%s -> %s}'%(self.support[i],
                                         self.func[i])
-
-    def __repr__(self):
-        """
-        Sets the default string display setting for the random
-        variable class
-        """
-        return repr(self.display(opt='repr'))
-
-    def __len__(self):
-        """
-        Sets the behavior for the len() procedure when an instance
-            of the random variable class is given as input. This
-            procedure will return the number of pieces if the distribution
-            is piecewise.
-        """
-        return len(self.func)
-
-    # Set the behavior for the operators '+,-,*,/'
-
-    def __add__(self,other):
-        """
-        Procedure Name: __add__
-        Purpose: If two random variables are passed to the + operator,
-                    the convolution of those random variables is returned.
-                    If a constant is added to the random variable, the
-                    random variable is shifted by that constant
-        Arguments:  1. self: the random variable
-                    2. other: a constant or random variable
-        Output:     1. A new random variable
-        """
-        # If the random variable is added to another random variable,
-        #   return the convolution of the two random variables
-        if 'RV' in other.__class__.__name__:
-            return Convolution(self,other)
-        # If the random variable is added to a constant, shift
-        # the random variable
-        if type(other) in [float,int]:
-            gX=[[x+other],[-oo,oo]]
-            return Transform(self,gX)
-        
-
-    def __sub__(self,other):
-        """
-        Procedure Name: __sub__
-        Purpose: If two random variables are passed to the - operator,
-                    the difference of those random variables is returned.
-                    If a constant is subracted from the random variable, the
-                    random variable is shifted by that constant
-        Arguments:  1. self: the random variable
-                    2. other: a constant or random variable
-        Output:     1. A new random variable
-        """
-        # If the random variable is subtracted by another random variable,
-        #   return the difference of the two random variables
-        if 'RV' in other.__class__.__name__:
-            gX=[[-x],[-oo,oo]]
-            RVar=Transform(other,gX)
-            return Convolution(self,RVar)
-        # If the random variable is subtracted by a constant, shift
-        # the random variable
-        if type(other) in [float,int]:
-            gX=[[x-other],[-oo,oo]]
-            return Transform(self,gX)
-
-    def __mul__(self,other):
-        """
-        Procedure Name: __mul__
-        Purpose: If two random variables are passed to the * operator,
-                    the product of those random variables is returned.
-                    If a constant is multiplied by the random variable, the
-                    random variable is scaled by that constant
-        Arguments:  1. self: the random variable
-                    2. other: a constant or random variable
-        Output:     1. A new random variable
-        """
-        # If the random variable is multiplied by another random variable,
-        #   return the product of the two random variables
-        if 'RV' in other.__class__.__name__:
-            return Product(self,other)
-        # If the random variable is multiplied by a constant, scale
-        # the random variable
-        if type(other) in [float,int]:
-            gX=[[x*other],[-oo,oo]]
-            return Transform(self,gX)
-
-    def __truediv__(self,other):
-        """
-        Procedure Name: __truediv__
-        Purpose: If two random variables are passed to the / operator,
-                    the quotient of those random variables is returned.
-                    If a constant is multiplied by the random variable, the
-                    random variable is scaled by the inverse of that constant
-        Arguments:  1. self: the random variable
-                    2. other: a constant or random variable
-        Output:     1. A new random variable
-        """
-        # If the random variable is divided by another random variable,
-        #   return the quotient of the two random variables
-        if 'RV' in other.__class__.__name__:
-            gX=[[1/x,1/x],[-oo,0,oo]]
-            RVar=Transform(other,gX)
-            return Product(self,RVar)
-        # If the random variable is divided by a constant, scale
-        # the random variable by theinverse of the constant
-        if type(other) in [float,int]:
-            gX=[[x/other],[-oo,oo]]
-            return Transform(self,gX)
-
-
-    """
-    Utility Methods
-
-    Procedures:
-        1. add_to_cache(self,object_name,object)
-        2. init_cache(self)
-        3. verifyPDF(self)
-        4. variate(self,n)
-    """
-
-    def add_to_cache(self,object_name,obj):
-        """
-        Procedure Name: add_to_cache
-        Purpose: Stores properties of the random variable (i.e. mean, variance,
-                    cdf, sf) in memory. The next time a function is called to
-                    compute that property, APPLPy will retrieve the object
-                    from memory.
-        Arguments:  1. self: the random variable
-                    2. object_name: the key for the object in the cache
-                        dictionary
-                    3. obj: the object to be stored in memory.
-        Output:     1. No output. The self.cache property of the random
-                        variable is modified to include the specified
-                        object.
-        """
-        # If a cache for the random variable does not exist, initialize it
-        if self.cache==None:
-            self.init_cache()
-        # Add an object to the cache dictionary
-        self.cache[object_name]=obj
 
     def init_cache(self):
         """
