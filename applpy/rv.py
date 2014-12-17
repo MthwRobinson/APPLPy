@@ -634,7 +634,7 @@ class RV:
             else:
                 print 'is not valid'
 
-    def variate(self,n=1,s='sim',sensitivity=.00001):
+    def variate(self,n=1,s=None,sensitivity=None):
         """
         Procedure Name: variate
         Purpose: Generates a list of n random variates from the random variable
@@ -651,11 +651,20 @@ class RV:
         cdf=CDF(self)
         pdf=PDF(self)
         mean=Mean(self)
+        if sensitivity==None:
+            # If sensitivity is not specified, set the sensitivity to be
+            #   .1% of the mean value for random variates
+            if s==None:
+                sensitivity=0.001*mean
+            # If a percentile is specified, set sensitivity to be .01%
+            #   of the mean value
+            else:
+                sensitivity=0.0001*mean
         # Create a list of variates
         varlist=[]
         for i in range(n):
             guess=mean
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -1297,16 +1306,13 @@ def IDF(RVar,value=x,cache=False):
             return idfrv
                     
             
-        # If a value is specified, use the newton-raphson method to generate a
-        # random variate
+        # If a value is specified, return the value of the IDF at x=value
         if value!=x:
             X_dummy=IDF(RVar)
             for i in range(len(X_dummy.support)):
                 if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
                     idfvalue=X_dummy.func[i].subs(t,value)
                     return simplify(idfvalue)
-            #varlist=RVar.variate(s=value)
-            #return varlist[0]
                 
     # If the distribution is a discrete function, find and return the idf
     #   of the random variable
