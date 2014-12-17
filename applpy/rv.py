@@ -1272,10 +1272,13 @@ def IDF(RVar,value=x,cache=False):
                     #   case, an exception is raised
                     flag=False
                     for j in range(len(invlist)):
-                        val=invlist[j].subs(t,X_dummy.func[i].subs(x,check[i])).evalf()
+                        subsfunc=X_dummy.func[i]
+                        val=invlist[j].subs(t,subsfunc.subs(x,check[i])).evalf()
                         if abs(val-check[i])<.00001:
                             if flag==True:
-                                raise RVError('Could not find the correct inverse')
+                                error_string='Could not find the'
+                                error_string+=' correct inverse'
+                                raise RVError(error_string)
                             idffunc.append(invlist[j])
                             flag=True
             # Create a list of supports for the IDF
@@ -1294,7 +1297,8 @@ def IDF(RVar,value=x,cache=False):
             return idfrv
                     
             
-        # If a value is specified, use the newton-raphson method to generate a random variate
+        # If a value is specified, use the newton-raphson method to generate a
+        # random variate
         if value!=x:
             X_dummy=IDF(RVar)
             for i in range(len(X_dummy.support)):
@@ -1337,10 +1341,13 @@ def IDF(RVar,value=x,cache=False):
                     #   case, an exception is raised
                     flag=False
                     for j in range(len(invlist)):
-                        val=invlist[j].subs(t,X_dummy.func[i].subs(x,check[i])).evalf()
+                        subsfunc=X_dummy.func[i]
+                        val=invlist[j].subs(t,subsfunc.subs(x,check[i])).evalf()
                         if abs(val-check[i])<.00001:
                             if flag==True:
-                                raise RVError('Could not find the correct inverse')
+                                error_string='Could not find the correct'
+                                error_string+=' inverse'
+                                raise RVError(error_string)
                             idffunc.append(invlist[j])
                             flag=True
             # Create a list of supports for the IDF
@@ -1359,7 +1366,8 @@ def IDF(RVar,value=x,cache=False):
             return idfrv
                     
             
-        # If a value is specified, use the newton-raphson method to generate a random variate
+        # If a value is specified, use the newton-raphson method to
+        # generate a random variate
         if value!=x:
             X_dummy=IDF(RVar)
             for i in range(len(X_dummy.support)):
@@ -1369,7 +1377,8 @@ def IDF(RVar,value=x,cache=False):
             #varlist=RVar.variate(s=value)
             #return varlist[0]
 
-    # If the distribution is discrete, find and return the idf of the random variable
+    # If the distribution is discrete, find and return the idf of the
+    # random variable
     if RVar.ftype[0]=='discrete':
         # If the distribution is already an idf, nothing needs to be done
         if RVar.ftype[1]=='idf':
@@ -1420,7 +1429,8 @@ def PDF(RVar,value=x,cache=False):
     if RVar.cache != None and 'pdf' in RVar.cache:
         return RVar.cache['pdf']
     
-    # If the distribution is continuous, find and return the pdf of the random variable
+    # If the distribution is continuous, find and return the pdf of the
+    # random variable
     if RVar.ftype[0]=='continuous':
         # If the distribution is already a pdf, nothing needs to be done
         if RVar.ftype[1]=='pdf':
@@ -1445,7 +1455,8 @@ def PDF(RVar,value=x,cache=False):
                 newfunc=integrate(hfsubslist[i],(t,X_dummy.support[i],x))
                 # Correct the constant of integration
                 if i!=0:
-                    const=intlist[i-1].subs(x,X_dummy.support[i])-newfunc.subs(x,X_dummy.support[i])
+                    const=intlist[i-1].subs(x,X_dummy.support[i])
+                    const=const-newfunc.subs(x,X_dummy.support[i])
                     newfunc=newfunc+const
                 if i==0:
                     const=0-newfunc.subs(x,X_dummy.support[i])
@@ -1463,9 +1474,10 @@ def PDF(RVar,value=x,cache=False):
                 return pdfrv
             if value!=x:
                 for i in range(len(X_dummy.support)):
-                    if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
-                        pdfvalue=pdffunc[i].subs(x,value)
-                        return simplify(pdfvalue)
+                    if value>=X_dummy.support[i]:
+                        if value<=X_dummy.support[i+1]:
+                            pdfvalue=pdffunc[i].subs(x,value)
+                            return simplify(pdfvalue)
         # In all other cases, find the pdf by differentiating the cdf
         else:
             X_dummy=CDF(RVar)
@@ -1480,10 +1492,11 @@ def PDF(RVar,value=x,cache=False):
             if value!=x:
                 for i in range(len(X_dummy.support)):
                     for i in range(len(X_dummy.support)):
-                        if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
-                            pdffunc=diff(X_dummy.func[i],x)
-                            pdfvalue=pdffunc.subs(x,value)
-                            return simplify(pdfvalue)
+                        if value>=X_dummy.support[i]:
+                            if value<=X_dummy.support[i+1]:
+                                pdffunc=diff(X_dummy.func[i],x)
+                                pdfvalue=pdffunc.subs(x,value)
+                                return simplify(pdfvalue)
 
     # If the distribution is a discrete function, find and return the pdf
     if RVar.ftype[0]=='Discrete':
@@ -1510,7 +1523,8 @@ def PDF(RVar,value=x,cache=False):
                 newfunc=summation(hfsubslist[i],(t,X_dummy.support[i],x))
                 # Correct the constant of integration
                 if i!=0:
-                    const=sumlist[i-1].subs(x,X_dummy.support[i])-newfunc.subs(x,X_dummy.support[i])
+                    const=sumlist[i-1].subs(x,X_dummy.support[i])
+                    const=const-newfunc.subs(x,X_dummy.support[i])
                     newfunc=newfunc+const
                 if i==0:
                     const=0-newfunc.subs(x,X_dummy.support[i])
@@ -1549,14 +1563,16 @@ def PDF(RVar,value=x,cache=False):
             if value!=x:
                 for i in range(len(X_dummy.support)):
                     for i in range(len(X_dummy.support)):
-                        if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
-                            funcX1=X_dummy.func[i]
-                            funcX0=X_dummy.func[i].subs(x,x-1)
-                            pmf=simplify(funcX1-funcX0)
-                            pdfvalue=pmf.subs(x,value)
-                            return simplify(pdfvalue)
+                        if value>=X_dummy.support[i]:
+                            if value<=X_dummy.support[i+1]:
+                                funcX1=X_dummy.func[i]
+                                funcX0=X_dummy.func[i].subs(x,x-1)
+                                pmf=simplify(funcX1-funcX0)
+                                pdfvalue=pmf.subs(x,value)
+                                return simplify(pdfvalue)
                         
-    # If the distribution is discrete, find and return the pdf of the random variable
+    # If the distribution is discrete, find and return the pdf of the
+    # random variable
     if RVar.ftype[0]=='discrete':
         # If the distribution is already a pdf, nothing needs to be done
         if RVar.ftype[1]=='pdf':
@@ -1610,7 +1626,8 @@ def SF(RVar,value=x,cache=False):
     if RVar.cache != None and 'sf' in RVar.cache:
         return RVar.cache['sf']
         
-    # If the distribution is continuous, find and return the sf of the random variable
+    # If the distribution is continuous, find and return the sf of the
+    # random variable
     if RVar.ftype[0]=='continuous':
         # If the distribution is already a sf, nothing needs to be done
         if RVar.ftype[1]=='sf':
@@ -1637,11 +1654,13 @@ def SF(RVar,value=x,cache=False):
             if value!=x:
                 return 1-CDF(RVar,value)
                 #for i in range(len(X_dummy.support)):
-                #    if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
-                #        sfvalue=sflist[i].subs(x,value)
-                #        return simplify(sfvalue)
+                #    if value>=X_dummy.support[i]:
+                #       if value<=X_dummy.support[i+1]:
+                #           sfvalue=sflist[i].subs(x,value)
+                #           return simplify(sfvalue)
 
-    # If the distribution is discrete, find and return the sf of the random variable
+    # If the distribution is discrete, find and return the sf of the
+    # random variable
     if RVar.ftype[0]=='Discrete':
         # If the distribution is already a sf, nothing needs to be done
         if RVar.ftype[1]=='sf':
@@ -1668,11 +1687,13 @@ def SF(RVar,value=x,cache=False):
             if value!=x:
                 return 1-CDF(RVar,value)
                 #for i in range(len(X_dummy.support)):
-                #    if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
-                #        sfvalue=sflist[i].subs(x,value)
-                #        return simplify(sfvalue)
+                #    if value>=X_dummy.support[i] and
+                #       value<=X_dummy.support[i+1]:
+                #           sfvalue=sflist[i].subs(x,value)
+                #           return simplify(sfvalue)
 
-    # If the distribution is a discrete function, find and return the sf of the random variable
+    # If the distribution is a discrete function, find and return the sf of the
+    # random variable
     if RVar.ftype[0]=='Discrete':
         # If the distribution is already a sf, nothing needs to be done
         if RVar.ftype[1]=='sf':
@@ -1699,11 +1720,13 @@ def SF(RVar,value=x,cache=False):
             if value!=x:
                 return 1-CDF(RVar,value)
                 #for i in range(len(X_dummy.support)):
-                #    if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
+                #    if value>=X_dummy.support[i]:
+                #       if value<=X_dummy.support[i+1]:
                 #        sfvalue=sflist[i].subs(x,value)
                 #        return simplify(sfvalue)
 
-    # If the distribution is a discrete function, find and return the sf of the random variable
+    # If the distribution is a discrete function, find and return the
+    # sf of the random variable
     if RVar.ftype[0]=='discrete':
         # If the distribution is already an sf, nothing needs to be done
         if RVar.ftype[1]=='sf':
@@ -1747,8 +1770,8 @@ def SF(RVar,value=x,cache=False):
                     return 0
                 else:
                     return sffunc[RVar.support.index(value)]
-        # Otherwise, find the cdf of the random variable, and reverse the function
-        #   argument
+        # Otherwise, find the cdf of the random variable, and reverse the
+        # function argument
         else:
             X_dummy=CDF(RVar)
             newfunc=[]
@@ -1774,8 +1797,8 @@ def BootstrapRV(varlist,symbolic=False):
     Procedure Name: Bootstrap RV
     Purpose: Generate a discrete random variable from a list of variates
     Arguments: 1. varlist: A list of variates
-    Output:    1. A discrete random variable, where each element in the given variate
-                    list is equally probable
+    Output:    1. A discrete random variable, where each element in the
+                    given variate list is equally probable
     """
     # Sort the list of variables
     varlist.sort()
@@ -1796,7 +1819,8 @@ def BootstrapRV(varlist,symbolic=False):
 def Convert(RVar,inc=1):
     """
     Procedure Name: Convert
-    Purpose: Convert a discrete random variable from functional to explicit form
+    Purpose: Convert a discrete random variable from functional to
+                explicit form
     Arguments:  1. RVar: A functional discrete random variable
                 2. inc: An increment value
     Output:     1. A discrete random variable in explicit form
@@ -1972,7 +1996,7 @@ def Kurtosis(RVar,cache=False):
         Xstar=BootstrapRV(RVar)
         return Kurtosis(Xstar)
     
-    # If the kurtosis of the random variable is already cached in memory,
+    # If the kurtosis of the random variable is already cached in memory,       
     #   retriew the value of the kurtosis and return in.
     if RVar.cache != None and 'kurtosis' in RVar.cache:
         return RVar.cache['kurtosis']
@@ -2039,7 +2063,8 @@ def Mean(RVar,cache=False):
         # Integrate to find the mean
         meanval=0
         for i in range(len(X_dummy.func)):
-            val=integrate(meanfunc[i],(x,X_dummy.support[i],X_dummy.support[i+1]))
+            val=integrate(meanfunc[i],(x,X_dummy.support[i],
+                                       X_dummy.support[i+1]))
             meanval+=val
         meanval=simplify(meanval)
         if cache==True:
@@ -2055,7 +2080,8 @@ def Mean(RVar,cache=False):
         # Sum to find the mean
         meanval=0
         for i in range(len(X_dummy.func)):
-            val=summation(meanfunc[i],(x,X_dummy.support[i],X_dummy.support[i+1]))
+            val=summation(meanfunc[i],(x,X_dummy.support[i],
+                                       X_dummy.support[i+1]))
             meanval+=val
 
         meanval=simplify(meanval)
@@ -2563,7 +2589,8 @@ def Transform(RVar,gXt):
                 if gX[1][j]>=X_dummy.support[i]:
                     if gX[1][j+1]<=X_dummy.support[i+1]:
                         if type(X_dummy.func[i]) not in [float,int]:
-                            tran=X_dummy.func[i].subs(x,ginv[j])*diff(ginv[j],t)
+                            tran=X_dummy.func[i].subs(x,ginv[j])
+                            tran=tran*diff(ginv[j],t)
                         else:
                             tran=X_dummy.func[i]*diff(ginv[j],t)
                         seg_func.append(tran)
@@ -2743,7 +2770,8 @@ def Variance(RVar,cache=False):
         # Integrate to find E(X^2)
         exxval=0
         for i in range(len(X_dummy.func)):
-            val=integrate(varfunc[i],(x,X_dummy.support[i],X_dummy.support[i+1]))
+            val=integrate(varfunc[i],(x,X_dummy.support[i],
+                                      X_dummy.support[i+1]))
             exxval+=val
         # Find Var(X)=E(X^2)-E(X)^2
         var=exxval-(EX**2)
@@ -2752,7 +2780,8 @@ def Variance(RVar,cache=False):
             RVar.add_to_cache('variance',var)
         return var
 
-    # If the random variable is a discrete function, find and return the variance
+    # If the random variable is a discrete function, find and return
+    # the variance
     if RVar.ftype[0]=='Discrete':
         # Find the mean of the random variable
         EX=Mean(X_dummy)
@@ -2764,7 +2793,8 @@ def Variance(RVar,cache=False):
         # Sum to find E(X^2)
         exxval=0
         for i in range(len(X_dummy.func)):
-            val=summation(varfunc[i],(x,X_dummy.support[i],X_dummy.support[i+1]))
+            val=summation(varfunc[i],(x,X_dummy.support[i],
+                                      X_dummy.support[i+1]))
             exxval+=val
         # Find Var(X)=E(X^2)-E(X)^2
         var=exxval-(EX**2)
