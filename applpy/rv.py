@@ -61,7 +61,7 @@ from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
-                   binomial, pprint,log,expand)
+                   binomial, pprint,log,expand,zoo)
 from sympy.plotting.plot import plot
 from random import random
 import numpy as np
@@ -2557,6 +2557,11 @@ def Transform(RVar,gXt):
             for j in range(2):
                 if mapping[i][j] not in trans_supp:
                     trans_supp.append(mapping[i][j])
+        if zoo in trans_supp:
+            error_string='complex infinity appears in the support, '
+            error_string+='please check for an undefined transformation '
+            error_string+='such as 1/0'
+            raise RVError(error_string)
         trans_supp.sort()
         # Find which segment of the transformation each transformation
         #   function applies to
