@@ -28,7 +28,7 @@ from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
-                   binomial,gamma)
+                   binomial,gamma,cos)
 from random import random
 from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
                  BootstrapRV, Convert)
@@ -158,16 +158,29 @@ class CauchyRV(RV):
         self.parameter=[a,alpha]
         self.cache=None
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):        
         # If no parameter is specified, return an error
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
 
-        # Generate exponential variates
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
+
+        # Generate cauchy variates
         idf_func=self.parameter[0]-cot(pi*t)*self.parameter[1]
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -317,16 +330,29 @@ class ExponentialRV(RV):
         self.parameter=[theta]
         self.cache=None
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):       
         # If no parameter is specified, return an error
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         # Generate exponential variates
         idf_func=(-ln(1-t))/(self.parameter[0])
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -358,17 +384,30 @@ class ExponentialPowerRV(RV):
         self.parameter=[theta,kappa]
         self.cache=None
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         # If no parameter is specified, return an error
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         # Generate exponential power variates
         idf_func=exp((-ln(self.parameter[0])+ln(ln(1-ln(1-s))))/
                      self.parameter[1])
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -398,14 +437,28 @@ class ExtremeValueRV(RV):
         self.parameter=[alpha,beta]
         self.cache=None
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         idf_func=(ln(self.parameter[0])+ln(ln(-1/(t-1))))/self.parameter[1]
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -515,16 +568,29 @@ class GompertzRV(RV):
         self.parameter=[theta,kappa]
         self.cache=None
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         idf_func=-((ln(self.parameter[0])-
                    ln(self.parameter[0]-ln(1-t)*ln(self.parameter[1])))
                    /ln(self.parameter[1]))
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -841,15 +907,28 @@ class LogisticRV(RV):
         self.parameter=[kappa,theta]
         self.cache=None
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         idf_func=-((ln(-t/(t-1))+self.parameter[0]*ln(self.parameter[1]))/
                    self.parameter[1])
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -883,15 +962,28 @@ class LogLogisticRV(RV):
         self.parameter=[theta,kappa]
         self.cache=None
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         idf_func=exp((ln(-t/(t-1))-self.parameter[1]*ln(self.parameter[0]))/
                      self.parameter[1])
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -948,14 +1040,27 @@ class LomaxRV(RV):
         self.parameters=[kappa,theta]
         self.cache=None
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         idf_func=((1-t)**(1/self.parameter[0])-1)/self.parameter[1]
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -1037,6 +1142,36 @@ class NormalRV(RV):
         self.ftype=X_dummy.ftype
         self.parameter=[mu,sigma]
         self.cache=None
+
+    def variate(self,n=1,s=None,method='special'):
+        # If no parameter is specified, return an error
+        if param_check(self.parameter)==False:
+            raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
+
+        # Otherwise, use the Box-Muller method to compute variates
+        mean=self.parameter[0];var=self.parameter[1]
+        U=UniformRV(0,1)
+        Z1=lambda (val1,val2): sqrt(-2*ln(val1))*cos(2*pi*val2).evalf()
+        gen_uniform=lambda x: U.variate(n=1)[0]
+        val_pairs=[(gen_uniform(1),gen_uniform(1)) for i in range(1,n+1)]
+        varlist=[Z1(pair) for pair in val_pairs]
+        normlist=[(mean+sqrt(var)*val).evalf() for val in varlist]
+        return normlist
+        
+        
 
 class ParetoRV(RV):
     """
@@ -1155,16 +1290,29 @@ class UniformRV(RV):
         self.parameter=[a,b]
         self.cache=None
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         # If no parameter is specified, return an error
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         # Generate uniform variates
         idf_func=-t*self.parameter[0]+t*self.parameter[1]+self.parameter[0]
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -1200,17 +1348,30 @@ class WeibullRV(RV):
         self.cache=None
 
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         # If no parameter is specified, return an error
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         # Generate weibull variates
         idf_func=exp(-(-ln(-ln(1-t))+self.parameter[1]*ln(self.parameter[0]))/
                      self.parameter[1])
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
