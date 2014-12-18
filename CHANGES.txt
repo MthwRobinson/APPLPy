@@ -17,6 +17,10 @@ New Capabilities:
 		with floats and ints
 	7. == operator will now test for the equality of two random variables
 	8. Maximum and Minimum will now accept a variable number of arguments
+	9. Box-Muller Transformation method implemented to allow for more
+		efficient computation of Normal variates
+	10. Users can now specify method for variate generation (generally
+		inverse cdf or a numerical method)
 
 Fixed Bugs:
 	1. Maximum and Minimum are now working properly for piecewise
@@ -25,6 +29,8 @@ Fixed Bugs:
 		implementation
 	2. The gamma function is now loaded into the namespace in the
 		dist_rv module.
+	3. Error message added to Transform to indicate if the user has
+		specified an undefined transformation
 
 v0.2.1, 18 NOV 2014
 
