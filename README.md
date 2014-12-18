@@ -1,9 +1,11 @@
-A Probability Progamming Language (APPL) -- Python Edition
+# APPLPy
+### A Probability Programming Language -- Python Edition
 
-ABOUT:
+## What is APPLPy?
 
-APPLPy is a computational probability package written in Python. The project
-runs using the open source SymPy computer algebra system (CAS). Because all of the dependencies that APPLPy requires to run are open source, APPLPy is available free of charge. APPLPy is currently capable of performing a wide range of random variable algebra operations on univariate probaility distributions. The package supports both continuous and discrete distributions, as well as piece-wise distributions. The current capabilities of APPLPy include:
+APPLPy stands for A Probability Programming Language -- Python Edition. The primary goal of APPLPy is to provide an open-source conceptual probability package capable of manipulating random variables symbolically. Although the Python implementation is a recent development, a version based on the Maple computer algebra system has been used for over a decade. The Maple implementation, called APPL, has been successfully integrated into mathematical statistics and computing courses at the College of William and Mary and the United States Military Academy, while also facilitating research in areas ranging from order statistics to queuing theory. The hope of APPLPy is to make the computational capabilities of APPL available to researchers and educators on an open-source platform.
+
+The current capabilities of APPLPy include:
 
 1. Conversion between PDF,CDF,SF,HF,CHF and IDF representations of random variables
 2. Computation of expected values, with both numeric and symbolic output
@@ -12,20 +14,14 @@ runs using the open source SymPy computer algebra system (CAS). Because all of t
 5. Random Variable Algebra (Sums/Differences/Products/Division)
 6. Random sampling from distributions
 7. Bootstrapping data sets
+8. Bayesian inference with ad-hoc prior distributions
+9. Computation of distributions for M/M/s queues
 
-In addition, the Bayesian statistics module provides the following Bayesian
-capabilities:
+## How is APPLPy Used?
 
-1. Computation of posterior and posterior predictive distributions 
-for unknown parameters
-2. Derivation of Jeffrey's Priors
-3. Computation of credible sets
+Although APPLPy can be used for a variety of purposes, it is best suited to fill three special roles. First, it enables students to gain an intuitive understanding of mathematical statistics by automating tedious, calculus-intensive algorithms. As such, students can experiment with different models without having to perform difficult derivations or produce ad-hoc code. Second, it allows students to check hand derived results. This aids the learning process by providing a quick and reliable answer key. Finally, it allows researchers to explore systems whose properties would be intractable to derive by hand. As mentioned above, the Maple-based APPL software has already spawned a variety of insightful research. APPLPy has the potential to continue along this pathway. The simplicity of APPLPy's syntax allow users to explore stochastic models with ease.
 
-APPLPy is derived from A Probability Programming Language (APPL), which runs
-in Maple. The idea behind APPLPy is to make the capabilites of APPL available
-on a free of charge, open source platform. This has the potential to make APPL much more effective, both as an educational resource and a research tool.
-
-INSTALLATION:
+## INSTALLATION:
 
 ApplPy requires the following dependencies in order to run properly:
 
@@ -42,6 +38,4 @@ the following command
 
 $ python setup.py install
 
-If you have any comments or suggestions for APPLPy, feel free to contact the author
-at mthw.wm.robinson@gmail.com. Users with Python experience are encouraged to
-get in touch and contribute.
+If you have any comments or suggestions for APPLPy, feel free to contact the author at mthw.wm.robinson@gmail.com. Users with Python experience are encouraged to get in touch and contribute.
