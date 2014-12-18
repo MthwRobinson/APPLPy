@@ -634,7 +634,8 @@ class RV:
             else:
                 print 'is not valid'
 
-    def variate(self,n=1,s=None,sensitivity=None):
+
+    def variate(self,n=1,s=None,sensitivity=None,method='newton-raphson'):
         """
         Procedure Name: variate
         Purpose: Generates a list of n random variates from the random variable
@@ -642,10 +643,28 @@ class RV:
         Arguments:  1. self: the random variable
                     2. n: the number of variates (default is n=1)
                     3. s: the percentile of the variate (default is random)
-                    4. sensitivity: value indicating how close two interations
+                    4. method: specifies the method for variate generaton
+                                valid methods are:
+                                1. 'newton-raphson'
+                                2. 'inverse'
+                    5. sensitivity: value indicating how close two interations
                             must be for the variate generator to reach
-                            convergence. (default is .00001)
-        """   
+                            convergence. (default is .1% of the mean)
+        """
+
+        # Check to see if the user specified a valid method
+        method_list=['newton-raphson','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
+        
         # Find the cdf and pdf functions (to avoid integrating for
             # each variate
         cdf=CDF(self)
@@ -1253,7 +1272,7 @@ def IDF(RVar,value=x,cache=False):
     if RVar.ftype[0]=='continuous':
         if value==x:
             if RVar.ftype[1]=='idf':
-                return self
+                return RVar
             # Convert the random variable to its CDF form
             X_dummy=CDF(RVar)
             # Create values used to check for correct inverse
@@ -1311,7 +1330,7 @@ def IDF(RVar,value=x,cache=False):
             X_dummy=IDF(RVar)
             for i in range(len(X_dummy.support)):
                 if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
-                    idfvalue=X_dummy.func[i].subs(t,value)
+                    idfvalue=X_dummy.func[i].subs(x,value)
                     return simplify(idfvalue)
                 
     # If the distribution is a discrete function, find and return the idf
