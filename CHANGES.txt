@@ -21,6 +21,8 @@ New Capabilities:
 		efficient computation of Normal variates
 	10. Users can now specify method for variate generation (generally
 		inverse cdf or a numerical method)
+	11. X.latex() command added to generate the LaTeX code for a
+		random variable
 
 Fixed Bugs:
 	1. Maximum and Minimum are now working properly for piecewise
