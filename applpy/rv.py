@@ -579,8 +579,10 @@ class RV:
             print 'continuous pdf with support %s'%(X_dummy.support)
             if area>.9999 and area<1.00001 and abs_flag==True:
                 print 'is valid'
+                return True
             else:
                 print 'is not valid'
+                return False
         # If the random variable is in a discrete functional form,
         #   verify the PDF
         if self.ftype[0]=='Discrete':
@@ -610,8 +612,10 @@ class RV:
             print 'discrete pdf with support %s'%(X_dummy.support)
             if area>.9999 and area<1.00001 and abs_flag==True:
                 print 'is valid'
+                return True
             else:
                 print 'is not valid'
+                return False
         # If the random variable is discrete, verify the PDF
         if self.ftype[0]=='discrete':
             # Convert the random variable to PDF form
