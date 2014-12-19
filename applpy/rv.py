@@ -61,7 +61,7 @@ from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
-                   binomial, pprint,log,expand,zoo)
+                   binomial, pprint,log,expand,zoo,latex,Piecewise)
 from sympy.plotting.plot import plot
 from random import random
 import numpy as np
@@ -457,8 +457,9 @@ class RV:
         1. add_to_cache(self,object_name,object)
         2. display(self)
         3. init_cache(self)
-        4. verifyPDF(self)
-        5. variate(self,n)
+        4. latex()
+        5. verifyPDF(self)
+        6. variate(self,n)
     """
 
     def add_to_cache(self,object_name,obj):
@@ -520,6 +521,41 @@ class RV:
                             is initialized
         """
         self.cache={}
+
+    def latex(self):
+        """
+        Procedure Name: latex
+        Purpose: Outputs the latex code for the random variable
+        Arugments:  1.self: the random variable
+        Output:     1. The latex code for the random variable
+        """
+        if self.ftype[0] not in ['continuous','Discrete']:
+            error_string='latex is only designed to work for continuous'
+            error_string+=' distributions and discrete distributions that '
+            error_string+='are represented in functional form'
+            raise RVError(error_string)
+        # Generate the pieces of the piecewise function
+        piece_list=[]
+        for i in range(len(self.func)):
+            f=self.func[i]
+            sup='x>=%s'%(self.support[i])
+            tup=(f,eval(sup))
+            piece_list.append(tup)
+        piece_list.append((0,True))
+        piece_input='Piecewise('+str(piece_list)+')'
+        piece2=piece_input.replace(piece_input[10],'')
+        n=len(piece2)-2
+        piece3=piece2.replace(piece2[n],'')
+        # Create symbols for use in the piecewise
+        #   function display
+        theta=Symbol('theta');kappa=Symbol('kappa');
+        a=Symbol('a');b=Symbol('b');c=Symbol('c');
+        p=Symbol('p');N=Symbol('N');alpha=Symbol('alpha')
+        beta=Symbol('beta');mu=Symbol('mu');sigma=Symbol('sigma')
+
+        p=eval(piece3)
+        return latex(p)
+
     
     def verifyPDF(self):
         """
