@@ -769,7 +769,10 @@ def CDF(RVar,value=x,cache=False):
     # If the CDF of the random variable is already cached in memory,
     #   retriew the value of the CDF and return in.
     if RVar.cache != None and 'cdf' in RVar.cache:
-        return RVar.cache['cdf']
+        if value==x:
+            return RVar.cache['cdf']
+        else:
+            return CDF(RVar.cache['cdf'],value)
 
     # If the distribution is continous, find and return the distribution
     #   of the random variable
@@ -990,7 +993,10 @@ def CHF(RVar,value=x,cache=False):
     # If the CHF of the random variable is already cached in memory,
     #   retriew the value of the CHF and return in.
     if RVar.cache != None and 'chf' in RVar.cache:
-        return RVar.cache['chf']
+        if value==x:
+            return RVar.cache['chf']
+        else:
+            return CHF(RVar.cache['chf'],value)
     
     # If the distribution is continuous, find and return the chf of
     #   the random variable
@@ -1124,7 +1130,10 @@ def HF(RVar,value=x,cache=False):
     # If the HF of the random variable is already cached in memory,
     #   retriew the value of the HF and return in.
     if RVar.cache != None and 'hf' in RVar.cache:
-        return RVar.cache['hf']
+        if value==x:
+            return RVar.cache['hf']
+        else:
+            return HF(RVar.cache['hf'],value)
 
     # If the distribution is continuous, find and return the hf of
     #   the random variable
@@ -1269,7 +1278,10 @@ def IDF(RVar,value=x,cache=False):
     # If the IDF of the random variable is already cached in memory,
     #   retriew the value of the IDF and return in.
     if RVar.cache != None and 'idf' in RVar.cache:
-        return RVar.cache['idf']
+        if value==x:
+            return RVar.cache['idf']
+        else:
+            return IDF(RVar.cache['idf'],value)
         
     # If the distribution is continuous, find and return the idf
     #   of the random variable
@@ -1456,7 +1468,10 @@ def PDF(RVar,value=x,cache=False):
     # If the PDF of the random variable is already cached in memory,
     #   retriew the value of the PDF and return in.
     if RVar.cache != None and 'pdf' in RVar.cache:
-        return RVar.cache['pdf']
+        if value==x:
+            return RVar.cache['pdf']
+        else:
+            return PDF(RVar.cache['pdf'],value)
     
     # If the distribution is continuous, find and return the pdf of the
     # random variable
@@ -1653,7 +1668,10 @@ def SF(RVar,value=x,cache=False):
     # If the SF of the random variable is already cached in memory,
     #   retriew the value of the SF and return in.
     if RVar.cache != None and 'sf' in RVar.cache:
-        return RVar.cache['sf']
+        if value==x:
+            return RVar.cache['sf']
+        else:
+            return SF(RVar.cache['sf'],value)
         
     # If the distribution is continuous, find and return the sf of the
     # random variable
