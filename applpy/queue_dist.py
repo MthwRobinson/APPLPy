@@ -66,7 +66,7 @@ def QueueMenu():
     print ""
 
 
-def Queue(X,Y,n,k=1,s=1):
+def Queue(X,Y,n,k=0,s=1):
     """
     Procedure Name: Queue
     Purpose: Computes the sojourn time distribution for the nth
