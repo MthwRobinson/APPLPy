@@ -499,7 +499,8 @@ class RV:
                 print('---------------------------')
                 pprint(self.func[i])
                 print('---------------------------')
-                print(' ');print(' ')
+                if i<len(self.func)-1:
+                    print(' ');print(' ')
             
         if self.ftype[0]=='discrete':
             print '%s %s where {x->f(x)}:'%(self.ftype[0],
