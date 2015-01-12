@@ -1,4 +1,4 @@
-v0.3.0, XX XXX XXXX
+v0.3.0, 12 JAN 2015
 
 New Capabilities:
 	1. The Queue procedure computes the sojourn time distribution
