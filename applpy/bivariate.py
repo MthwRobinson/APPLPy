@@ -243,9 +243,63 @@ class BivariateRV:
 
             # j loops through the constraints for segment i
             for j in range(ncons):
-                temp=solve([self.constraints[i][j],
-                            self.constraints[i][(j+1)%ncons]],x,y)
+                cons_j=self.constraints[i][j]
+                cons_mod=self.constraints[i][(j+1)%ncons]   
+
+                # Use solve to compute the intersect point for each of the
+                #   adjacent constraints. cons_j is the jth constraint
+                #   and cons_mod uses modular division to find the adjacent
+                #   constraint (moves to 0 after last adjacent segment).
+                #   Intercepts are created first as a list to all the
+                #   algorithm to detect multiple intercepts
+                
+                temp=solve([cons_j,cons_mod],x,y,dict=True)
+                if cons_j==oo and cons_mod==0:
+                    if cons_j==x:
+                        temp=[{x:oo,y:0}]
+                    else:
+                        temp=[{x:0,y:oo}]
+                else if cons_j==-oo and cons_mod==0:
+                    if cons_j==x:
+                        temp=[{x:-oo,y:0}]
+                    else:
+                        temp=[{x:0,y:-oo}]
+                else if cons_j==0 and cons_mod==oo:
+                    if cons_j==x:
+                        temp=[{y:oo,x:0}]
+                    else:
+                        temp=[{y:0,x:oo}]
+                else if cons_j==0 and cons_mod==-oo:
+                    if cons_j==x:
+                        temp=[{y:-oo,x:0}]
+                    else:
+                        temp=[{y:0,x:-oo}]
+
+                if len(temp)>1:
+                    err_string='Adjacent constraints intersect at '
+                    err_string='two or more points'
+                    raise RVError(err_string)
+                elif len(temp)==0:
+                    err_string='Adjacent constraints do not intersect'
+                    raise RVError(err_string)
+
+                if len(temp)!=0:
+                    line1.append(cons_j)
+                    line2.append(cons_mod)
+                if len(temp)!=0:
+                    xinters.append(temp[0][x])
+                    yinters.append(temp[0][y])
+                if len(xinters)==ncons+1:
+                    print('Unbounded')
+
+            # Bubble sort all four lists with respect to xinters
             
+
+                
+            
+                
+                    
+                
                 
             
 
