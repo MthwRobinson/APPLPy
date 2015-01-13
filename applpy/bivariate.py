@@ -139,6 +139,7 @@ class BivariateRV:
             1. add_to_cache(self,object_name,object)
             2. display(self)
             3. init_cache(self)
+            4. verifyPDF(self)
         """
 
     def add_to_cache(self,object_name,obj):
@@ -203,6 +204,50 @@ class BivariateRV:
                             is initialized
         """
         self.cache={}
+
+    def verifyPDF(self):
+        """
+        Procedure Name: verifyPDF
+        Purpose: Verifies where or not the random variable is valid. It first
+                    checks to make sure the pdf of the random variable
+                    integrates to one. It then checks to make sure the random
+                    variable is strictly positive
+        Arguments:  1. self: the random variable
+        Output:     1.  print statement that displays that volume under the
+                            random variable and a second statement that
+                            shows whether or not the random variable is valid
+        """
+
+        # Check to make sure that the random variable is entered as a
+        #   continuous pdf
+
+        if ftype!=['continuous','pdf']:
+            err_string='verifyPDF currently only supports continuous pdfs'
+            raise RVError(err_string)
+
+        totalPDF=0
+        absPDF=0
+
+        # i loops through the number of segments of XY
+        for i in range(len(self.func)):
+            x='x';y='y'
+            ncons=len(self.constraints[i])
+
+            # list of x intercepts and corresponding y intercepts
+            xinters=[]
+            yinters=[]
+
+            # corresponding lines 1 and 2
+            line1=[]
+            line2=[]
+
+            # j loops through the constraints for segment i
+            for j in range(ncons):
+                temp=solve([self.constraints[i][j],
+                            self.constraints[i][(j+1)%ncons]],x,y)
+            
+                
+            
 
 
 
