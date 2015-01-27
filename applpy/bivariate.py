@@ -314,16 +314,113 @@ class BivariateRV:
                         line2[jb]=tempb
 
             # Default yupper and ylower assuming the start off is a vert line
-            
-            
+            set1=_union(line1[0],line2[0])
+            set2=_union(line1[1],line2[1])
+            yupper=_intersect(set1,set2)
+            ylower=_intersect(set1,set2)
 
+            start=1
+
+            # Start off from a point (figure out yupper and ylower)
+
+            if xinters[0]!=yinters[1]:
+                eqn=solve(line1[0],y)-solve(line2[0],y)
+                area=integrate(eqn,(x,xinters[0],xinters[1]))
+
+                # PDF evaluated over the segment
+                if area>0:
+                    yupper=line1[0]
+                    ylower=line2[0]
+                else:
+                    ylower=line1[0]
+                    yupper=line2[0]
+                y_0=solve(ylower,y)
+                y_1=solve(yupper,y)
+                x_0=xinters[0]
+                x_1=xinters[1]
+                totalPDF+=integrate(integrate(XY.func[i],
+                                              (y,y_0,y_1)),
+                                    (x,x_0,x_1))
+                # Not yet supported by sympy
+                #absPDF+=integrate(integrate(abs(XY.func[i]),
+                #                            (y,y_0,y_1)),
+                #                  (x,x_0,x_1))
+                start=2
+
+            # Triangle case (left = point, right = line)
+            if start==2 and len(xinters)==3 and xinters[2]==xinters[1]:
+                start=4
+
+            # Begin calculating PDFs
+            ind=start-1
+            while ind<len(xinters):
+                # left xinters lie on a vertical line
+                if xinters[ind]==xinters[ind+1] and ind!=len(xinters):
+                    # y ind < ind+1 => ylower is the other line intersecting
+                    #   ind and yupper is otherline intersecting ind+1
+                    if yinters[ind]<yinters[ind+1]:
+                        ylower=_union(line1[ind],line2[ind]).remove(ylower)
+                        yupper=_union(line1[ind+1],line2[ind+1]).remove(ylower)
+                    else:
+                        yupper=_union(line1[ind],line2[ind]).remove(ylower)
+                        ylower=_union(line1[ind+1],line2[ind+1]).remove(ylower)
+                ylower=ylower[0]
+                yupper=yupper[0]
+                # Infinity case
+                lowerB=solve(ylower,y)
+                upperB=solve(yupper,y)
+                if yupper==oo:
+                    upperB=oo
+                if ylower==-oo:
+                    lowerB=-oo
+                totalPDF+=integrate(integrate(XY.func[i],
+                                              (y,lowerB,upperB)),
+                                    (x,xinters[ind],xinters[ind+1]))
+                # Not yet supported by sympy
+                #absPDF+=integrate(integrate(abs(XY.func[i]),
+                #                            (y,lowerB,upperB)),
+                #                  (x,xinters[ind],xinters[ind+1]))
+
+                ind+=1
+                # Left x is only one point
                 
             
+'''
+Supporting Functions:
 
+1. _intersection(a,b)
+2. _union(a,b)
+
+'''
                     
+def _intersection(a,b):
+    """
+    Procedure Name: _intersection
+    Purpose: Returns the intersection of two lists
+    Arguments:  1. a: a list
+                2. b: a list
+    Output:     1. A list containing the intersection of a and b
+    """
+    if type(a) != list:
+        a=[a]
+    if type(b) != list:
+        b=[b]
+    return list(set(a) & set(b))
                 
-                
-            
+def _union(a,b):
+    """
+    Procedure Name: _union
+    Purpose: Returns the union of two lists
+    Arguments:  1. a: a list
+                2. b: a list
+    Output:     1. A list containing the union of a and b
+    """
+    if type(a) != list:
+        a=[a]
+    if type(b) != list:
+        b=[b]                       
+    return list(set(a) | set(b))
+    
 
 
 
