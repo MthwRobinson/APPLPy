@@ -293,11 +293,33 @@ class BivariateRV:
                     print('Unbounded')
 
             # Bubble sort all four lists with respect to xinters
+            for ib in range(len(xinters)-1):
+                for jb in range(ib+1,len(xinters)):
+                    if xinters[ib]>xinters[jb]:
+                        # Swap relevant indices in for the intercepts and lines
+                        tempb=xinters[ib]
+                        xinters[ib]=xinters[jb]
+                        xinters[jb]=tempb
+                        
+                        tempb=yinters[ib]
+                        yinters[ib]=yinters[jb]
+                        yinters[jb]=tempb
+
+                        tempb=line1[ib]
+                        line1[ib]=line1[jb]
+                        line1[jb]=tempb
+
+                        tempb=line2[ib]
+                        line2[ib]=line2[jb]
+                        line2[jb]=tempb
+
+            # Default yupper and ylower assuming the start off is a vert line
+            
             
 
                 
             
-                
+
                     
                 
                 
