@@ -79,7 +79,7 @@ def Queue(X,Y,n,k=0,s=1):
                 3. n: the total number of customers in the system
                 4. k: the number of customers in the system at time 0
                 5. s: the number of identical parallel servers
-    Output:   
+    Output:     1. Probability distribution for an M/M/s queue
     """
     rho=Symbol('rho')
     rho_subs=(1/Mean(X))/(s*(1/Mean(Y)))
