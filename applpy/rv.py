@@ -1894,7 +1894,7 @@ def BootstrapRV(varlist,symbolic=False):
     funclist=[]
     supplist=[]
     for i in range(len(varlist)):
-        if varlist[i] not in funclist:
+        if varlist[i] not in supplist:
             supplist.append(varlist[i])
             funclist.append(varlist.count(varlist[i])/numel)
     # Return the result as a discrete random variable
