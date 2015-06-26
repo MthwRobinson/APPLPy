@@ -1,3 +1,9 @@
+v0.3.1, 
+
+Fixed Bugs:
+	1. BootstrapRV procedure fixed. Duplicate elements are now
+		eliminated from the support of Bootstrap RVs.
+
 v0.3.0, 12 JAN 2015
 
 New Capabilities:
