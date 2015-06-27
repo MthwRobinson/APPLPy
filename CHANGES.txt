@@ -3,6 +3,8 @@ v0.3.1,
 Fixed Bugs:
 	1. BootstrapRV procedure fixed. Duplicate elements are now
 		eliminated from the support of Bootstrap RVs.
+	2. Pr(X) for elements in the BootstrapRV are now described by
+		rational numbers instead of floats
 
 v0.3.0, 12 JAN 2015
 

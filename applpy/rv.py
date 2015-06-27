@@ -61,7 +61,7 @@ from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
-                   binomial, pprint,log,expand,zoo,latex,Piecewise)
+                   binomial, pprint,log,expand,zoo,latex,Piecewise,Rational)
 from sympy.plotting.plot import plot
 from random import random
 import numpy as np
@@ -1896,7 +1896,7 @@ def BootstrapRV(varlist,symbolic=False):
     for i in range(len(varlist)):
         if varlist[i] not in supplist:
             supplist.append(varlist[i])
-            funclist.append(varlist.count(varlist[i])/numel)
+            funclist.append(Rational(varlist.count(varlist[i]),numel))
     # Return the result as a discrete random variable
     return RV(funclist,supplist,['discrete','pdf'])
 
