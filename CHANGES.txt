@@ -5,6 +5,8 @@ Fixed Bugs:
 		eliminated from the support of Bootstrap RVs.
 	2. Pr(X) for elements in the BootstrapRV are now described by
 		rational numbers instead of floats
+	3. Bug in transform for RV's with negative support is fixed.
+		Transform is now running properly for all supports.
 
 v0.3.0, 12 JAN 2015
 

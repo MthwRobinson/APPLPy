@@ -2620,10 +2620,18 @@ def Transform(RVar,gXt):
             if gX[1][i]>X_dummy.support[len(X_dummy.support)-1]:
                 gX[1][i]=X_dummy.support[len(X_dummy.support)-1]
         # Delete segments of the transformation that will not be used
-        for i in range(len(gX[0])-1):
+        gX0_removal = []
+        gX1_removal = []
+        for i in range(len(gX[0])):
             if gX[1][i]==gX[1][i+1]:
-                gX[0].remove(gX[0][i])
-                gX[1].remove(gX[1][i+1])
+                gX0_removal.append(i)
+                gX1_removal.append(i+1)
+        for i in range(len(gX0_removal)):
+            index = gX0_removal[i]
+            del gX[0][index-i]
+        for i in range(len(gX1_removal)):
+            index = gX1_removal[i]
+            del gX[1][index-i]
         # Create a list of mappings x->g(x)
         mapping=[]
         for i in range(len(gX[0])):
@@ -3578,6 +3586,7 @@ def Product(RVar1,RVar2):
                 # If the region is in the third quadrant, compute
                 #   the required integrals sequentially
                 if a<0 and c>=0:
+                    print 'QD 3'
                     if type(Y_dummy.func[j]) not in [float,int]:
                         gj=Y_dummy.func[j].subs(x,v/x)
                     else:
@@ -3590,20 +3599,27 @@ def Product(RVar1,RVar2):
                         rv=-simplify(integrate(fi*gj*(1/x),(x,(v/c),b)))
                     if c>0 and d<oo:
                         sv=-simplify(integrate(fi*gj*(1/x),(x,(v/c),(v/d))))
+                    print pv
+                    print qv
+                    print rv
+                    print sv
                     # 3rd Qd, Scenario 1
                     if c==0 and d==oo:
+                        print 'QD3 Sc1'
                         for k in range(len(vfunc)):
                             if vsupp[k+1]<=0:
                                 vfunc[k]+=pv
                     # 3rd Qd, Scenario 2
                     if c==0 and d<oo:
+                        print 'QD3 Sc2'
                         for k in range(len(vfunc)):
                             if vsupp[k]>=b*d and vsupp[k+1]<=0:
                                 vfunc[k]+=pv
                             if vsupp[k]>=a*d and vsupp[k+1]<=b*d:
                                 vfunc[k]+=qv
                     # 3rd Qd, Scenario 3
-                    if c>0 and d<oo:
+                    if c>0 and d==oo:
+                        print 'QD3 Sc3'
                         for k in range(len(vfunc)):
                             if vsupp[k]>=-oo and vsupp[k+1]<=a*c:
                                 vfunc[k]+=pv
@@ -3613,6 +3629,7 @@ def Product(RVar1,RVar2):
                     if c>0 and d<oo:
                         # Case 1
                         if b*d>a*c:
+                            print 'QD3 Sc4 Case1'
                             for k in range(len(vfunc)):
                                 if vsupp[k]>=b*d and vsupp[k+1]<=b*c:
                                     vfunc[k]+=rv
@@ -3622,6 +3639,7 @@ def Product(RVar1,RVar2):
                                     vfunc[k]+=qv
                         # Case 2
                         if a*c==b*d:
+                            print 'QD3 Sc4 Case2'
                             for k in range(len(vfunc)):
                                 if vsupp[k]>=a*d and vsupp[k+1]<=a*c:
                                     vfunc[k]+=qv
@@ -3629,6 +3647,7 @@ def Product(RVar1,RVar2):
                                     vfunc[k]+=rv
                         # Case 3
                         if a*c>b*d:
+                            print 'QD3 Sc4 Case3'
                             for k in range(len(vfunc)):
                                 if vsupp[k]>=a*c and vsupp[k+1]<=b*c:
                                     vfunc[k]+=rv
