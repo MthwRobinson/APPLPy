@@ -7,6 +7,10 @@ Fixed Bugs:
 		rational numbers instead of floats
 	3. Bug in transform for RV's with negative support is fixed.
 		Transform is now running properly for all supports.
+	4. Fixed bug in convolution for lifetime distributions. When
+		a floating point value was entered for a parameter,
+		the procedure would return 0 for the cdf of the convolution.
+		The procedure now works correctly
 
 v0.3.0, 12 JAN 2015
 

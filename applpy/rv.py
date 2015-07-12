@@ -2997,8 +2997,12 @@ def Convolution(RVar1,RVar2):
             #z=Symbol('z',positive=True)
             func1=X1_dummy.func[0]
             func2=X2_dummy.func[0].subs(x,z-x)
-            conv=integrate(func1*func2,(x,0,z),conds='none')
-            return RV([conv.subs(z,x)],[0,oo],['continuous','pdf'])
+            int_func=expand(func1*func2)
+            conv=integrate(int_func,(x,0,z),conds='none')
+            conv_final=conv.subs(z,x)
+            conv=expand(conv_final)
+            conv=simplify(conv_final)
+            return RV([conv_final],[0,oo],['continuous','pdf'])
         # Otherwise, compute the convolution using the product method
         else:
             gln=[[ln(x)],[0,oo]]
