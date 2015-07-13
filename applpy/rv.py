@@ -3468,6 +3468,7 @@ def Product(RVar1,RVar2):
                 # If the region is in the first quadrant, compute the
                 #   required integrals sequentially
                 if a>=0 and c>=0:
+                    v=Symbol('v',positive=True)
                     if type(Y_dummy.func[j]) not in [float,int]:
                         gj=Y_dummy.func[j].subs(x,v/x)
                     else:
@@ -3529,6 +3530,7 @@ def Product(RVar1,RVar2):
                 # If the region is in the second quadrant, compute
                 #   the required integrals sequentially
                 if a<0 and c<0:
+                    v=Symbol('v',positive=True)
                     if type(Y_dummy.func[j]) not in [float,int]:
                         gj=Y_dummy.func[j].subs(x,v/x)
                     else:
@@ -3590,7 +3592,7 @@ def Product(RVar1,RVar2):
                 # If the region is in the third quadrant, compute
                 #   the required integrals sequentially
                 if a<0 and c>=0:
-                    print 'QD 3'
+                    v=Symbol('v',negative=True)
                     if type(Y_dummy.func[j]) not in [float,int]:
                         gj=Y_dummy.func[j].subs(x,v/x)
                     else:
@@ -3600,22 +3602,16 @@ def Product(RVar1,RVar2):
                     if d<oo:
                         qv=-simplify(integrate(fi*gj*(1/x),(x,a,(v/d))))
                     if c>0:
-                        rv=-simplify(integrate(fi*gj*(1/x),(x,(v/c),b)))
+                        rv=-simplify(integrate(fi*gj*(1/x),(x,(v/b),c)))
                     if c>0 and d<oo:
                         sv=-simplify(integrate(fi*gj*(1/x),(x,(v/c),(v/d))))
-                    print pv
-                    print qv
-                    print rv
-                    print sv
                     # 3rd Qd, Scenario 1
                     if c==0 and d==oo:
-                        print 'QD3 Sc1'
                         for k in range(len(vfunc)):
                             if vsupp[k+1]<=0:
                                 vfunc[k]+=pv
                     # 3rd Qd, Scenario 2
                     if c==0 and d<oo:
-                        print 'QD3 Sc2'
                         for k in range(len(vfunc)):
                             if vsupp[k]>=b*d and vsupp[k+1]<=0:
                                 vfunc[k]+=pv
@@ -3623,7 +3619,6 @@ def Product(RVar1,RVar2):
                                 vfunc[k]+=qv
                     # 3rd Qd, Scenario 3
                     if c>0 and d==oo:
-                        print 'QD3 Sc3'
                         for k in range(len(vfunc)):
                             if vsupp[k]>=-oo and vsupp[k+1]<=a*c:
                                 vfunc[k]+=pv
@@ -3633,7 +3628,6 @@ def Product(RVar1,RVar2):
                     if c>0 and d<oo:
                         # Case 1
                         if b*d>a*c:
-                            print 'QD3 Sc4 Case1'
                             for k in range(len(vfunc)):
                                 if vsupp[k]>=b*d and vsupp[k+1]<=b*c:
                                     vfunc[k]+=rv
@@ -3643,7 +3637,6 @@ def Product(RVar1,RVar2):
                                     vfunc[k]+=qv
                         # Case 2
                         if a*c==b*d:
-                            print 'QD3 Sc4 Case2'
                             for k in range(len(vfunc)):
                                 if vsupp[k]>=a*d and vsupp[k+1]<=a*c:
                                     vfunc[k]+=qv
@@ -3651,7 +3644,6 @@ def Product(RVar1,RVar2):
                                     vfunc[k]+=rv
                         # Case 3
                         if a*c>b*d:
-                            print 'QD3 Sc4 Case3'
                             for k in range(len(vfunc)):
                                 if vsupp[k]>=a*c and vsupp[k+1]<=b*c:
                                     vfunc[k]+=rv
@@ -3662,6 +3654,7 @@ def Product(RVar1,RVar2):
                 # If the region is in the fourth quadrant, compute
                 #   the required integrals sequentially
                 if a>=0 and c<0:
+                    v=Symbol('v',negative=True)
                     if type(Y_dummy.func[j]) not in [float,int]:
                         gj=Y_dummy.func[j].subs(x,v/x)
                     else:
