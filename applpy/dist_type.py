@@ -1479,11 +1479,10 @@ class UniformDiscreteRV(RV):
         if b<=a:
             err_string='b is only valid if b > a'
             raise RVError(err_string)
-        if a.__class__.__name__ not in [float,int]:
-            if b.__class__.__name__ not in [float,int]:
-                err_string='a and b must be numeric'
-                raise RVError(err_string)
-        n = (b-a)/k
+        if (b-a)%k != 0:
+            err_string='(b-a) must be divisble by k'
+            raise RVError(err_string)
+        n = int((b-a)/k)
         X_dummy=RV([1/(n+1) for i in range(1,n+2)],
                    [a+i*k for i in range(n+1)], ['discrete','pdf'])
         self.func=X_dummy.func
