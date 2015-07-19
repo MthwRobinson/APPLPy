@@ -61,7 +61,8 @@ from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
-                   binomial, pprint,log,expand,zoo,latex,Piecewise,Rational)
+                   binomial, pprint,log,expand,zoo,latex,Piecewise,Rational,
+                   Sum)
 from sympy.plotting.plot import plot
 from random import random
 import numpy as np
@@ -883,6 +884,11 @@ def CDF(RVar,value=x,cache=False):
     # If the distribution is in discrete functional, find and return the
     #   distribution of the random variable
     if RVar.ftype[0]=='Discrete':
+        # If the support is finite, then convert to expanded form and compute
+        #   the CDF
+        if oo or -oo not in RVar.support:
+            RVar2=Convert(RVar)
+            return CDF(RVar2,value)
         # If the random variable is already a cdf, nothing needs to
         #   be done
         if RVar.ftype[1]=='cdf':
@@ -1078,6 +1084,11 @@ def CHF(RVar,value=x,cache=False):
     # If the distribution is a discrete function, find and return the chf of
     #   the random variable
     if RVar.ftype[0]=='Discrete':
+        # If the support is finite, then convert to expanded form and compute
+        #   the CHF
+        if oo or -oo not in RVar.support:
+            RVar2=Convert(RVar)
+            return CHF(RVar2,value)
         # If the distribution is already a chf, nothing needs to
         #   be done
         if RVar.ftype[1]=='chf':
@@ -1230,6 +1241,11 @@ def HF(RVar,value=x,cache=False):
     # If the distribution is a discrete function, find and return the hf of
     #   the random variable
     if RVar.ftype[0]=='Discrete':
+        # If the support is finite, then convert to expanded form and compute
+        #   the HF
+        if oo or -oo not in RVar.support:
+            RVar2=Convert(RVar)
+            return HF(RVar2,value)
         # If the distribution is already a hf, nothing needs to be
         #   done
         if RVar.ftype[1]=='hf':
@@ -1389,6 +1405,11 @@ def IDF(RVar,value=x,cache=False):
     # If the distribution is a discrete function, find and return the idf
     #   of the random variable
     if RVar.ftype[0]=='Discrete':
+        # If the support is finite, then convert to expanded form and compute
+        #   the IDF
+        if oo or -oo not in RVar.support:
+            RVar2=Convert(RVar)
+            return IDF(RVar2,value)
         if value==x:
             if RVar.ftype[1]=='idf':
                 return self
@@ -1444,8 +1465,7 @@ def IDF(RVar,value=x,cache=False):
             return idfrv
                     
             
-        # If a value is specified, use the newton-raphson method to
-        # generate a random variate
+        # If a value is specified, find thevalue of the idf
         if value!=x:
             X_dummy=IDF(RVar)
             for i in range(len(X_dummy.support)):
@@ -1581,6 +1601,11 @@ def PDF(RVar,value=x,cache=False):
 
     # If the distribution is a discrete function, find and return the pdf
     if RVar.ftype[0]=='Discrete':
+        # If the support is finite, then convert to expanded form and compute
+        #   the PDF
+        if oo or -oo not in RVar.support:
+            RVar2=Convert(RVar)
+            return PDF(RVar2,value)
         # If the distribution is already a pdf, nothing needs to be done
         if RVar.ftype[1]=='pdf':
             if value==x:
@@ -1746,6 +1771,9 @@ def SF(RVar,value=x,cache=False):
     # If the distribution is discrete, find and return the sf of the
     # random variable
     if RVar.ftype[0]=='Discrete':
+        if oo or -oo not in RVar.support:
+            RVar2=Convert(RVar)
+            return SF(RVar2,value)
         # If the distribution is already a sf, nothing needs to be done
         if RVar.ftype[1]=='sf':
             if value==x:
@@ -2166,9 +2194,7 @@ def Mean(RVar,cache=False):
         for i in range(len(X_dummy.func)):
             val=summation(meanfunc[i],(x,X_dummy.support[i],
                                        X_dummy.support[i+1]))
-            
             meanval+=val
-
         meanval=simplify(meanval)
         if cache==True:
             RVar.add_to_cache('mean',meanval)
@@ -3723,6 +3749,7 @@ def Product(RVar1,RVar2):
             else:
                 vfunc_final.append(vfunc[i])
         return RV(vfunc_final,vsupp,['continuous','pdf'])
+    
     # If the distributions are discrete, find and return the product
     #   of the two random variables.
     if RVar1.ftype[0]=='discrete':
