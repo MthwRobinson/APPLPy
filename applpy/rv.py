@@ -2166,6 +2166,7 @@ def Mean(RVar,cache=False):
         for i in range(len(X_dummy.func)):
             val=summation(meanfunc[i],(x,X_dummy.support[i],
                                        X_dummy.support[i+1]))
+            
             meanval+=val
 
         meanval=simplify(meanval)
@@ -2718,10 +2719,12 @@ def Transform(RVar,gXt):
         #   in the random variable applies to, and then transform it
         for i in range(len(X_dummy.support)):
             for j in range(len(gX[1])-1):
-                if X_dummy.support[i]>=gX[1][j]:
-                    if X_dummy.support[i]<=gX[1][j+1]:
-                        trans_sup.append(gX[0][j].subs(x,X_dummy.support[i]))
-        # Sort the function and support lists for the convolution
+                X_support=X_dummy.support[i]
+                if X_support>=gX[1][j] and X_support<=gX[1][j+1]:
+                    trans_sup.append(gX[0][j].subs(x,X_dummy.support[i]))
+                else:
+                    trans_sup.append(X_support)
+        # Sort the function and support lists
         sortlist=zip(trans_sup,X_dummy.func)
         sortlist.sort()
         translist=[]
