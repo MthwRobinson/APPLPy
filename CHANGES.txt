@@ -3,6 +3,8 @@ v0.3.1,
 New Capabilities:
 	1. Improved method implmented for converting discrete RVs between
 		different functional forms. Now runs more efficiently
+	2. Discrete RVs with explicit values and discrete RVs defined by
+		expressions can now be manipulated with RV algebra
 
 Fixed Bugs:
 	1. BootstrapRV procedure fixed. Duplicate elements are now

@@ -3016,7 +3016,9 @@ def Convolution(RVar1,RVar2):
     # If the two random variables are not both continuous or
     #   both discrete, return an error
     if RVar1.ftype[0]!=RVar2.ftype[0]:
-        raise RVError('Both random variables must have the same type')
+        discr=['discrete','Discrete']
+        if (RVar1.ftype[0] not in discr) and (RVar2.ftype[0] not in discr):
+            raise RVError('Both random variables must have the same type')
 
     # Convert both random variables to their PDF form
     X1_dummy=PDF(RVar1)
@@ -3051,7 +3053,23 @@ def Convolution(RVar1,RVar2):
                 convfunc.append(simplify(fz.func[i]))
             return RV(convfunc,fz.support,['continuous','pdf'])
             
-
+    # If the two random variables are discrete in functinonal form,
+    #   find andreturn the convolution of the two random variables
+    if RVar1.ftype[0]=='Discrete':
+        for num in RVar1.support:
+            if type(num) not in [int,float]:
+                err_string='Convolution does not currently work with'
+                err_string=' RVs that have symbolic or infinite support'
+                raise RVError(err_string)
+        RVar1=Convert(RVar1)
+    if RVar2.ftype[0]=='Discrete':
+        for num in RVar1.support:
+            if type(num) not in [int,float]:
+                err_string='Convolution does not currently work with'
+                err_string=' RVs that have symbolic or infinite support'
+                raise RVError(err_string)
+        RVar2=Convert(RVar2)
+        
     # If the distributions are discrete, find and return the convolution
     #   of the two random variables.
     if RVar1.ftype[0]=='discrete':
