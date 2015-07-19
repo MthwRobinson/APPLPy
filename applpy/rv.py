@@ -886,9 +886,10 @@ def CDF(RVar,value=x,cache=False):
     if RVar.ftype[0]=='Discrete':
         # If the support is finite, then convert to expanded form and compute
         #   the CDF
-        if oo or -oo not in RVar.support:
-            RVar2=Convert(RVar)
-            return CDF(RVar2,value)
+        if oo not in RVar.support:
+            if -oo not in RVar.support:
+                RVar2=Convert(RVar)
+                return CDF(RVar2,value)
         # If the random variable is already a cdf, nothing needs to
         #   be done
         if RVar.ftype[1]=='cdf':
@@ -1086,9 +1087,10 @@ def CHF(RVar,value=x,cache=False):
     if RVar.ftype[0]=='Discrete':
         # If the support is finite, then convert to expanded form and compute
         #   the CHF
-        if oo or -oo not in RVar.support:
-            RVar2=Convert(RVar)
-            return CHF(RVar2,value)
+        if oo not in RVar.support:
+            if -oo not in RVar.support:
+                RVar2=Convert(RVar)
+                return CHF(RVar2,value)
         # If the distribution is already a chf, nothing needs to
         #   be done
         if RVar.ftype[1]=='chf':
@@ -1243,9 +1245,10 @@ def HF(RVar,value=x,cache=False):
     if RVar.ftype[0]=='Discrete':
         # If the support is finite, then convert to expanded form and compute
         #   the HF
-        if oo or -oo not in RVar.support:
-            RVar2=Convert(RVar)
-            return HF(RVar2,value)
+        if oo not in RVar.support:
+            if -oo not in RVar.support:
+                RVar2=Convert(RVar)
+                return HF(RVar2,value)
         # If the distribution is already a hf, nothing needs to be
         #   done
         if RVar.ftype[1]=='hf':
@@ -1407,9 +1410,10 @@ def IDF(RVar,value=x,cache=False):
     if RVar.ftype[0]=='Discrete':
         # If the support is finite, then convert to expanded form and compute
         #   the IDF
-        if oo or -oo not in RVar.support:
-            RVar2=Convert(RVar)
-            return IDF(RVar2,value)
+        if oo not in RVar.support:
+            if -oo not in RVar.support:
+                RVar2=Convert(RVar)
+                return IDF(RVar2,value)
         if value==x:
             if RVar.ftype[1]=='idf':
                 return self
@@ -1603,9 +1607,10 @@ def PDF(RVar,value=x,cache=False):
     if RVar.ftype[0]=='Discrete':
         # If the support is finite, then convert to expanded form and compute
         #   the PDF
-        if oo or -oo not in RVar.support:
-            RVar2=Convert(RVar)
-            return PDF(RVar2,value)
+        if oo not in RVar.support:
+            if -oo not in RVar.support:
+                RVar2=Convert(RVar)
+                return PDF(RVar2,value)
         # If the distribution is already a pdf, nothing needs to be done
         if RVar.ftype[1]=='pdf':
             if value==x:
@@ -1771,9 +1776,10 @@ def SF(RVar,value=x,cache=False):
     # If the distribution is discrete, find and return the sf of the
     # random variable
     if RVar.ftype[0]=='Discrete':
-        if oo or -oo not in RVar.support:
-            RVar2=Convert(RVar)
-            return SF(RVar2,value)
+        if oo not in RVar.support:
+            if -oo not in RVar.support:
+                RVar2=Convert(RVar)
+                return SF(RVar2,value)
         # If the distribution is already a sf, nothing needs to be done
         if RVar.ftype[1]=='sf':
             if value==x:
@@ -2093,7 +2099,7 @@ def Entropy(RVar,cache=False):
     entropy=simplify(entropy)
     if cache==True:
         RVar.add_to_cache('entropy',entropy)
-    return entropy
+    return simplify(entropy)
 
 def Kurtosis(RVar,cache=False):
     """
@@ -2125,7 +2131,7 @@ def Kurtosis(RVar,cache=False):
 
     if cache==True:
         RVar.add_to_cache('kurtosis',kurt)
-    return kurt
+    return simplify(kurt)
 
 def MaximumIID(RVar,n):
     """
@@ -2167,7 +2173,7 @@ def Mean(RVar,cache=False):
     # Find the PDF of the random variable
     X_dummy=PDF(RVar)
     # If the random variable is continuous, find and return the mean
-    if RVar.ftype[0]=='continuous':
+    if X_dummy.ftype[0]=='continuous':
         # Create list of x*f(x)
         meanfunc=[]
         for i in range(len(X_dummy.func)):
@@ -2181,10 +2187,10 @@ def Mean(RVar,cache=False):
         meanval=simplify(meanval)
         if cache==True:
             RVar.add_to_cache('mean',meanval)
-        return meanval
+        return simplify(meanval)
 
     # If the random variable is a discrete function, find and return the mean
-    if RVar.ftype[0]=='Discrete':
+    if X_dummy.ftype[0]=='Discrete':
         # Create list of x*f(x)
         meanfunc=[]
         for i in range(len(X_dummy.func)):
@@ -2198,14 +2204,14 @@ def Mean(RVar,cache=False):
         meanval=simplify(meanval)
         if cache==True:
             RVar.add_to_cache('mean',meanval)
-        return meanval
+        return simplify(meanval)
 
     # If the random variable is discrete, find and return the variance
-    if RVar.ftype[0]=='discrete':
+    if X_dummy.ftype[0]=='discrete':
         meanval=MeanDiscrete(RVar)
         if cache==True:
             RVar.add_to_cache('mean',meanval)
-        return meanval
+        return simplify(meanval)
         #
         # Legacy mean code ... update uses faster numpy implementation
         #
@@ -2586,7 +2592,7 @@ def Skewness(RVar,cache=False):
     skew=simplify(skew)
     if cache==True:
         RVar.add_to_cache('skewness',skew)
-    return skew
+    return simplify(skew)
                             
 
 def Transform(RVar,gXt):
@@ -2885,7 +2891,7 @@ def Variance(RVar,cache=False):
     # Find the PDF of the random variable
     X_dummy=PDF(RVar)
     # If the random variable is continuous, find and return the variance
-    if RVar.ftype[0]=='continuous':
+    if X_dummy.ftype[0]=='continuous':
         # Find the mean of the random variable
         EX=Mean(X_dummy)
         # Find E(X^2)
@@ -2904,11 +2910,11 @@ def Variance(RVar,cache=False):
         var=simplify(var)
         if cache==True:
             RVar.add_to_cache('variance',var)
-        return var
+        return simplify(var)
 
     # If the random variable is a discrete function, find and return
     # the variance
-    if RVar.ftype[0]=='Discrete':
+    if X_dummy.ftype[0]=='Discrete':
         # Find the mean of the random variable
         EX=Mean(X_dummy)
         # Find E(X^2)
@@ -2927,14 +2933,14 @@ def Variance(RVar,cache=False):
         var=simplify(var)
         if cache==True:
             RVar.add_to_cache('variance',var)
-        return var
+        return simplify(var)
 
     # If the random variable is discrete, find and return the variance
-    if RVar.ftype[0]=='discrete':
+    if X_dummy.ftype[0]=='discrete':
         var=VarDiscrete(RVar)
         if cache==True:
             RVar.add_to_cache('variance',var)
-        return var
+        return simplify(var)
         #
         # Legacy variance code ... update uses faster numpy implementation
         #
