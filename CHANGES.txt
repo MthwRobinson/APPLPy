@@ -14,6 +14,10 @@ Fixed Bugs:
 	5. Added assumptions to variables in product procedure. No longer
 		gives complex functions as output for products that occur in
 		the third quadrant.
+	6. Corrections made to transform for discrete random variables. No
+		longer cuts out parts of the distribution that are not in
+		the support of the tranformation, but simply does not 
+		transform them.
 
 v0.3.0, 12 JAN 2015
 
