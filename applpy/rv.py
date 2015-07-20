@@ -3054,7 +3054,7 @@ def Convolution(RVar1,RVar2):
             return RV(convfunc,fz.support,['continuous','pdf'])
             
     # If the two random variables are discrete in functinonal form,
-    #   find andreturn the convolution of the two random variables
+    #   find and return the convolution of the two random variables
     if RVar1.ftype[0]=='Discrete':
         for num in RVar1.support:
             if type(num) not in [int,float]:
@@ -3186,7 +3186,23 @@ def MaximumRV(RVar1,RVar2):
             max_func.append(simplify(Fmax))
         return PDF(RV(max_func,max_supp2,['continuous','cdf']))
         
-
+    # If the two random variables are discrete in functinonal form,
+    #   find and return the maximum of the two random variables
+    if RVar1.ftype[0]=='Discrete':
+        for num in RVar1.support:
+            if type(num) not in [int,float]:
+                err_string='Maximum does not currently work with'
+                err_string=' RVs that have symbolic or infinite support'
+                raise RVError(err_string)
+        RVar1=Convert(RVar1)
+    if RVar2.ftype[0]=='Discrete':
+        for num in RVar1.support:
+            if type(num) not in [int,float]:
+                err_string='Maximum does not currently work with'
+                err_string=' RVs that have symbolic or infinite support'
+                raise RVError(err_string)
+        RVar2=Convert(RVar2)
+        
     # If the distributions are discrete, find and return
     #   the maximum of the two rv's
     if RVar1.ftype[0]=='discrete':
@@ -3319,6 +3335,23 @@ def MinimumRV(RVar1,RVar2):
         # Return the random variable
         return PDF(RV(min_func,min_supp2,['continuous','cdf']))
 
+    # If the two random variables are discrete in functinonal form,
+    #   find and return the minimum of the two random variables
+    if RVar1.ftype[0]=='Discrete':
+        for num in RVar1.support:
+            if type(num) not in [int,float]:
+                err_string='Minimum does not currently work with'
+                err_string=' RVs that have symbolic or infinite support'
+                raise RVError(err_string)
+        RVar1=Convert(RVar1)
+    if RVar2.ftype[0]=='Discrete':
+        for num in RVar1.support:
+            if type(num) not in [int,float]:
+                err_string='Minimum does not currently work with'
+                err_string=' RVs that have symbolic or infinite support'
+                raise RVError(err_string)
+        RVar2=Convert(RVar2)
+
     # If the distributions are discrete, find and return
     #   the minimum of the two rv's
     if RVar1.ftype[0]=='discrete':
@@ -3428,6 +3461,23 @@ def Mixture(MixParameters,MixRVs):
             fxnew.append(newMixfx)
         # Return the mixture rv
         return RV(fxnew,MixSupp,['continuous','pdf'])
+
+    # If the two random variables are discrete in functinonal form,
+    #   find and return the mixture of the two random variables
+    if RVar1.ftype[0]=='Discrete':
+        for num in RVar1.support:
+            if type(num) not in [int,float]:
+                err_string='Mixture does not currently work with'
+                err_string=' RVs that have symbolic or infinite support'
+                raise RVError(err_string)
+        RVar1=Convert(RVar1)
+    if RVar2.ftype[0]=='Discrete':
+        for num in RVar1.support:
+            if type(num) not in [int,float]:
+                err_string='Mixture does not currently work with'
+                err_string=' RVs that have symbolic or infinite support'
+                raise RVError(err_string)
+        RVar2=Convert(RVar2)
 
     # If the distributions are discrete, find and return the
     #   mixture pdf
@@ -3773,6 +3823,23 @@ def Product(RVar1,RVar2):
             else:
                 vfunc_final.append(vfunc[i])
         return RV(vfunc_final,vsupp,['continuous','pdf'])
+
+    # If the two random variables are discrete in functinonal form,
+    #   find and return the product of the two random variables
+    if RVar1.ftype[0]=='Discrete':
+        for num in RVar1.support:
+            if type(num) not in [int,float]:
+                err_string='Product does not currently work with'
+                err_string=' RVs that have symbolic or infinite support'
+                raise RVError(err_string)
+        RVar1=Convert(RVar1)
+    if RVar2.ftype[0]=='Discrete':
+        for num in RVar1.support:
+            if type(num) not in [int,float]:
+                err_string='Product does not currently work with'
+                err_string=' RVs that have symbolic or infinite support'
+                raise RVError(err_string)
+        RVar2=Convert(RVar2)
     
     # If the distributions are discrete, find and return the product
     #   of the two random variables.
