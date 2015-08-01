@@ -24,6 +24,8 @@ Fixed Bugs:
 		longer cuts out parts of the distribution that are not in
 		the support of the tranformation, but simply does not 
 		transform them.
+	7. Corrections made to Transform to account for equality testing with
+		SymPy number types
 
 
 v0.3.0, 12 JAN 2015
