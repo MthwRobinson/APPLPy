@@ -259,17 +259,17 @@ class BivariateRV:
                         temp=[{x:oo,y:0}]
                     else:
                         temp=[{x:0,y:oo}]
-                else if cons_j==-oo and cons_mod==0:
+                if cons_j==-oo and cons_mod==0:
                     if cons_j==x:
                         temp=[{x:-oo,y:0}]
                     else:
                         temp=[{x:0,y:-oo}]
-                else if cons_j==0 and cons_mod==oo:
+                if cons_j==0 and cons_mod==oo:
                     if cons_j==x:
                         temp=[{y:oo,x:0}]
                     else:
                         temp=[{y:0,x:oo}]
-                else if cons_j==0 and cons_mod==-oo:
+                if cons_j==0 and cons_mod==-oo:
                     if cons_j==x:
                         temp=[{y:-oo,x:0}]
                     else:
