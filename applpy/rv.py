@@ -753,7 +753,7 @@ class RV:
         return varlist
 
 """
-Procedures:
+Conversion Procedures:
     1. CDF(RVar,value)
     2. CHF(RVar,value)
     3. HF(RVar,value)
@@ -1982,10 +1982,11 @@ Procedures:
     11. OrderStat(RVar,n,r)
     12. ProductIID(RVar,n)
     13. Skewness(RVar)
-    14. Transform(RVar,gX)
-    15. Truncate(RVar,[lw,up])
-    16. Variance(RVar)
-    17. VarDiscrete(RVar)
+    14. SqRt(RVar)
+    15. Transform(RVar,gX)
+    16. Truncate(RVar,[lw,up])
+    17. Variance(RVar)
+    18. VarDiscrete(RVar)
 """
 
 def ConvolutionIID(RVar,n):
@@ -2593,7 +2594,22 @@ def Skewness(RVar,cache=False):
     if cache==True:
         RVar.add_to_cache('skewness',skew)
     return simplify(skew)
-                            
+
+def Sqrt(RVar):
+    """
+    Procedure Name: Sqrt
+    Purpose: Computes the transformation of a random variable by sqrt(x)
+    Arguments:  1. RVar: A random variable
+    Output:     1. The random variable transformed by sqrt(x) 
+    """
+    for element in RVar.support:
+        if element < 0:
+            err_string = 'A negative value appears in the support of the'
+            err_string += ' random variable.'
+            raise RVError(err_string)
+    u=[[sqrt(x)],[0,oo]]
+    NewRvar=Transform(RVar,u)
+    return NewRvar           
 
 def Transform(RVar,gXt):
     """
