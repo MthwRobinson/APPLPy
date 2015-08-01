@@ -62,7 +62,7 @@ from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
                    binomial, pprint,log,expand,zoo,latex,Piecewise,Rational,
-                   Sum)
+                   Sum,S,Float)
 from sympy.plotting.plot import plot
 from random import random
 import numpy as np
@@ -2725,7 +2725,8 @@ def Transform(RVar,gXt):
             # Use the test point to determine the correct inverse
             for j in range(len(invlist)):
                 # If g-1(g(c))=c, then the inverse is correct
-                if invlist[j].subs(t,gX[0][i].subs(x,c))==c:
+                test=invlist[j].subs(t,gX[0][i].subs(x,c))
+                if Float(test,10)==Float(c,10):
                     ginv.append(invlist[j])
         # Find the transformation function for each segment
         seg_func=[]
