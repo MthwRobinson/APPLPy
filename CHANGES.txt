@@ -5,6 +5,7 @@ New Capabilities:
 		different functional forms. Now runs more efficiently
 	2. Discrete RVs with explicit values and discrete RVs defined by
 		expressions can now be manipulated with RV algebra
+	3. Sqrt(X) syntax implemented for transformation by sqrt(x).
 
 Fixed Bugs:
 	1. BootstrapRV procedure fixed. Duplicate elements are now
@@ -26,6 +27,9 @@ Fixed Bugs:
 		transform them.
 	7. Corrections made to Transform to account for equality testing with
 		SymPy number types
+	8. Corrections made to the discrete transform procedure to handle
+		situations in which the support of the transformation does
+		not cover the full support of the random variable
 
 
 v0.3.0, 12 JAN 2015
