@@ -1980,13 +1980,14 @@ Procedures:
     9. MGF(RVar)
     10. MinimumIID(RVar,n)
     11. OrderStat(RVar,n,r)
-    12. ProductIID(RVar,n)
-    13. Skewness(RVar)
-    14. SqRt(RVar)
-    15. Transform(RVar,gX)
-    16. Truncate(RVar,[lw,up])
-    17. Variance(RVar)
-    18. VarDiscrete(RVar)
+    12. Power(Rvar,n)
+    13. ProductIID(RVar,n)
+    14. Skewness(RVar)
+    15. SqRt(RVar)
+    16. Transform(RVar,gX)
+    17. Truncate(RVar,[lw,up])
+    18. Variance(RVar)
+    19. VarDiscrete(RVar)
 """
 
 def ConvolutionIID(RVar,n):
@@ -2546,6 +2547,20 @@ def OrderStat(RVar,n,r,replace='w'):
                         # Find the next lexicographical combination
                         combo=NextCombination(combo,N)
 
+def Pow(RVar,n):
+    """
+    Procedure Name: Pow
+    Purpose: Compute the transformation of a random variable by an exponent
+    Arguments:  1. RVar: A random variable
+                2. n: an integer
+    Output:     1. The transformation of the RV by x**n
+    """
+    if type(n) != int:
+        err_str = 'n must be an integer'
+        raise RVError(err_str)
+    g=[[x**n,x**n],[-oo,0,oo]]
+    return Transform(RVar,g)
+
 def ProductIID(RVar,n):
     """
     Procedure Name: ProductIID
@@ -2726,9 +2741,12 @@ def Transform(RVar,gXt):
             for j in range(len(invlist)):
                 # If g-1(g(c))=c, then the inverse is correct
                 test=invlist[j].subs(t,gX[0][i].subs(x,c))
-                if Float(test,10)==Float(c,10):
-                    ginv.append(invlist[j])
-        # Find the transformation function for each segment
+                if test.__class__.__name__ != 'Mul':                  
+                    if test==Float(c,10):
+                        ginv.append(invlist[j])
+                if j==len(invlist)-1 and len(ginv) < i+1:
+                    ginv.append(None)
+        # Find the transformation function for each segment'
         seg_func=[]
         for i in range(len(X_dummy.func)):
             # Only find transformation for applicable segments
@@ -2756,7 +2774,10 @@ def Transform(RVar,gXt):
         # Substitute x into the transformed random variable
         trans_func2=[]
         for i in range(len(trans_func)):
-            trans_func2.append(simplify(trans_func[i].subs(t,x)))
+            if type(trans_func[i]) not in [int,float]:
+                trans_func2.append(simplify(trans_func[i].subs(t,x)))
+            else:
+                trans_func2.append(trans_func[i])
         # Create and return the random variable
         return RV(trans_func2,trans_supp,['continuous','pdf'])
 
@@ -2767,12 +2788,16 @@ def Transform(RVar,gXt):
         # Find the portion of the transformation each element
         #   in the random variable applies to, and then transform it
         for i in range(len(X_dummy.support)):
+            X_support=X_dummy.support[i]
+            if X_support < min(gX[1]) or X_support > max(gX[1]):
+                trans_sup.append(X_support)
             for j in range(len(gX[1])-1):
-                X_support=X_dummy.support[i]
                 if X_support>=gX[1][j] and X_support<=gX[1][j+1]:
                     trans_sup.append(gX[0][j].subs(x,X_dummy.support[i]))
-                else:
-                    trans_sup.append(X_support)
+                    break
+                    # Break is required, otherwise points on the boundaries
+                    #   between two segments of the transformation will
+                    #   be entered twice
         # Sort the function and support lists
         sortlist=zip(trans_sup,X_dummy.func)
         sortlist.sort()
