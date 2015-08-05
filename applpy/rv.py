@@ -410,7 +410,7 @@ class RV:
             error_string+=' integer value'
             raise RVError(error_string)
 
-        pow_rv=ProductIID(self,n)
+        pow_rv=Pow(self,n)
         return pow_rv
 
     def __eq__(self,other):
