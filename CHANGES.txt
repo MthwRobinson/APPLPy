@@ -6,6 +6,7 @@ New Capabilities:
 	2. Discrete RVs with explicit values and discrete RVs defined by
 		expressions can now be manipulated with RV algebra
 	3. Sqrt(X) syntax implemented for transformation by sqrt(x).
+	4. X**n syntax implemented for transformations by x**n
 
 Fixed Bugs:
 	1. BootstrapRV procedure fixed. Duplicate elements are now
