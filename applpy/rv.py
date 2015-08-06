@@ -2558,7 +2558,12 @@ def Pow(RVar,n):
     if type(n) != int:
         err_str = 'n must be an integer'
         raise RVError(err_str)
-    g=[[x**n,x**n],[-oo,0,oo]]
+    # If n is even, then g is a two-to-one transformation
+    if n%2 == 0:
+        g=[[x**n,x**n],[-oo,0,oo]]
+    # If n is odd, the g is a one-to-one transformation
+    elif n%2 == 1:
+        g=[[x**n],[-oo,oo]]
     return Transform(RVar,g)
 
 def ProductIID(RVar,n):
