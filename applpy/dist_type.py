@@ -83,7 +83,7 @@ class ArcSinRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class ArcTanRV(RV):
     """
@@ -107,7 +107,7 @@ class ArcTanRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class BetaRV(RV):
     """
@@ -132,7 +132,7 @@ class BetaRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class CauchyRV(RV):
     """
@@ -157,7 +157,7 @@ class CauchyRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[a,alpha]
-        self.cache=None
+        self.cache={}
 
     def variate(self,n=1,s=None,method='special'):        
         # If no parameter is specified, return an error
@@ -208,7 +208,7 @@ class ChiRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class ChiSquareRV(RV):
     """
@@ -228,7 +228,7 @@ class ChiSquareRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class ErlangRV(RV):
     """
@@ -256,7 +256,7 @@ class ErlangRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class ErrorRV(RV):
     """
@@ -283,7 +283,7 @@ class ErrorRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class ErrorIIRV(RV):
     """
@@ -307,7 +307,7 @@ class ErrorIIRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class ExponentialRV(RV):
     """
@@ -329,7 +329,7 @@ class ExponentialRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta]
-        self.cache=None
+        self.cache={}
 
     def variate(self,n=1,s=None,method='special'):       
         # If no parameter is specified, return an error
@@ -383,7 +383,7 @@ class ExponentialPowerRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
-        self.cache=None
+        self.cache={}
 
     def variate(self,n=1,s=None,method='special'):
         # If no parameter is specified, return an error
@@ -436,7 +436,7 @@ class ExtremeValueRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[alpha,beta]
-        self.cache=None
+        self.cache={}
 
     def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
@@ -491,7 +491,7 @@ class FRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class GammaRV(RV):
     """
@@ -517,7 +517,7 @@ class GammaRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
-        self.cache=None
+        self.cache={}
 
 class GeneralizedParetoRV(RV):
     """
@@ -542,7 +542,7 @@ class GeneralizedParetoRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class GompertzRV(RV):
     """
@@ -567,7 +567,7 @@ class GompertzRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
-        self.cache=None
+        self.cache={}
 
     def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
@@ -618,7 +618,7 @@ class IDBRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class InverseGaussianRV(RV):
     """
@@ -644,7 +644,7 @@ class InverseGaussianRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 
 class InverseGammaRV(RV):
@@ -670,7 +670,7 @@ class InverseGammaRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class KSRV(RV):
     """
@@ -833,7 +833,7 @@ class KSRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class LaPlaceRV(RV):
     """
@@ -855,7 +855,7 @@ class LaPlaceRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
         
 class LogGammaRV(RV):
     """
@@ -880,7 +880,7 @@ class LogGammaRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class LogisticRV(RV):
     """
@@ -906,7 +906,7 @@ class LogisticRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[kappa,theta]
-        self.cache=None
+        self.cache={}
 
     def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
@@ -961,7 +961,7 @@ class LogLogisticRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
-        self.cache=None
+        self.cache={}
 
     def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
@@ -1014,7 +1014,7 @@ class LogNormalRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class LomaxRV(RV):
     """
@@ -1039,7 +1039,7 @@ class LomaxRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameters=[kappa,theta]
-        self.cache=None
+        self.cache={}
 
     def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
@@ -1094,7 +1094,7 @@ class MakehamRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class MuthRV(RV):
     """
@@ -1117,7 +1117,7 @@ class MuthRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class NormalRV(RV):
     """
@@ -1142,7 +1142,7 @@ class NormalRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[mu,sigma]
-        self.cache=None
+        self.cache={}
 
     def variate(self,n=1,s=None,method='special'):
         # If no parameter is specified, return an error
@@ -1196,7 +1196,7 @@ class ParetoRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class RayleighRV(RV):
     """
@@ -1216,7 +1216,7 @@ class RayleighRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class TriangularRV(RV):
     """
@@ -1244,7 +1244,7 @@ class TriangularRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[a,b,c]
-        self.cache=None
+        self.cache={}
 
 class TRV(RV):
     """
@@ -1264,7 +1264,7 @@ class TRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class UniformRV(RV):
     """
@@ -1289,7 +1289,7 @@ class UniformRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[a,b]
-        self.cache=None
+        self.cache={}
 
     def variate(self,n=1,s=None,method='special'):
         # If no parameter is specified, return an error
@@ -1346,7 +1346,7 @@ class WeibullRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
-        self.cache=None
+        self.cache={}
 
 
     def variate(self,n=1,s=None,method='special'):
@@ -1398,7 +1398,7 @@ class BenfordRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class BinomialRV(RV):
     """
@@ -1425,7 +1425,7 @@ class BinomialRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class GeometricRV(RV):
     """
@@ -1443,7 +1443,7 @@ class GeometricRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class PoissonRV(RV):
     """
@@ -1465,7 +1465,7 @@ class PoissonRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
 
 class UniformDiscreteRV(RV):
     """
@@ -1488,7 +1488,7 @@ class UniformDiscreteRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
-        self.cache=None
+        self.cache={}
         
         
 
