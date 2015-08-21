@@ -1,3 +1,6 @@
 Current APPLPy Bugs:
 
-1. Transform is not able to handle g=[[x**n]] where n is an even number
+1. MGF(X) not working for discrete random variables
+2. Need to simplify "weird" output (i.e. - - - x instead of -x),
+	may need to do a sequence of simplify commands
+
