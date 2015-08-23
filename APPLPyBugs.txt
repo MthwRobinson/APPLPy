@@ -2,5 +2,6 @@ Current APPLPy Bugs:
 
 1. MGF(X) not working for discrete random variables
 2. Need to simplify "weird" output (i.e. - - - x instead of -x),
-	may need to do a sequence of simplify commands
+	may need to do a sequence of simplify commands (also
+	may need to add an assumption for the 't')
 
