@@ -2858,7 +2858,7 @@ def Truncate(RVar,supp):
         truncfunc=[]
         for i in range(len(X_dummy.func)):
             if i>=lwindx and i<=upindx:
-                truncfunc.append(X_dummy.func[i]/area)
+                truncfunc.append(simplify(X_dummy.func[i]/area))
         truncsupp=[supp[0]]
         upindx+=1
         for i in range(len(X_dummy.support)):

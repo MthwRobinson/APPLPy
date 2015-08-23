@@ -31,6 +31,7 @@ Fixed Bugs:
 	8. Corrections made to the discrete transform procedure to handle
 		situations in which the support of the transformation does
 		not cover the full support of the random variable
+	9. Added simplification line to end of Truncate procedure
 
 
 v0.3.0, 12 JAN 2015
