@@ -7,6 +7,8 @@ New Capabilities:
 		expressions can now be manipulated with RV algebra
 	3. Sqrt(X) syntax implemented for transformation by sqrt(x).
 	4. X**n syntax implemented for transformations by x**n
+	5. Markov Chain class added, includes procedures for computing the state
+		of a system after n additional steps
 
 Fixed Bugs:
 	1. BootstrapRV procedure fixed. Duplicate elements are now

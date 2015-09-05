@@ -29,6 +29,7 @@ from .bayes import *
 from .queue_dist import *
 from .bivariate import *
 from .timeseries import *
+from .stoch import *
 
 x,y,z,t=symbols('x y z t')
 k,m,n=symbols('k m n',integers=True)
