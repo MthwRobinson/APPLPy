@@ -144,9 +144,10 @@ class MarkovChain:
     Procedures:
         1. display(self)
         2. matrix_convert(self,matrix)
-        3. step(self,n)
-        4. trans_mat(self,n)
-        5. vector_convert(self,vector)
+        3. reset(self)
+        4. step(self,n)
+        5. trans_mat(self,n)
+        6. vector_convert(self,vector)
     """
     def display(self):
         """
@@ -181,6 +182,17 @@ class MarkovChain:
         display_mat = pd.DataFrame(matrix, index=self.state_space,
                                     columns = self.state_space)
         return display_mat
+
+    def reset(self):
+        """
+        Procedure Name: resets
+        Purpose: Resets the current state of the system to n=0
+        Arugments:  1. self: the markov process
+        Output:     1. The system reset to time n=0
+        """
+        self.state=self.init
+        self.state_print=self.init_print
+        return self.state_print
     
     def step(self,n):
         """
