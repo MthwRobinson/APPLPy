@@ -15,6 +15,7 @@ from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
 from sympy.plotting.plot import plot
 from random import random
 import numpy as np
+import pandas as pd
 import plot as plt
 import pylab as pyplt
 x,y,z,t=symbols('x y z t')
@@ -56,7 +57,7 @@ class MarkovChain:
     Defines procedures relating to APPLPy Markov Chains
     """
 
-    def __init__(self,P,init=None):
+    def __init__(self,P,init=None,states=None):
         """
         Procedure Name: __init__
         Purpose: Initializes and instance of the Markov Chain class
@@ -77,6 +78,21 @@ class MarkovChain:
                 raise StochError(err_string)
             else:
                 P = np.array(P)
+        # Optionally set up the markov process to recognizes names for the
+        #   states in the state space
+        self.state_space = None
+        if states != None:
+            # If the number of states does not equal the dimension of the
+            #   transition matrix, return an error
+            if len(states) != P.shape[0]:
+                err_string = 'The number of states in the state space '
+                err_string += 'must be equal to the dimensions of the '
+                err_string += 'transition probability matrix'
+                raise StochError(err_string)
+            # Convert the state labels to strings, set the state space
+            #   for the markov chain
+            state_space = [str(state_label) for state_label in states]
+            self.state_space = state_space
         # Check to make sure that the transition probability matrix is a square
         #   matrix
         if P.shape[0] != P.shape[1]:
@@ -94,6 +110,7 @@ class MarkovChain:
                 err_string += row_id
                 raise StochError(err_string)
         self.P=P
+        self.P_print=self.matrix_convert(P)
 
         # If an initial distribution is specified, check to make sure that it
         #   is entered as an array or list
@@ -112,12 +129,82 @@ class MarkovChain:
                 err_string = 'The initial distribution must sum to one'
                 raise StochError(err_string)
             self.init=init
+            self.init_print=self.vector_convert(init)
         else:
             self.init=None
+            self.init_print=None
         # Initialize the state of the system to the initial distribution
         self.state=init
+        self.state_print=self.init_print
         self.steps=0
 
+    """
+    Special Class Methods
+
+    Procedures:
+        1. display(self)
+        2. matrix_convert(self,matrix)
+        3. step(self,n)
+        4. trans_mat(self,n)
+        5. vector_convert(self,vector)
+    """
+    def display(self):
+        """
+        Procedure Name: display
+        Purpose: Displays the markov process in an interactive environment
+        Arugments:  1. self: the markov process
+        Output:     1. The transition probability matrix
+                    2. The initial state of the system
+                    3. The current state of the system
+        """
+        # Store display versions of the transition probability matrix and
+        #   initial state for future use
+        print 'The transition probability matrix:'
+        print self.P_print
+        print '----------------------------------------'
+        print 'The initial system state:'
+        print self.init_print
+        print'-----------------------------------------'
+        print 'The current system state after %s steps:'%(self.steps)
+        print self.state_print      
+        
+
+    def matrix_convert(self,matrix):
+        """
+        Procedure Name: matrix_convert
+        Purpose: Converts matrices to pandas data frame so that they can
+                    be displayed with state space labels
+        Arugments:  1. self: the markov process
+                    2. matrix: the matrix to be converted for display
+        Output:     1. The matrix in display format
+        """
+        display_mat = pd.DataFrame(matrix, index=self.state_space,
+                                    columns = self.state_space)
+        return display_mat
+    
+    def step(self,n):
+        """
+        Procedure Name: step
+        Purpose: Moves the system forward n steps and saves the current
+                    state of the system
+        Arguments:  1. n: the number of steps the system takes forward
+        Output:     1. The state of the system after n additional steps
+        """
+        # Check to make sure that the number of steps is an integer value
+        if type(n) != int:
+            err_string = 'The number of steps in a discrete time markov chain'
+            err_string = ' must be an integer value'
+            raise StochError(err_string)
+        # Compute the probability transition matrix for n steps
+        Pk = self.trans_mat(n)
+        # Compute the state of the system after n additional steps
+        new_state = np.dot(Pk,self.state)
+        # Set the system state to the new state
+        self.state=new_state
+        self.state_print=self.vector_convert(new_state)
+        self.steps+=n
+        return self.state
+            
     def trans_mat(self,n):
         """
         Procedure Name: trans_mat
@@ -138,27 +225,19 @@ class MarkovChain:
         Pk = np.dot(np.dot(T,Dk),Tinv)
         return Pk
 
-    def step(self,n):
+    def vector_convert(self,vector):
         """
-        Procedure Name: step
-        Purpose: Moves the system forward n steps and saves the current
-                    state of the system
-        Arguments:  1. n: the number of steps the system takes forward
-        Output:     1. The state of the system after n additional steps
+        Procedure Name: vector_convert
+        Purpose: Converts vectors to pandas data frame so that they can
+                    be displayed with state space labels
+        Arugments:  1. self: the markov process
+                    2. vector: the vector to be converted for display
+        Output:     1. The vector in display format
         """
-        # Check to make sure that the number of steps is an integer value
-        if type(n) != int:
-            err_string = 'The number of steps in a discrete time markov chain'
-            err_string = ' must be an integer value'
-            raise StochError(err_string)
-        # Compute the probability transition matrix for n steps
-        Pk = self.trans_mat(n)
-        # Compute the state of the system after n additional steps
-        new_state = np.dot(Pk,self.state)
-        # Set the system state to the new state
-        self.state=new_state
-        self.steps+=n
-        return self.state
+        display_vec = pd.DataFrame(vector, index=self.state_space)
+        return display_vec
+
+
         
         
         
