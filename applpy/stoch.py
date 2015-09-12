@@ -210,7 +210,7 @@ class MarkovChain:
         # Compute the probability transition matrix for n steps
         Pk = self.trans_mat(n)
         # Compute the state of the system after n additional steps
-        new_state = np.dot(Pk,self.state)
+        new_state = np.dot(self.state,Pk)
         # Set the system state to the new state
         self.state=new_state
         self.state_print=self.vector_convert(new_state)
