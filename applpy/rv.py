@@ -1487,10 +1487,12 @@ def IDF(RVar,value=x,cache=False):
             if value==x:
                 return RVar
             if value!=x:
-                if value not in RVar.support:
-                    return 0
-                else:
-                    return RVar.func[RVar.support.index(value)]
+                for i in range(len(X_dummy.support)):
+                    if X_dummy.support[i]==value:
+                        return X_dummy.func[i]
+                    if X_dummy.support[i]<value:
+                        if X_dummy.support[i+1]>value:
+                            return X_dummy.func[i+1]
         # Otherwise, find the cdf, and then invert it
         else:
             # If the distribution is a chf or hf, convert to an sf first
@@ -1502,10 +1504,13 @@ def IDF(RVar,value=x,cache=False):
             if value==x:
                 return RV(X_dummy.support,X_dummy.func,['discrete','idf'])
             if value!=x:
-                if value not in RVar.func:
-                    return 0
-                else:
-                    return RVar.support[RVar.func.index(value)]
+                X_dummy=RV(X_dummy.support,X_dummy.func,['discrete','idf'])
+                for i in range(len(X_dummy.support)):
+                    if X_dummy.support[i]==value:
+                        return X_dummy.func[i]
+                    if X_dummy.support[i]<value:
+                        if X_dummy.support[i+1]>value:
+                            return X_dummy.func[i+1]
             
 
 
