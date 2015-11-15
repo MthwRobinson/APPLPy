@@ -9,6 +9,9 @@ New Capabilities:
 	4. X**n syntax implemented for transformations by x**n
 	5. Markov Chain class added, includes procedures for computing the state
 		of a system after n additional steps
+	6. Support added for rational numbers in DiscreteUniformRV
+	7. Support for discrete random variables added for the Expected Value
+		function
 
 Fixed Bugs:
 	1. BootstrapRV procedure fixed. Duplicate elements are now
@@ -34,6 +37,8 @@ Fixed Bugs:
 		situations in which the support of the transformation does
 		not cover the full support of the random variable
 	9. Added simplification line to end of Truncate procedure
+	10. Fixed bug in computing values for discrete pdf
+	11. Fixed bug related to floating point numbers in transform
 
 
 v0.3.0, 12 JAN 2015
