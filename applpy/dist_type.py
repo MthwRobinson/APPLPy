@@ -28,7 +28,7 @@ from __future__ import division
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
-                   binomial,gamma,cos,cot)
+                   binomial,gamma,cos,cot,Rational)
 from random import random
 from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
                  BootstrapRV, Convert)
@@ -1483,7 +1483,7 @@ class UniformDiscreteRV(RV):
             err_string='(b-a) must be divisble by k'
             raise RVError(err_string)
         n = int((b-a)/k)
-        X_dummy=RV([1/(n+1) for i in range(1,n+2)],
+        X_dummy=RV([Rational(1,n+1) for i in range(1,n+2)],
                    [a+i*k for i in range(n+1)], ['discrete','pdf'])
         self.func=X_dummy.func
         self.support=X_dummy.support
