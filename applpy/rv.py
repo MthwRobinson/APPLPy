@@ -853,7 +853,11 @@ def CDF(RVar,value=x,cache=False):
             # Substitue the dummy variable 't' into the dummy rv
             funclist=[]
             for i in range(len(X_dummy.func)):
-                newfunc=X_dummy.func[i].subs(x,t)
+                number_types = [int,float,'sympy.core.numbers.Rational']
+                if type(X_dummy.func[i]) not in number_types:
+                    newfunc=X_dummy.func[i].subs(x,t)
+                else:
+                    newfunc=X_dummy.func[i]
                 funclist.append(newfunc)
             # Integrate to find the cdf
             cdflist=[]
@@ -2746,14 +2750,15 @@ def Transform(RVar,gXt):
             else:
                 c=(gX[1][i]+gX[1][i+1])/2
             # Create a list of possible inverses
-            invlist=solve(gX[0][i]-t,x)
+            invlist=solve(gX[0][i]-t,x)           
             # Use the test point to determine the correct inverse
             for j in range(len(invlist)):
                 # If g-1(g(c))=c, then the inverse is correct
                 test=invlist[j].subs(t,gX[0][i].subs(x,c))
                 if test.__class__.__name__ != 'Mul':                  
-                    if test==Float(c,10):
-                        ginv.append(invlist[j])
+                    if test<=Float(c,10)+.0000001:
+                        if test >= Float(c,10)-.0000001:
+                            ginv.append(invlist[j])
                 if j==len(invlist)-1 and len(ginv) < i+1:
                     ginv.append(None)
         # Find the transformation function for each segment'
