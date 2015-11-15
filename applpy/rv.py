@@ -1331,7 +1331,7 @@ def IDF(RVar,value=x,cache=False):
     # Check to make sure the value given is within the random
     #   variable's support
     if value.__class__.__name__!='Symbol':
-        if value>RVar.support[-1] or value<RVar.support[0]:
+        if value>1 or value<0:
             string='Value is not within the support of the random variable'        
             raise RVError(string)
 
@@ -1614,12 +1614,6 @@ def PDF(RVar,value=x,cache=False):
 
     # If the distribution is a discrete function, find and return the pdf
     if RVar.ftype[0]=='Discrete':
-        # If the support is finite, then convert to expanded form and compute
-        #   the PDF
-        if oo not in RVar.support:
-            if -oo not in RVar.support:
-                RVar2=Convert(RVar)
-                return PDF(RVar2,value)
         # If the distribution is already a pdf, nothing needs to be done
         if RVar.ftype[1]=='pdf':
             if value==x:
@@ -1629,6 +1623,12 @@ def PDF(RVar,value=x,cache=False):
                     if value>=RVar.support[i] and value<=RVar.support[i+1]:
                         pdfvalue=RVar.func[i].subs(x,value)
                         return simplify(pdfvalue)
+        # If the support is finite, then convert to expanded form and compute
+        #   the PDF
+        if oo not in RVar.support:
+            if -oo not in RVar.support:
+                RVar2=Convert(RVar)
+                return PDF(RVar2,value)
         # If the distribution is a hf or chf, use summation to find the pdf
         if RVar.ftype[1]=='hf' or RVar.ftype[1]=='chf':
             X_dummy=HF(RVar)
@@ -2084,7 +2084,9 @@ def ExpectedValue(RVar,gX=x):
     if fx.ftype[0]=='discrete':
         # Transform the random variable, and then use the
         #   mean procedure to find the expected value
-        fx_trans=Transform(fx,[[gX],[-oo,oo]])
+        fx_support = [gX.subs(x,value) for value in fx.support]
+        fx_trans = RV(fx.func,fx_support,fx.ftype)
+        #fx_trans=Transform(fx,[[gX],[-oo,oo]])
         Expect=MeanDiscrete(fx_trans)
         return simplify(Expect)
 
@@ -2182,8 +2184,9 @@ def Mean(RVar,cache=False):
         return RVar.cache['mean']
     
     # Find the PDF of the random variable
-    X_dummy=PDF(RVar)
+
     # If the random variable is continuous, find and return the mean
+    X_dummy=PDF(RVar)
     if X_dummy.ftype[0]=='continuous':
         # Create list of x*f(x)
         meanfunc=[]
@@ -2209,8 +2212,8 @@ def Mean(RVar,cache=False):
         # Sum to find the mean
         meanval=0
         for i in range(len(X_dummy.func)):
-            val=summation(meanfunc[i],(x,X_dummy.support[i],
-                                       X_dummy.support[i+1]))
+            val=Sum(meanfunc[i],(x,X_dummy.support[i],
+                                       X_dummy.support[i+1])).doit()
             meanval+=val
         meanval=simplify(meanval)
         if cache==True:
