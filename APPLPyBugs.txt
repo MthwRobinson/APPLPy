@@ -1,8 +1,18 @@
 Current APPLPy Bugs:
 
-1. MGF(X) not working for discrete random variables
-2. Need to simplify "weird" output (i.e. - - - x instead of -x),
+1. Need to simplify "weird" output (i.e. - - - x instead of -x),
 	may need to do a sequence of simplify commands (also
 	may need to add an assumption for the 't', see HW1.pynb
 	for example of when procedure fails)
+2. Support for the CDF representations of Discrete RVs
+3. X+X for U(0,1/2) works with 0.5 but not with Rational(1,2)
+4. MGF(X) comes out as a piecewise function for gamma,
+	may need to add assumptions
+5. Cannot handle functions that include abs(*)
+6. Need to get Convolution and Product running for Discrete RVs
+7. Error on Transform code with DiscreteRVs
+8. Need to implement OrderState "wo"
+9. Need to implement MaximumIID so it runs with n left unspecified
+10. Need to implement RangeStat procedure
+
 
