@@ -40,6 +40,7 @@ Fixed Bugs:
 	9. Added simplification line to end of Truncate procedure
 	10. Fixed bug in computing values for discrete pdf
 	11. Fixed bug related to floating point numbers in transform
+	12. Fixed bug to correct computation of IDFs for Discrete RVs
 
 
 v0.3.0, 12 JAN 2015

@@ -937,15 +937,15 @@ def CDF(RVar,value=x,cache=False):
             # Sum to find the cdf
             cdflist=[]
             for i in range(len(funclist)):
-                cdffunc=summation(funclist[i],(t,X_dummy.support[i],x))
+                cdffunc=Sum(funclist[i],(t,X_dummy.support[i],x)).doit()
                 # Adjust the constant of integration
                 if i!=0:
                     const=(cdflist[i-1].subs(x,X_dummy.support[i])-
                     cdffunc.subs(x,X_dummy.support[i]))
-                    cdffunc=cdffunc+const
+                    #cdffunc=cdffunc+const
                 if i==0:
                     const=0-cdffunc.subs(x,X_dummy.support[i])
-                    cdffunc=cdffunc+const
+                    #cdffunc=cdffunc+const
                 cdflist.append(simplify(cdffunc))
             # If no value is specified, return the cdf
             if value==x:
@@ -1478,7 +1478,7 @@ def IDF(RVar,value=x,cache=False):
             X_dummy=IDF(RVar)
             for i in range(len(X_dummy.support)):
                 if value>=X_dummy.support[i] and value<=X_dummy.support[i+1]:
-                    idfvalue=X_dummy.func[i].subs(t,value)
+                    idfvalue=X_dummy.func[i].subs(x,value)
                     return simplify(idfvalue)
             #varlist=RVar.variate(s=value)
             #return varlist[0]
