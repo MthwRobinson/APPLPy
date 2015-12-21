@@ -1435,7 +1435,7 @@ class BernoulliRV(BinomialRV):
     Output:     1. A bernoulli random variable
     """
     def __init__(self,p=Symbol('p',positive=True)):
-        X_dummy = BinomialRV(N=1,p)
+        X_dummy = BinomialRV(1,p)
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
