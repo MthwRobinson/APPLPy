@@ -2405,8 +2405,8 @@ def OrderStat(RVar,n,r,replace='w'):
     # If the distribution is continuous, find and return the value of the
     #   order statistic
     if RVar.ftype[0]=='continuous':
-        if replace == 'w':
-            err_string = 'OrderStat with replacement not implemented '
+        if replace == 'wo':
+            err_string = 'OrderStat without replacement not implemented '
             err_string += 'for continuous random variables'
             raise RVError(err_string)
         # Compute the PDF, CDF and SF of the random variable
@@ -2607,24 +2607,31 @@ def ProductIID(RVar,n):
         X_final*=X_dummy
     return PDF(X_final)
 
-def RangeStat(RVar,n):
+def RangeStat(RVar,n,replace='w'):
     """
-    Procedure Name: ProductIID
-    Purpose: Compute the product of n iid random variables
+    Procedure Name: RangeStat
+    Purpose: Compute the distribution of the range of n iid rvs
     Arguments:  1. RVar: A random variable
                 2. n: an integer
-    Output:     1. The product of n iid random variables
+                3. replace: indicates with or without replacment
+    Output:     1. The dist of the range of n iid random variables
     """
     # Check to make sure that n >= 2, otherwise there is no range
-    if n < 2:
+    if n<2:
         err_string = 'Only one item sampled from the population'
         raise RVError(err_string)
+    if replace not in ['w','wo']:
+        raise RVError('Replace must be w or wo')
     # Convert the random variable to its PDF form
     fX = PDF(RVar)
     # If the random variable is continuous and its CDF is tractable,
     #   find the PDF of the range statistic
     z = Symbol('z')
     if fX.ftype[0] == 'continuous':
+        if replace == 'wo':
+            err_string = 'OrderStat without replacement not implemented '
+            err_string += 'for continuous random variables'
+            raise RVError(err_string)
         FX = CDF(RVar)
         nsegs = len(FX.func)
         fXRange = []
@@ -2637,6 +2644,62 @@ def RangeStat(RVar,n):
             fXRange.append(ffX)
         RangeRV = RV(fXRange,fX.support,fX.ftype)
         return RangeRV
+    # If the random variable is discrete symbolic, convert it to discrete
+    #   explicit and compute the range statistic
+    if fX.ftype[0] == 'Discrete':
+        if (-oo not in fX.support) and (oo not in fX.support):
+            X_dummy = Convert(RVar)
+            return RangeStat(X_dummy,n,replace)
+    # If the reandom variable is discrete explicit, find and return the
+    #   range stat
+    if fX.ftype[0] == 'discrete':
+        fX = PDF(RVar)
+        FX = CDF(RVar)
+        N = len(fX.support)
+        if N < 2:
+            err_string = 'The population only consists of 1 element'
+            raise RVError(err_string)
+        if replace == 'w':
+            s = fX.support
+            p = fX.func
+            k = 0
+            # rs is an array that holds the range support values
+            # rp is an array that holds the range probability mass values
+            # There are 1 + 2 + 3 + ... + N possible range support values
+            #   if the support is of size N. 'uppers' is this limit
+            uppers = sum(range(1,N+1))
+            rs = [0 for i in range(N**2)]
+            rp = [0 for i in range(N**2)]
+            for i in range(N):
+                for j in range(N):
+                    rs[k] = s[j] - s[i]
+                    rp[k] = (sum(p[i:j+1])**n -
+                             sum(p[i+1:j+1])**n -
+                             sum(p[i:j])**n+
+                             sum(p[i+1:j])**n)
+                    k+=1
+            # Sort rs and rp together by rs
+            sortedr = zip(*sorted(zip(rs,rp)))
+            sortrs = list(sortedr[0])
+            sortrp = list(sortedr[1])
+            # Combine redundant elements in the list
+            sortrs2=[]
+            sortrp2=[]
+            for i in range(len(sortrs)):
+                if sortrs[i] not in sortrs2:
+                    if sortrp[i] > 0:
+                        sortrs2.append(sortrs[i])
+                        sortrp2.append(sortrp[i])
+                elif sortrs[i] in sortrs2:
+                    idx=sortrs2.index(sortrs[i])
+                    sortrp2[idx]+=sortrp[i]
+            return RV(sortrp2,sortrs2,['discrete','pdf'])
+            
+            
+                    
+                        
+        
+        
 
 def Skewness(RVar,cache=False):
     """
