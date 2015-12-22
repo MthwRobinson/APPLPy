@@ -2399,10 +2399,16 @@ def OrderStat(RVar,n,r,replace='w'):
     """
     if r>n:
         raise RVError('The index cannot be greater than the sample size')
+    if replace not in ['w','wo']:
+        raise RVError('Replace must be w or wo')
 
     # If the distribution is continuous, find and return the value of the
     #   order statistic
     if RVar.ftype[0]=='continuous':
+        if replace == 'w':
+            err_string = 'OrderStat with replacement not implemented '
+            err_string += 'for continuous random variables'
+            raise RVError(err_string)
         # Compute the PDF, CDF and SF of the random variable
         pdf_dummy=PDF(RVar)
         cdf_dummy=CDF(RVar)
@@ -2421,19 +2427,20 @@ def OrderStat(RVar,n,r,replace='w'):
         # Return the distribution of the order statistic
         return RV(ordstat_func,RVar.support,['continuous','pdf'])
 
+    # If the distribution is in discrete symbolic form, convert it to
+    #   discrete explicit form and find the order statistic
+    if RVar.ftype[0]=='Discrete':
+        if (-oo not in RVar.support) and (oo not in RVar.support):
+            X_dummy = Convert(RVar)
+            return OrderStat(X_dummy,n,r,replace)
+        else:
+            err_string = 'OrderStat is not currently implemented for '
+            err_string += 'discrete RVs with infinite support'
+            raise RVError(err_string)
+
     # If the distribution is continuous, find and return the value of
     #   the order statistic
     if RVar.ftype[0]=='discrete':
-        #
-        # For discrete distributions:
-        #   1. Need to add support for symbolic discrete distributions
-        #   2. Need to add procedure that converts from dot form
-        #       to no-dot form
-        #   -- This will allow for the use of discrete distributions
-        #       such as the Poisson and Binomial distributions
-        #
-        if replace not in ['w','wo']:
-            raise RVError('Replace must be w or wo')
         fx=PDF(RVar)
         Fx=CDF(RVar)
         Sx=SF(RVar)
@@ -2479,10 +2486,12 @@ def OrderStat(RVar,n,r,replace='w'):
                 return RV(OSproblist,RVar.support,['discrete','pdf'])
 
         if replace=='wo':
+            '''
             if n>4:
-                print 'When sampling without replacement, n must be'
-                print 'less than 4'
-                raise RVError('n greater than 4')
+                err_string = 'When sampling without replacement, n must be '
+                err_string += 'less than 4'
+                raise RVError(err_string)
+            '''
             # Determine if the PDF has equally likely probabilities
             EqLike=True
             for i in range(len(fx.func)):

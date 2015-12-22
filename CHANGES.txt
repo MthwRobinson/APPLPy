@@ -43,6 +43,8 @@ Fixed Bugs:
 	10. Fixed bug in computing values for discrete pdf
 	11. Fixed bug related to floating point numbers in transform
 	12. Fixed bug to correct computation of IDFs for Discrete RVs
+	13. OrderStat modified to allow for 'wo' for samples of size
+		greater than 4
 
 
 v0.3.0, 12 JAN 2015
