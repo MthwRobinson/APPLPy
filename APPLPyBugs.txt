@@ -11,8 +11,7 @@ Current APPLPy Bugs:
 5. Cannot handle functions that include abs(*)
 6. Need to get Convolution and Product running for Discrete RVs
 7. Error on Transform code with DiscreteRVs
-8. Need to implement OrderState "wo"
+8. Need to implement OrderStat "wo"
 9. Need to implement MaximumIID so it runs with n left unspecified
-10. Need to implement RangeStat procedure
 
 

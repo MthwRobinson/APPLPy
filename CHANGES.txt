@@ -13,6 +13,8 @@ New Capabilities:
 	7. Support for discrete random variables added for the Expected
 		 Value function
 	8. BernoulliRV type added
+	9. RangeStat procedure added for finding the range stastics for
+		a random variable
 
 Fixed Bugs:
 	1. BootstrapRV procedure fixed. Duplicate elements are now

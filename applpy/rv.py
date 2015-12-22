@@ -35,11 +35,12 @@ Procedures On One Random Variable:
     10. MinimumIID(RVar,n)
     11. OrderStat(RVar,n,r)
     12. ProductIID(RVar,n)
-    13. Skewness(RVar)
-    14. Transform(RVar,gX)
-    15. Truncate(RVar,[lw,up])
-    16. Variance(RVar)
-    17. VarDiscrete(RVar)
+    13. RangeStat(RVar,n)
+    14. Skewness(RVar)
+    15. Transform(RVar,gX)
+    16. Truncate(RVar,[lw,up])
+    17. Variance(RVar)
+    18. VarDiscrete(RVar)
 
 Procedures On Two Random Variables:
     1. Convolution(RVar1,RVar2)
@@ -2596,6 +2597,37 @@ def ProductIID(RVar,n):
     for i in range(n-1):
         X_final*=X_dummy
     return PDF(X_final)
+
+def RangeStat(RVar,n):
+    """
+    Procedure Name: ProductIID
+    Purpose: Compute the product of n iid random variables
+    Arguments:  1. RVar: A random variable
+                2. n: an integer
+    Output:     1. The product of n iid random variables
+    """
+    # Check to make sure that n >= 2, otherwise there is no range
+    if n < 2:
+        err_string = 'Only one item sampled from the population'
+        raise RVError(err_string)
+    # Convert the random variable to its PDF form
+    fX = PDF(RVar)
+    # If the random variable is continuous and its CDF is tractable,
+    #   find the PDF of the range statistic
+    z = Symbol('z')
+    if fX.ftype[0] == 'continuous':
+        FX = CDF(RVar)
+        nsegs = len(FX.func)
+        fXRange = []
+        for i in range(nsegs):
+            ffX = integrate( n*(n-1)*
+                             (FX.func[i].subs(x,z) -
+                              FX.func[i].subs(x,z-x))**(n-2)
+                             *fX.func[i].subs(x,z-x)
+                             *fX.func[i].subs(x,z),(z,x,fX.support[i+1]))
+            fXRange.append(ffX)
+        RangeRV = RV(fXRange,fX.support,fX.ftype)
+        return RangeRV
 
 def Skewness(RVar,cache=False):
     """
