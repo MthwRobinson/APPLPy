@@ -2920,8 +2920,8 @@ def Transform(RVar,gXt):
                 # If g-1(g(c))=c, then the inverse is correct
                 test=invlist[j].subs(t,gX[0][i].subs(x,c))
                 if test.__class__.__name__ != 'Mul':                  
-                    if test<=Float(c,10)+.0000001:
-                        if test >= Float(c,10)-.0000001:
+                    if test<=Float(float(c),10)+.0000001:
+                        if test >= Float(float(c),10)-.0000001:
                             ginv.append(invlist[j])
                 if j==len(invlist)-1 and len(ginv) < i+1:
                     ginv.append(None)

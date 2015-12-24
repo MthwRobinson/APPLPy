@@ -5,10 +5,9 @@ Current APPLPy Bugs:
 	may need to add an assumption for the 't', see HW1.pynb
 	for example of when procedure fails)
 2. Support for the CDF representations of Discrete RVs
-3. X+X for U(0,1/2) works with 0.5 but not with Rational(1,2)
-4. MGF(X) comes out as a piecewise function for gamma,
+3. MGF(X) comes out as a piecewise function for gamma,
 	may need to add assumptions
-5. Cannot handle functions that include abs(*) (Sympy problem)
+4. Cannot handle functions that include abs(*) (Sympy problem)
 
 To do list:
 1. Update documentation on site to include RangeStat and OrderStat wo
