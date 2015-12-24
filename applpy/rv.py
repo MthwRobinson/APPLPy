@@ -2369,22 +2369,22 @@ def NextPermutation(Previous):
                 flag=True
                 OrigVal=Next[indx]
                 SwapIndex=indx+1
-            # Find the smallest value Next[j] for which Next[i]<Next[j]
-            #   and i<j
-            for j in reversed(range(SwapIndex,n)):
-                if Next[j]<Next[SwapIndex]:
-                    if Next[j]>OrigVal:
-                        SwapIndex=j
-            Temp1=Next[SwapIndex]
-            Swap=Next[indx]
-            Next[SwapIndex]=Swap
-            Next[indx]=Temp1
-            # Reverse the order of the values to the right of the leftmost
-            #   swapped value
-            for k in range(indx+1,n):
-                Temp2[k]=Next[k]
-            for m in range(indx+1,n):
-                Next[m]=Temp2[n+indx-m]
+                # Find the smallest value Next[j] for which Next[i]<Next[j]
+                #   and i<j
+                for j in reversed(range(SwapIndex,n)):
+                    if Next[j]<Next[SwapIndex]:
+                        if Next[j]>OrigVal:
+                            SwapIndex=j
+                Temp1=Next[SwapIndex]
+                Swap=Next[indx]
+                Next[SwapIndex]=Swap
+                Next[indx]=Temp1
+                # Reverse the order of the values to the right of the leftmost
+                #   swapped value
+                for k in range(indx+1,n):
+                    Temp2[k]=Next[k]
+                for m in range(indx+1,n):
+                    Next[m]=Temp2[n+indx-m]
     return(Next)
             
 def OrderStat(RVar,n,r,replace='w'):
@@ -2694,6 +2694,48 @@ def RangeStat(RVar,n,replace='w'):
                     idx=sortrs2.index(sortrs[i])
                     sortrp2[idx]+=sortrp[i]
             return RV(sortrp2,sortrs2,['discrete','pdf'])
+        if replace == 'wo':
+            err_string = 'RangeStat current not implemented without '
+            err_string += 'replacement'
+            raise RVError(err_string)
+            if n==N:
+                fXRange = [1]
+                fXSupport = [N-1]
+            else:
+                fXRange = [0 for i in range(N)]
+                fXSupport = [value for value in fX.support]
+                # Create the first lexicographical combo of n items
+                combo = [value for value in range(1,n+1)]
+                for i in range(binomial(N,n)):
+                    # Assign perm as the current combo
+                    perm = [elem for elem in combo]
+                    # Compute the probability of obtaining the permutation                    
+                    for j in range(factorial(n)):
+                        PermProb = fX.func[perm[0]]
+                        cumsum = fX.func[perm[0]]
+                        for m in range(1,n):
+                            PermProb *= fX.func[perm[m]]/(1-cumsum)
+                            cumsum += fX.func[perm[m]]
+                        # Find the maximum and minimum elements of the
+                        #   permutation and then determine their difference
+                        HiVal = max(perm)
+                        LoVal = min(perm)
+                        Range = HiVal - LoVal
+                        flag = True
+                        for k in range(N-1):
+                            if Range == k+1:
+                                fXRange[k] += PermProb
+                        # Find the next lexicographical permutation
+                        perm = NextPermutation(perm)
+                    combo = NextCombination(combo,N)
+                print len(fXRange),len(fXSupport)
+                return RV(fXRange,fXSupport,fX.ftype)
+                
+                
+                        
+                    
+                
+            
             
             
                     
