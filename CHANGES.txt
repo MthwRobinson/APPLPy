@@ -46,6 +46,7 @@ Fixed Bugs:
 	12. Fixed bug to correct computation of IDFs for Discrete RVs
 	13. OrderStat modified to allow for 'wo' for samples of size
 		greater than 4
+	14. Transform modified to accept symbolic discrete RVs
 
 
 v0.3.0, 12 JAN 2015

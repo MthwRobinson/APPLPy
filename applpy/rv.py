@@ -2960,6 +2960,18 @@ def Transform(RVar,gXt):
         # Create and return the random variable
         return RV(trans_func2,trans_supp,['continuous','pdf'])
 
+    # If the distribution in symbolic discrete, convert it and then compute
+    #   the transformation
+    if RVar.ftype[0]=='Discrete':
+        for element in RVar.support:
+            if (element in [-oo,oo]) or (element.__class__.__name__=='Symbol'):
+                err_string = 'Transform is not implemented for discrete '
+                err_string = 'random variables with symbolic or inifinite '
+                err_string = 'support'
+                raise RVError(err_string)
+        X_dummy = Convert(RVar)
+        return Transform(X_dummy,gXt)
+
     # If the distribution is discrete, find and return the transformation
     if RVar.ftype[0]=='discrete':
         gX=gXt
