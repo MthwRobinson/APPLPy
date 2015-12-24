@@ -2147,7 +2147,7 @@ def Kurtosis(RVar,cache=False):
         RVar.add_to_cache('kurtosis',kurt)
     return simplify(kurt)
 
-def MaximumIID(RVar,n):
+def MaximumIID(RVar,n=Symbol('n')):
     """
     Procedure Name: MaximumIID
     Purpose: Compute the maximum of n iid random variables
@@ -2157,14 +2157,21 @@ def MaximumIID(RVar,n):
     """
     # Check to make sure n is an integer
     if type(n)!=int:
-        raise RVError('The second argument must be an integer')
+        if n.__class__.__name__!='Symbol':
+            raise RVError('The second argument must be an integer')
 
+    # If n is symbolic, find and return the maximum using
+    #   OrderStat (may need to test and see if this is more
+    #   efficient than using the for loop for non symbolic parameters)
+    if n.__class__.__name__=='Symbol':
+        return OrderStat(RVar,n,n)
     # Compute the iid maximum
-    X_dummy=RVar
-    X_final=X_dummy
-    for i in range(n-1):
-        X_final=Maximum(X_final,X_dummy)
-    return PDF(X_final)
+    else:
+        X_dummy=RVar
+        X_final=X_dummy
+        for i in range(n-1):
+            X_final=Maximum(X_final,X_dummy)
+        return PDF(X_final)
 
 def Mean(RVar,cache=False):
     """
@@ -2299,14 +2306,21 @@ def MinimumIID(RVar,n):
     """
     # Check to make sure n is an integer
     if type(n)!=int:
-        raise RVError('The second argument must be an integer')
+        if n.__class__.__name__!='Symbol':
+            raise RVError('The second argument must be an integer')
 
+    # If n is symbolic, find and return the maximum using
+    #   OrderStat (may need to test and see if this is more
+    #   efficient than using the for loop for non symbolic parameters)
+    if n.__class__.__name__=='Symbol':
+        return OrderStat(RVar,1,n)
     # Compute the iid minimum
-    X_dummy=RVar
-    X_final=X_dummy
-    for i in range(n-1):
-        X_final=Minimum(X_final,X_dummy)
-    return PDF(X_final)
+    else:
+        X_dummy=RVar
+        X_final=X_dummy
+        for i in range(n-1):
+            X_final=Minimum(X_final,X_dummy)
+        return PDF(X_final)
 
 def NextCombination(Previous,N):
     """
@@ -2397,8 +2411,9 @@ def OrderStat(RVar,n,r,replace='w'):
                 3. r: The index of the order statistic
     Output:     1. The desired r out of n OrderStatistic
     """
-    if r>n:
-        raise RVError('The index cannot be greater than the sample size')
+    if r.__class__.__name__!='Symbol' and n.__class__.__name__!='Symbol':
+        if r>n:
+            raise RVError('The index cannot be greater than the sample size')
     if replace not in ['w','wo']:
         raise RVError('Replace must be w or wo')
 

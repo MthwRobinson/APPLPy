@@ -15,6 +15,7 @@ New Capabilities:
 	8. BernoulliRV type added
 	9. RangeStat procedure added for finding the range stastics for
 		a random variable
+	10. Maximum and Minimum IID now work with symbolic n unspecified
 
 Fixed Bugs:
 	1. BootstrapRV procedure fixed. Duplicate elements are now
