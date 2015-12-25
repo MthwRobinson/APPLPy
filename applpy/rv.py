@@ -1468,6 +1468,7 @@ def IDF(RVar,value=x,cache=False):
                 func=idffunc[i].subs(t,x)
                 idffunc2.append(simplify(func))
             # Return the IDF
+            idfsup[0] = 0
             idfrv=RV(idffunc2,idfsup,['Discrete','idf'])
             if cache==True:
                 RVar.add_to_cache('idf',idfrv)

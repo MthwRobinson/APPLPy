@@ -4,10 +4,9 @@ Current APPLPy Bugs:
 	may need to do a sequence of simplify commands (also
 	may need to add an assumption for the 't', see HW1.pynb
 	for example of when procedure fails)
-2. Support for the CDF representations of Discrete RVs
-3. MGF(X) comes out as a piecewise function for gamma,
+2. MGF(X) comes out as a piecewise function for gamma,
 	may need to add assumptions
-4. Cannot handle functions that include abs(*) (Sympy problem)
+3. Cannot handle functions that include abs(*) (Sympy problem)
 
 To do list:
 1. Update documentation on site to include RangeStat and OrderStat wo

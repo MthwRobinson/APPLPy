@@ -48,6 +48,8 @@ Fixed Bugs:
 		greater than 4
 	14. Transform modified to accept symbolic discrete RVs
 	15. Convolution now works with rational supports
+	16. IDF for symbolic discrete random variables updated to
+		start the support at 0
 
 
 v0.3.0, 12 JAN 2015
