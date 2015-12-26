@@ -142,14 +142,29 @@ class MarkovChain:
     Special Class Methods
 
     Procedures:
+        1. __repr__(self)
+    """
+    
+    def __repr__(self):
+        """
+        Procedure Name: __repr__
+        Purpose: Sets the default string display setting for the MC class
+        Arguments:  1. self: the markov chain
+        Output:     1. Print statements showing the transition probability
+                        matrix and the initial state of the system
+        """
+        return repr(self.display())
+
+    
+    """
+    Utility Class Methods
+
+    Procedures:
         1. display(self)
         2. matrix_convert(self,matrix)
-        3. reset(self)
-        4. step(self,n)
-        5. trans_mat(self,n)
-        6. vector_convert(self,vector)
+        3. vector_convert(self,vector)
     """
-    def display(self):
+    def display(self,option='trans mat',n=1):
         """
         Procedure Name: display
         Purpose: Displays the markov process in an interactive environment
@@ -158,16 +173,32 @@ class MarkovChain:
                     2. The initial state of the system
                     3. The current state of the system
         """
-        # Store display versions of the transition probability matrix and
-        #   initial state for future use
-        print 'The transition probability matrix:'
-        print self.P_print
-        print '----------------------------------------'
-        print 'The initial system state:'
-        print self.init_print
-        print'-----------------------------------------'
-        print 'The current system state after %s steps:'%(self.steps)
-        print self.state_print      
+        option_list = ['trans mat','steady state']
+        if option not in option_list:
+            options = ''
+            for option_type in option_list:
+                options += option_type+', '
+            err_string = 'Invalid option. Valid options are: '
+            err_string += options
+            raise StochError(err_string)
+        if option == 'trans mat':
+            # Check to make sure that the number of steps is an integer value
+            if (type(n) != int) and (n.__class__.__name__!='Symbol'):
+                err_string = 'The number of steps in a discrete'
+                err_string = ' time markov chain must be an integer value'
+                raise StochError(err_string)
+            if n == 1:
+                print 'The transition probability matrix:'
+                print self.P_print
+            else:
+                print 'The transition probability matrix after %s steps:'%(n)
+                print self.matrix_convert(self.trans_mat(n))
+            print '----------------------------------------'
+            print 'The initial system state:'
+            print self.init_print
+        if option == 'steady state':
+            print 'The steady state probabilities are:'
+            print self.vector_convert(self.steady_state())
         
 
     def matrix_convert(self,matrix):
@@ -183,60 +214,6 @@ class MarkovChain:
                                     columns = self.state_space)
         return display_mat
 
-    def reset(self):
-        """
-        Procedure Name: resets
-        Purpose: Resets the current state of the system to n=0
-        Arugments:  1. self: the markov process
-        Output:     1. The system reset to time n=0
-        """
-        self.state=self.init
-        self.state_print=self.init_print
-        return self.state_print
-    
-    def step(self,n):
-        """
-        Procedure Name: step
-        Purpose: Moves the system forward n steps and saves the current
-                    state of the system
-        Arguments:  1. n: the number of steps the system takes forward
-        Output:     1. The state of the system after n additional steps
-        """
-        # Check to make sure that the number of steps is an integer value
-        if type(n) != int:
-            err_string = 'The number of steps in a discrete time markov chain'
-            err_string = ' must be an integer value'
-            raise StochError(err_string)
-        # Compute the probability transition matrix for n steps
-        Pk = self.trans_mat(n)
-        # Compute the state of the system after n additional steps
-        new_state = np.dot(self.state,Pk)
-        # Set the system state to the new state
-        self.state=new_state
-        self.state_print=self.vector_convert(new_state)
-        self.steps+=n
-        return self.state
-            
-    def trans_mat(self,n):
-        """
-        Procedure Name: trans_mat
-        Purpose: Computes the state of the system after n steps
-        Arguments:  1. n: the number of steps the system takes forward
-        Output:     1. The transition probability matix for n steps
-        """
-        # Check to make sure that the number of steps is an integer value
-        if type(n) != int:
-            err_string = 'The number of steps in a discrete time markov chain'
-            err_string = ' must be an integer value'
-            raise StochError(err_string)
-        # Compute the transition probability transition matrix for n steps
-        eigen = np.linalg.eig(self.P)
-        Dk = np.diag(eigen[0]**n)
-        T = eigen[1]
-        Tinv = np.linalg.inv(T)
-        Pk = np.dot(np.dot(T,Dk),Tinv)
-        return Pk
-
     def vector_convert(self,vector):
         """
         Procedure Name: vector_convert
@@ -249,8 +226,67 @@ class MarkovChain:
         display_vec = pd.DataFrame(vector, index=self.state_space)
         return display_vec
 
+    """
+    Functional Class Methods
 
+    Procedures:
+        1. trans_mat(self,n)
+    """
+
+    def steady_state(self):
+        """
+        Procedure Name: steady_state
+        Purpose: Computes the long run fraction of time spent in state i
+        Arguments:  1. None
+        Output:     1. A vector containing the long run fraction of time
+                        spent in state i
+        """
+        # Need to add code to check to make sure that the markov chain
+        #   is irreducible, aperiodic and positive recurrent
+
+
+        # The steady state probabilities are found by solving the following
+        #   system: Pj = sum( Pij*Pj ) for all j, 1 = sum(Pj)
+        trans_mat = self.P
+        size = np.size(trans_mat,axis=0)
+        trans_mat_T = trans_mat.transpose()
+        A = trans_mat_T - np.identity(size)
+        B = np.vstack((A,np.array([1 for i in range(size)])))
+        B = B[1:,]
+        a = [0 for i in range(size)]
+        a[-1]=1
+        b = np.array(a).reshape(-1,1)
+        soln = np.dot(np.linalg.inv(B),b)
+        return soln
         
+        
+                      
+        
+    
+    def trans_mat(self,n=Symbol('n',positive=True)):
+        """
+        Procedure Name: trans_mat
+        Purpose: Computes the state of the system after n steps
+        Arguments:  1. n: the number of steps the system takes forward
+        Output:     1. The transition probability matix for n steps
+        """
+        # Check to make sure that the number of steps is an integer value
+        if (type(n) != int) and (n.__class__.__name__!='Symbol'):
+            err_string = 'The number of steps in a discrete time markov chain'
+            err_string = ' must be an integer value'
+            raise StochError(err_string)
+        # Compute the transition probability transition matrix for n steps
+        # To efficiently compute powers of the matrix, this algorithm
+        #   finds the eigen decomposition of the matrix, and then computes
+        #   the power of the elements in the diagonal matrix
+        eigen = np.linalg.eig(self.P)
+        Dk = np.diag(eigen[0]**n)
+        T = eigen[1]
+        Tinv = np.linalg.inv(T)
+        Pk = np.dot(np.dot(T,Dk),Tinv)
+        return Pk
+
+
         
         
         
