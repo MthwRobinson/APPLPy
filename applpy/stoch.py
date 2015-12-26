@@ -93,6 +93,9 @@ class MarkovChain:
             #   for the markov chain
             state_space = [str(state_label) for state_label in states]
             self.state_space = state_space
+        else:
+            state_space = range(len(P.size(axis=1)))
+            self.state_space = state_space
         # Check to make sure that the transition probability matrix is a square
         #   matrix
         if P.shape[0] != P.shape[1]:
@@ -199,6 +202,9 @@ class MarkovChain:
         if option == 'steady state':
             print 'The steady state probabilities are:'
             print self.vector_convert(self.steady_state())
+        if option == 'init':
+            print 'The initial conditions are:'
+            print self.vector_convert(self.init)
         
 
     def matrix_convert(self,matrix):
@@ -230,8 +236,71 @@ class MarkovChain:
     Functional Class Methods
 
     Procedures:
-        1. trans_mat(self,n)
+        1. probability(self,state,given)
+        2. steady_state(self)
+        3. trans_mat(self,n)
     """
+    def probability(self,states,given=None):
+        """
+        Procedure Name: probability
+        Purpose: Computes the probability of reaching a state, given that
+                    another state has been realized
+        Arguments:  1. states: a list of tuples. The first entry in each
+                        tuple is the time period when the state is realized
+                        and the second entry is the state
+                    2. given: an optional list of conditions, expressed as
+                        tuples. When entered, the procedure conditions
+                        the probability on these states
+        Output:     1. A probability
+        """
+        # Check to make sure the states and conditional statements are
+        #   in the proper form
+        for state in states:
+            if type(state) != tuple:
+                err_string = 'Each state must be entered as a tuple'
+                raise StochError(err_string)
+            if len(state) != 2:
+                err_string = 'Each state must be a tuple with two elements, '
+                err_string += 'the first is the time period and the second '
+                err_string += 'is the name of the state'
+                raise StochError(err_string)
+            if state[1] not in self.states:
+                err_string = 'A state was entered that does not appear '
+                err_string += 'in the state space of the Markov Chain'
+                raise StochError(err_string)
+        # If no conditions are given, check to make sure that initial
+        #   conditions are specified
+        if given == None:
+            if self.init == None:
+                err_string = 'Unconditional probabilities can only be '
+                err_string += 'computed if initial conditions are '
+                err_string += 'specified.'
+                raise StochError(err_string)
+        # Make sure that the state for a time period is not specified
+        #   more than once
+        states.sort()
+        states_specified = []
+        for i in range(len(states)-1):
+            states_specified.append(states[i])
+            if states[i][0] == states[i+1][0]:
+                err_string = 'Two different states were specified for '
+                err_string += 'the same time period'
+                raise StochError(err_string)
+        states_specified.append(states[-1])
+        if given != None
+            given.sort()
+            for i in range(len(given)-1):
+                err_string = 'Two different states were specified '
+                err_string += 'the same time period'
+                if given[i][0] == given[i+1][0]:
+                    raise StochError(err_string)
+                if given[i] in states_specified:
+                    raise StochError(err_string)
+            if given[-1] in states_specified:
+                raise StochError(err_string)
+                      
+
+        
 
     def steady_state(self):
         """
@@ -259,10 +328,6 @@ class MarkovChain:
         soln = np.dot(np.linalg.inv(B),b)
         return soln
         
-        
-                      
-        
-    
     def trans_mat(self,n=Symbol('n',positive=True)):
         """
         Procedure Name: trans_mat
@@ -285,6 +350,7 @@ class MarkovChain:
         Tinv = np.linalg.inv(T)
         Pk = np.dot(np.dot(T,Dk),Tinv)
         return Pk
+
 
 
         
