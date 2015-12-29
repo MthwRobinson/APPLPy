@@ -94,7 +94,7 @@ class MarkovChain:
             state_space = [str(state_label) for state_label in states]
             self.state_space = state_space
         else:
-            state_space = range(len(P.size(axis=1)))
+            state_space = range(P.shape[0])
             self.state_space = state_space
         # Check to make sure that the transition probability matrix is a square
         #   matrix
