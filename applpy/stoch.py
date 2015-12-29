@@ -287,7 +287,7 @@ class MarkovChain:
                 err_string += 'the same time period'
                 raise StochError(err_string)
         states_specified.append(states[-1])
-        if given != None
+        if given != None:
             given.sort()
             for i in range(len(given)-1):
                 err_string = 'Two different states were specified '

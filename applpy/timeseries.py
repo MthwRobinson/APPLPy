@@ -16,7 +16,7 @@ from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
                    binomial)
-from sympy.mpmath import (nsum,nprod)
+from mpmath import (nsum,nprod)
 from random import random
 import numpy as np
 from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
