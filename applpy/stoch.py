@@ -264,18 +264,19 @@ class MarkovChain:
                 err_string += 'the first is the time period and the second '
                 err_string += 'is the name of the state'
                 raise StochError(err_string)
-            if state[1] not in self.states:
+            if state[1] not in self.state_space:
                 err_string = 'A state was entered that does not appear '
                 err_string += 'in the state space of the Markov Chain'
                 raise StochError(err_string)
         # If no conditions are given, check to make sure that initial
         #   conditions are specified
         if given == None:
-            if self.init == None:
-                err_string = 'Unconditional probabilities can only be '
-                err_string += 'computed if initial conditions are '
-                err_string += 'specified.'
-                raise StochError(err_string)
+            if type(self.init) != np.ndarray:
+                if self.init == None:
+                    err_string = 'Unconditional probabilities can only be '
+                    err_string += 'computed if initial conditions are '
+                    err_string += 'specified.'
+                    raise StochError(err_string)
         # Make sure that the state for a time period is not specified
         #   more than once
         states.sort()
@@ -298,7 +299,46 @@ class MarkovChain:
                     raise StochError(err_string)
             if given[-1] in states_specified:
                 raise StochError(err_string)
-                      
+
+        # If no conditions are specified, compute the probability
+        if given == None:
+            prev_time = 0
+            prev_state = None
+            step_mat = {1:self.P_print}
+            init_states = self.init_print[0]
+            total_prob = 1
+            while len(states) > 0:
+                current_time = states[0][0]
+                current_state = states[0][1]
+                time_diff = current_time - prev_time
+                # If we haven't compute it yet, compute transition
+                #   matrix using C-K equations. Store it in a dict
+                #   so that it does not need to be computed again
+                if time_diff not in step_mat and time_diff != 0:
+                    trans = self.trans_mat(n=time_diff)
+                    step_mat[time_diff] = Y.matrix_convert(trans)
+                # If this is the first iteration, condition on the
+                #   distribution of the initial states
+                if prev_state == None:
+                    if time_diff == 0:
+                        total_prob *= init_states[current_state]
+                    else:
+                        init_prob = 0
+                        for state in self.state_space:
+                            prob_to_state = init_states[state]
+                            p_n = step_mat[time_diff][current_state][state]
+                            prob_to_state *= p_n
+                            init_prob += prob_to_state
+                        total_prob *= init_prob
+                # If this is not the first iteration, compute the
+                #   transition probability
+                else:
+                    total_prob *= step_mat[time_diff][current_state][prev_state]
+                prev_state = current_state
+                prev_time = current_time
+                del states[0]
+            return total_prob
+                        
 
         
 
