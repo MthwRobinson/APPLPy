@@ -337,7 +337,19 @@ class MarkovChain:
                 prev_state = current_state
                 prev_time = current_time
                 del states[0]
-            return total_prob
+            # If conditions are specified, compute the probability
+        if type(given) == list:
+            if given[0][0] < states[0][0]:
+                shift = given[0][0]
+                total_states = given + states
+                for i,element in enumerate(total_states):
+                    total_states[i] = (element[0]-shift,element[1])
+                init_prob = self.init_print[0][given[0][0]]
+                total_prob = self.probability(states=total_states)/init_prob
+            else:
+                total_states = given + states
+                total_prob = self.probability(states=total_states)
+        return total_prob
                         
 
         
