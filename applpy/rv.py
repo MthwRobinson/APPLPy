@@ -2967,8 +2967,8 @@ def Transform(RVar,gXt):
         for element in RVar.support:
             if (element in [-oo,oo]) or (element.__class__.__name__=='Symbol'):
                 err_string = 'Transform is not implemented for discrete '
-                err_string = 'random variables with symbolic or inifinite '
-                err_string = 'support'
+                err_string += 'random variables with symbolic or inifinite '
+                err_string += 'support'
                 raise RVError(err_string)
         X_dummy = Convert(RVar)
         return Transform(X_dummy,gXt)
