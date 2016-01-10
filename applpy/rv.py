@@ -459,9 +459,10 @@ class RV:
         1. add_to_cache(self,object_name,object)
         2. display(self)
         3. init_cache(self)
-        4. latex()
-        5. verifyPDF(self)
-        6. variate(self,n)
+        4. latex(self)
+        5. simplify(self,assumption)
+        6. verifyPDF(self)
+        7. variate(self,n)
     """
 
     def add_to_cache(self,object_name,obj):
@@ -559,6 +560,38 @@ class RV:
         p=eval(piece3)
         return latex(p)
 
+    def simplify(self, assumption=None):
+        """
+        Procedure Name: simplify
+        Purpose: Uses assumptions to help simplify the random variable
+        Arguments:  1. self: the random variable.
+        Output:     1. A list of assumptions for each segment in the random
+                        variable
+        """
+        for i, segment in enumerate(self.func):
+            if self.support[i] < 0 and self.support[i+1] <= 0:
+                x2 = Symbol('x2',negative=True)
+            elif self.support[i+1] > 0 and self.support[i] >= 0:
+                x2 = Symbol('x2',positive=True)
+            else:
+                x2 = Symbol('x2')
+            new_func = segment.subs(x,x2)
+            new_func = simplify(new_func)
+            self.func[i] = new_func.subs(x2,x)
+        new_func = []
+        new_support = []
+        for i in range(len(self.func)):
+            if i == 0:
+                new_func.append(self.func[i])
+                new_support.append(self.support[i])
+            else:
+                if self.func[i] != self.func[i-1]:
+                    new_func.append(self.func[i])
+                    new_support.append(self.support[i])
+        new_support.append(self.support[-1])
+        self.func = new_func
+        self.support = new_support
+        self.display()
     
     def verifyPDF(self):
         """

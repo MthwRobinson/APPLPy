@@ -16,6 +16,8 @@ New Capabilities:
 	9. RangeStat procedure added for finding the range stastics for
 		a random variable
 	10. Maximum and Minimum IID now work with symbolic n unspecified
+	11. Random Variable method added to simplify functions with
+		assumptions
 
 Fixed Bugs:
 	1. BootstrapRV procedure fixed. Duplicate elements are now

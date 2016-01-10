@@ -1,12 +1,8 @@
 Current APPLPy Bugs:
 
-1. Need to simplify "weird" output (i.e. - - - x instead of -x),
-	may need to do a sequence of simplify commands (also
-	may need to add an assumption for the 't', see HW1.pynb
-	for example of when procedure fails)
-2. MGF(X) comes out as a piecewise function for gamma,
+1. MGF(X) comes out as a piecewise function for gamma,
 	may need to add assumptions
-3. Cannot handle functions that include abs(*) (Sympy problem)
+2. Cannot handle functions that include abs(*) (Sympy problem)
 
 To do list:
 1. Update documentation on site to include RangeStat and OrderStat wo
