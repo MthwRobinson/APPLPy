@@ -210,7 +210,7 @@ def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
     Output:     1. PostRV: A posterior distribution
     """
     # Find the posterior distribution for the first observation
-    PostRV=BayesUpdate(LikeRV,PriorRV,data[0],param)
+    PostRV=BayesUpdate(LikeRV,PriorRV,[data[0]],param)
     # If there are multiple observations, continue bayesian updating
     #   for each observation in the data set
     if len(data)>1:
@@ -220,7 +220,7 @@ def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
             NewPrior=PostRV
             # Compute the new posterior distribution for the next
             #   observation in the data set
-            PostRV=BayesUpdate(LikeRV,NewPrior,data[i],param)
+            PostRV=BayesUpdate(LikeRV,NewPrior,[data[i]],param)
     return PostRV
 
 def PosteriorPredictive(LikeRV,PriorRV,data=[],param=Symbol('theta')):

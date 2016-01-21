@@ -53,6 +53,7 @@ Fixed Bugs:
 	16. IDF for symbolic discrete random variables updated to
 		start the support at 0
 	17. Corrected likelihood function computation in Posterior
+	18. Fixed technique for finding area in Truncate
 
 
 v0.3.0, 12 JAN 2015

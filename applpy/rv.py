@@ -3065,7 +3065,12 @@ def Truncate(RVar,supp):
     #   the truncated random variable
     if RVar.ftype[0]=='continuous':
         # Find the area of the truncated random variable
-        area=CDF(cdf_dummy,supp[1])-CDF(cdf_dummy,supp[0])
+        #area=CDF(cdf_dummy,supp[1])-CDF(cdf_dummy,supp[0])
+        area=0
+        for i in range(len(X_dummy.func)):
+            val=integrate(X_dummy.func[i],(x,X_dummy.support[i],
+                            X_dummy.support[i+1]))
+            area+=val
         # Cut out parts of the distribution that don't fall
         #   within the new limits
         for i in range(len(X_dummy.func)):
