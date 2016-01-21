@@ -83,7 +83,7 @@ def Posterior(LikeRV,PriorRV,data=[],param=Symbol('theta')):
         #   variable
         likelihood=LikeRV.func[0].subs(x,data[0])
         for i in range(1,len(data)):    
-            likelihood+=LikeRV.func[0].subs(x,data[i])
+            likelihood*=LikeRV.func[0].subs(x,data[i])
         likelihood=simplify(likelihood)
         likelihood=likelihood.subs(param,x)
         # Create a list of proportional posterior distributions
