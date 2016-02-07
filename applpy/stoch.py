@@ -167,7 +167,7 @@ class MarkovChain:
         2. matrix_convert(self,matrix)
         3. vector_convert(self,vector)
     """
-    def display(self,option='trans mat',n=1):
+    def display(self,option='trans mat',n=1,method='float'):
         """
         Procedure Name: display
         Purpose: Displays the markov process in an interactive environment
@@ -195,13 +195,13 @@ class MarkovChain:
                 print self.P_print
             else:
                 print 'The transition probability matrix after %s steps:'%(n)
-                print self.matrix_convert(self.trans_mat(n))
+                print self.matrix_convert(self.trans_mat(n,method=method))
             print '----------------------------------------'
             print 'The initial system state:'
             print self.init_print
         if option == 'steady state':
             print 'The steady state probabilities are:'
-            print self.vector_convert(self.steady_state())
+            print self.vector_convert(self.steady_state(method=method))
         if option == 'init':
             print 'The initial conditions are:'
             print self.vector_convert(self.init)
@@ -240,7 +240,7 @@ class MarkovChain:
         2. steady_state(self)
         3. trans_mat(self,n)
     """
-    def probability(self,states,given=None):
+    def probability(self,states,given=None,method='float'):
         """
         Procedure Name: probability
         Purpose: Computes the probability of reaching a state, given that
@@ -315,8 +315,8 @@ class MarkovChain:
                 #   matrix using C-K equations. Store it in a dict
                 #   so that it does not need to be computed again
                 if time_diff not in step_mat and time_diff != 0:
-                    trans = self.trans_mat(n=time_diff)
-                    step_mat[time_diff] = Y.matrix_convert(trans)
+                    trans = self.trans_mat(n=time_diff,method=method)
+                    step_mat[time_diff] = self.matrix_convert(trans)
                 # If this is the first iteration, condition on the
                 #   distribution of the initial states
                 if prev_state == None:
@@ -345,16 +345,16 @@ class MarkovChain:
                 for i,element in enumerate(total_states):
                     total_states[i] = (element[0]-shift,element[1])
                 init_prob = self.init_print[0][given[0][0]]
-                total_prob = self.probability(states=total_states)/init_prob
+                total_prob = self.probability(states=total_states,
+                                              method=method)/init_prob
             else:
                 total_states = given + states
-                total_prob = self.probability(states=total_states)
+                total_prob = self.probability(states=total_states,
+                                              method=method)
         return total_prob
                         
 
-        
-
-    def steady_state(self):
+    def steady_state(self, method = 'float'):
         """
         Procedure Name: steady_state
         Purpose: Computes the long run fraction of time spent in state i
@@ -365,22 +365,43 @@ class MarkovChain:
         # Need to add code to check to make sure that the markov chain
         #   is irreducible, aperiodic and positive recurrent
 
+        if method not in ['float', 'rational']:
+            raise StochError('Method must be either float or rational')
 
-        # The steady state probabilities are found by solving the following
-        #   system: Pj = sum( Pij*Pj ) for all j, 1 = sum(Pj)
         trans_mat = self.P
         size = np.size(trans_mat,axis=0)
-        trans_mat_T = trans_mat.transpose()
-        A = trans_mat_T - np.identity(size)
-        B = np.vstack((A,np.array([1 for i in range(size)])))
-        B = B[1:,]
-        a = [0 for i in range(size)]
-        a[-1]=1
-        b = np.array(a).reshape(-1,1)
-        soln = np.dot(np.linalg.inv(B),b)
-        return soln
+        # The steady state probabilities are found by solving the following
+        #   system: Pj = sum( Pij*Pj ) for all j, 1 = sum(Pj)
+        if method == 'float':
+            trans_mat_T = trans_mat.transpose()
+            A = trans_mat_T - np.identity(size)
+            B = np.vstack((A,np.array([1 for i in range(size)])))
+            B = B[1:,]
+            a = [0 for i in range(size)]
+            a[-1]=1
+            b = np.array(a).reshape(-1,1)
+            soln = np.dot(np.linalg.inv(B),b)
+            return soln
+        # The stead state probabilities are computing by explicity solving
+        #   the system of equations using computer algebra
+        if method == 'rational':
+            a = symbols('a0:%d'%(size),positive=True)
+            eqns = []
+            norm_eqn = -1
+            for i in range(1,size):
+                current_eqn = 0
+                for j in range(size):
+                    current_eqn += trans_mat[j][i]*a[j]
+                current_eqn -= a[i]
+                norm_eqn += a[i]
+                eqns.append(current_eqn)
+            eqns.append(norm_eqn+a[0])
+            solns = solve(eqns)
+            soln = [solns[a[i]] for i in range(size)]
+            return np.array(soln)
+            
         
-    def trans_mat(self,n=Symbol('n',positive=True)):
+    def trans_mat(self,n=Symbol('n',positive=True),method='float'):
         """
         Procedure Name: trans_mat
         Purpose: Computes the state of the system after n steps
@@ -396,12 +417,18 @@ class MarkovChain:
         # To efficiently compute powers of the matrix, this algorithm
         #   finds the eigen decomposition of the matrix, and then computes
         #   the power of the elements in the diagonal matrix
-        eigen = np.linalg.eig(self.P)
-        Dk = np.diag(eigen[0]**n)
-        T = eigen[1]
-        Tinv = np.linalg.inv(T)
-        Pk = np.dot(np.dot(T,Dk),Tinv)
-        return Pk
+        if method == 'float':
+            eigen = np.linalg.eig(self.P)
+            Dk = np.diag(eigen[0]**n)
+            T = eigen[1]
+            Tinv = np.linalg.inv(T)
+            Pk = np.dot(np.dot(T,Dk),Tinv)
+            return Pk
+        if method == 'rational':
+            Pk = self.P
+            for i in range(n-1):
+                Pk = np.dot(self.P,Pk)
+            return Pk
 
 
 
