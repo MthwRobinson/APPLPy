@@ -764,7 +764,7 @@ class KSRV(RV):
             l=int(min(floor(2*N*c[k])+1,N))
             F[N][N]=integrate(1,(u[N],x[N]-v,1))
             V[N][N]=integrate(1,(u[N],u[N-1],1))
-            for i in reversed(range(2,N,-1)):
+            for i in range(N-1,1,-1):
                 if i+l>N:
                     S=0
                 else:
@@ -781,7 +781,7 @@ class KSRV(RV):
                     F[i][i+l-1]=integrate(V[i+1][i+l-1]+S,
                                           (u[i],x[N]-v,x[i]+v))
                 S+=F[i+1][min(i+l-1,N)]
-                for j in reversed(range(max(i+1,z+2),min(N-1,i+l-2)+1,-1)):
+                for j in range(min(N-1,i+l-2),max(i+1-1,z+2-1),-1):
                     F[i][j]=integrate(V[i+1][j]+S,
                                       (u[i],x[j]-v,x[j+1]-v))
                     V[i][j]=integrate(V[i+1][j]+S,
@@ -796,12 +796,13 @@ class KSRV(RV):
                     F[i][i]=integrate(S,(u[i],x[i]-v,x[i+1]-v))
             if l==N:
                 S=0
+                F[1][N] = integrate(V[2][N],(u[1],x[N]-v,x[1]+v))
             else:
                 S=F[2][l+1]
             if l<N:
                 F[1][l]=integrate(V[2][l]+S,(u[1],x[l]-v,x[1]+v))
             S+=F[2][j]
-            for j in reversed(range(max(2,z+1),min(N-1,l-1)+1,-1)):
+            for j in range(min(N-1,i+l-2),max(i,z+1),-1):
                 F[1][j]=integrate(V[2][j]+S,
                           (u[1],(x[j]-v)*(floor(x[j]-c[k])+1),
                            x[j+1]-v))
@@ -818,8 +819,12 @@ class KSRV(RV):
         for i in range(0,m+1):
             KSspt.append(vv[i]+1/(2*N))
         for i in range(1,m+1):
-            func=(x-1)/(2*N)
-            KSCDF.append(simplify(func.subs(v,P[i])))
+            func = P[i]
+            if type(func) in [int,float]:
+                ksfunc = func
+            else:
+                ksfunc = func.subs(v, (x-1/(2*N)))
+            KSCDF.append(simplify(ksfunc))
         # Remove redundant elements from the list
         KSCDF2=[];KSspt2=[]
         KSspt2.append(KSspt[0])
@@ -829,7 +834,7 @@ class KSRV(RV):
                 KSCDF2.append(KSCDF[i])
                 KSspt2.append(KSspt[i])
         KSspt2.append(KSspt[-1])
-        X_dummy=RV(KSCDF2,KSspt2,['continuous','cdf'])
+        X_dummy=RV(KSCDF,KSspt,['continuous','cdf'])
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
