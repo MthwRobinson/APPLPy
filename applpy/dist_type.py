@@ -204,7 +204,7 @@ class ChiRV(RV):
                 err_string='N must be a positive integer'
                 raise RVError(err_string)
         X_dummy=RV(((x**(N-1))*exp(-x**2/2))/
-                   (2**((N/2)-1)*gamma(N/2)),[0,oo])
+                   (2**((Rational(N,2))-1)*gamma(Rational(N,2))),[0,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
