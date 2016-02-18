@@ -229,7 +229,8 @@ class MarkovChain:
                     2. vector: the vector to be converted for display
         Output:     1. The vector in display format
         """
-        display_vec = pd.DataFrame(vector, index=self.state_space)
+        display_vec = pd.DataFrame(vector, index=self.state_space,
+                                   columns = ['Prob'])
         return display_vec
 
     """
