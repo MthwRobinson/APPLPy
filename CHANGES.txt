@@ -18,6 +18,7 @@ New Capabilities:
 	10. Maximum and Minimum IID now work with symbolic n unspecified
 	11. Random Variable method added to simplify functions with
 		assumptions
+	12. VerifyPDF(X) added for compatiblity with APPL
 
 Fixed Bugs:
 	1. BootstrapRV procedure fixed. Duplicate elements are now
