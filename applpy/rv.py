@@ -64,7 +64,7 @@ from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
                    binomial, pprint,log,expand,zoo,latex,Piecewise,Rational,
-                   Sum,S,Float)
+                   Sum,S,Float,limit)
 from sympy.plotting.plot import plot
 from random import random
 import numpy as np
@@ -2902,8 +2902,13 @@ def Transform(RVar,gXt):
         # Create a list of mappings x->g(x)
         mapping=[]
         for i in range(len(gX[0])):
-            mapping.append([gX[0][i].subs(x,gX[1][i]),
-                            gX[0][i].subs(x,gX[1][i+1])])
+            gXsubs1 = gX[0][i].subs(x,gX[1][i])
+            if gXsubs1 == zoo:
+                gXsubs1 = limit(gX[0][i],x,gX[1][i])
+            gXsubs2 = gX[0][i].subs(x,gX[1][i+1])
+            if gXsubs2 == zoo:
+                gXsubs2 = limit(gX[0][i+1],x,gX[1][i+1])
+            mapping.append([gXsubs1, gXsubs2])
         # Create the support for the transformed random variable
         trans_supp=[]
         for i in range(len(mapping)):
