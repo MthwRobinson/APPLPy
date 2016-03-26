@@ -238,8 +238,9 @@ class MarkovChain:
 
     Procedures:
         1. probability(self,state,given)
-        2. steady_state(self)
-        3. trans_mat(self,n)
+        2. reachability(self)
+        3. steady_state(self)
+        4. trans_mat(self,n)
     """
     def probability(self,states,given=None,method='float'):
         """
@@ -353,6 +354,27 @@ class MarkovChain:
                 total_prob = self.probability(states=total_states,
                                               method=method)
         return total_prob
+
+    def reachability(self, method = 'float'):
+        """
+        Procedure Name: reachability
+        Purpose: Computes boolean matrix B such that B[i][j]=1 if state
+            j can be reached from state i, 0 otherwise. The method
+            for computing B is described in Weiss, B. 'A non-recursive
+            algorithm for classifying the states of a finite Markov chain'.
+            1987. European Journal of Operations Research.
+        Arguments:  1. None
+        Output:     1. A boolean matrix
+        """
+        trans_mat = self.P
+        n = trans_mat.shape[0]
+        Q = []
+        for row in trans_mat:
+            qrow = [x > 0 for x in row]
+            Q.append(qrow)
+        Q = np.array(Q,dtype=bool)
+        B = np.linalg.matrix_power(Q,n-1)
+        return B
                         
 
     def steady_state(self, method = 'float'):
