@@ -93,12 +93,12 @@ class MarkovChain:
             #   for the markov chain
             state_space = [str(state_label) for state_label in states]
             self.state_space = state_space
-            self.index_dict = {}
-            for i, state in enumerate(self.state_space):
-                self.index_dict[state] = i
         else:
             state_space = range(P.shape[0])
             self.state_space = state_space
+        self.index_dict = {}
+        for i, state in enumerate(self.state_space):
+            self.index_dict[state] = i
         # Check to make sure that the transition probability matrix is a square
         #   matrix
         if P.shape[0] != P.shape[1]:
@@ -240,12 +240,53 @@ class MarkovChain:
     Functional Class Methods
 
     Procedures:
-        1. classify_states(self)
-        2. probability(self,state,given)
-        3. reachability(self)
-        4. steady_state(self)
-        5. trans_mat(self,n)
+        1. absorption_prob(self,state)
+        2. classify_states(self)
+        3. probability(self,state,given)
+        4. reachability(self)
+        5. steady_state(self)
+        6. trans_mat(self,n)
     """
+    def absorption_prob(self,state):
+        """
+        Procedure Name: absorption_prob
+        Purpose: Gives the probability of being absorbed into the specified
+            state, given the the markov chain starts in each other state
+        Arguments:  1. state: the absorbing state of interest
+        Output:     1. A vector of probabilities
+        """
+        if state not in self.state_space:
+            err_string = 'Specified state is not in the state space'
+            raise StochError(err_string)
+        trans_mat = self.P
+        size = np.size(trans_mat,axis=0)
+        B = self.reachability()
+        j = self.index_dict[state]
+        if sum(B[j,:]) != 1:
+            err_string = 'The specified state is not absorbing'
+            raise StochError(err_string)
+        P = list(symbols('P0:%d'%(size),positive=True))
+        # P[j] = 1 since state j is absorbing
+        P[j] = 1
+        # P[i] = 0 if state j is not reachable from i
+        for item in self.index_dict:
+            i = self.index_dict[item]
+            if (i != j) and (B[i,j] == False):
+                P[i] = 0
+        # Set up remaining unknowns
+        eqns = []
+        for i,unknown in enumerate(P):
+            if unknown.__class__.__name__=='Symbol':
+                lhs = np.dot(np.array(P),trans_mat[i])
+                new_eqn = unknown - lhs
+                eqns.append(new_eqn)
+        soln = solve(eqns)
+        for i, unknown in enumerate(P):
+            if unknown.__class__.__name__ == 'Symbol':
+                P[i] = soln[P[i]]
+        return P
+
+    
     def classify_states(self):
         """
         Procedure Name: classify_states
@@ -367,7 +408,7 @@ class MarkovChain:
                 current_time = states[0][0]
                 current_state = states[0][1]
                 time_diff = current_time - prev_time
-                # If we haven't compute it yet, compute transition
+                # If we haven't computed it yet, compute transition
                 #   matrix using C-K equations. Store it in a dict
                 #   so that it does not need to be computed again
                 if time_diff not in step_mat and time_diff != 0:
@@ -516,11 +557,11 @@ class MarkovChain:
 
 """
 Format Conversion Procedures:
-    1. matrix_convert(matrix,states)
-    2. vector_convert(vector,states)
+    1. matrix_display(matrix,states)
+    2. vector_display(vector,states)
 """
         
-def matrix_convert(matrix,states):
+def matrix_display(matrix,states):
     """
     Procedure Name: matrix_convert
     Purpose: Converts matrices to pandas data frame so that they can
@@ -533,7 +574,7 @@ def matrix_convert(matrix,states):
                                     columns = states)
     return display_mat
 
-def vector_convert(vector,states):
+def vector_display(vector,states):
     """
     Procedure Name: vector_convert
     Purpose: Converts vectors to pandas data frame so that they can
