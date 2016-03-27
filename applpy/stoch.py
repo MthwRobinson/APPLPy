@@ -286,6 +286,37 @@ class MarkovChain:
                 P[i] = soln[P[i]]
         return P
 
+    def absorption_steps(self):
+        """
+        Procedure Name: absorption_steps
+        Purpose: Gives the expected number of steps until absoption,
+            given the initial state of the Markov chain
+        Arguments:  1. None
+        Output:     1. A vector of expected values
+        """
+        trans_mat = self.P
+        size = np.size(trans_mat, axis=0)
+        B = self.reachability()
+        M = list(symbols('M0:%d'%(size),positive=True))
+        # If a state is absorbing, the number of steps to absorption is 0
+        for item in self.index_dict:
+            i = self.index_dict[item]
+            if sum(B[i,:]) == 1:
+                M[i] = 0
+        # Set up the remaining unknown equations and solve them using
+        #   first step analysis
+        eqns = []
+        for i, unknown in enumerate(M):
+            if unknown.__class__.__name__ == 'Symbol':
+                lhs = 1 + np.dot(np.array(M),self.P[i,:])
+                new_eqn = unknown - lhs
+                eqns.append(new_eqn)
+        soln = solve(eqns)
+        for i, unknown in enumerate(M):
+            if unknown.__class__.__name__ == 'Symbol':
+                M[i] = soln[M[i]]
+        return M
+
     
     def classify_states(self):
         """
@@ -570,8 +601,7 @@ def matrix_display(matrix,states):
                 2. matrix: the matrix to be converted for display
     Output:     1. The matrix in display format
     """
-    display_mat = pd.DataFrame(matrix, index=states,
-                                    columns = states)
+    display_mat = pd.DataFrame(matrix, index=states, columns = states)
     return display_mat
 
 def vector_display(vector,states):
@@ -583,8 +613,7 @@ def vector_display(vector,states):
                 2. vector: the vector to be converted for display
     Output:     1. The vector in display format
     """
-    display_vec = pd.DataFrame(vector, index=states,
-                                columns = ['Prob'])
+    display_vec = pd.DataFrame(vector, index=states, columns = ['Prob'])
     return display_vec       
         
 
