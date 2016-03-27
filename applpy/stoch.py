@@ -93,6 +93,9 @@ class MarkovChain:
             #   for the markov chain
             state_space = [str(state_label) for state_label in states]
             self.state_space = state_space
+            self.index_dict = {}
+            for i, state in enumerate(self.state_space):
+                self.index_dict[state] = i
         else:
             state_space = range(P.shape[0])
             self.state_space = state_space
@@ -511,9 +514,37 @@ class MarkovChain:
             return Pk
 
 
+"""
+Format Conversion Procedures:
+    1. matrix_convert(matrix,states)
+    2. vector_convert(vector,states)
+"""
+        
+def matrix_convert(matrix,states):
+    """
+    Procedure Name: matrix_convert
+    Purpose: Converts matrices to pandas data frame so that they can
+                be displayed with state space labels
+    Arugments:  1. self: the markov process
+                2. matrix: the matrix to be converted for display
+    Output:     1. The matrix in display format
+    """
+    display_mat = pd.DataFrame(matrix, index=states,
+                                    columns = states)
+    return display_mat
 
-        
-        
+def vector_convert(vector,states):
+    """
+    Procedure Name: vector_convert
+    Purpose: Converts vectors to pandas data frame so that they can
+                be displayed with state space labels
+    Arugments:  1. self: the markov process
+                2. vector: the vector to be converted for display
+    Output:     1. The vector in display format
+    """
+    display_vec = pd.DataFrame(vector, index=states,
+                                columns = ['Prob'])
+    return display_vec       
         
 
 
