@@ -237,11 +237,62 @@ class MarkovChain:
     Functional Class Methods
 
     Procedures:
-        1. probability(self,state,given)
-        2. reachability(self)
-        3. steady_state(self)
-        4. trans_mat(self,n)
+        1. classify_states(self)
+        2. probability(self,state,given)
+        3. reachability(self)
+        4. steady_state(self)
+        5. trans_mat(self,n)
     """
+    def classify_states(self):
+        """
+        Procedure Name: classify_states
+        Purpose: Classifies states in the state space as either transient
+            or recurrent. Recurrent states are grouped togehter The method
+            for classifying states is described in Weiss, B. 'A non-recursive
+            algorithm for classifying the states of a finite Markov chain'.
+            1987. European Journal of Operations Research.
+        Arguments:  1. None
+        Output:     1. A dictionary of states. If there are no transient states
+                        self.reducible is set to False. Otherwise, it is
+                        set to True.
+        """
+        n = self.P.shape[0]
+        B = self.reachability()
+        # C[j] gives the number states from which j can be accessed
+        C = [0 for i in range(n)]
+        for j in range(n):
+            C[j] = sum(B[:,j])
+        # T[j] = 0 for transient states, > 0 for recurrent states. Recurrent
+        #   states in the same equivalence class have the same value
+        T = np.array([0 for i in range(n)])
+        c = 0
+        Z = None
+        while True:
+            c += 1
+            Z = max(C)
+            if Z == 0:
+                break
+            K = [i for i in range(n) if C[i] == Z]
+            k = K[0]
+            for j in range(n):
+                if B[k,j] == True:
+                    T[j] = c
+                if B[j,k] == True:
+                    C[j] = 0
+        classes = ['Transient']
+        for i in range(1,c):
+            classes.append('Recurrent ' + str(i))
+        state_dict = {}
+        for k in range(c):
+            state_dict[classes[k]] = [self.state_space[i] for i in range(n)
+                                      if T[i] == k]
+        self.classify = state_dict
+        if len(self.classify['Transient']) == 0:
+            self.reducible = False
+        else:
+            self.reducible = True
+        return self.classify
+    
     def probability(self,states,given=None,method='float'):
         """
         Procedure Name: probability
@@ -373,6 +424,8 @@ class MarkovChain:
             qrow = [x > 0 for x in row]
             Q.append(qrow)
         Q = np.array(Q,dtype=bool)
+        for i in range(n):
+            Q[i,i]=True
         B = np.linalg.matrix_power(Q,n-1)
         return B
                         
@@ -390,7 +443,11 @@ class MarkovChain:
 
         if method not in ['float', 'rational']:
             raise StochError('Method must be either float or rational')
-
+        self.classify_states()
+        if self.reducible == True:
+            err_string = 'This Markov chain is reducible. The steady state '
+            err_string += 'only works for irreducible chains.'
+            raise StochError(err_string)
         trans_mat = self.P
         size = np.size(trans_mat,axis=0)
         # The steady state probabilities are found by solving the following
