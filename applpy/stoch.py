@@ -60,7 +60,7 @@ class MarkovChain:
     def __init__(self,P,init=None,states=None):
         """
         Procedure Name: __init__
-        Purpose: Initializes and instance of the Markov Chain class
+        Purpose: Initializes an instance of the Markov Chain class
         Arguments:  1. P: the transition matrix of the markov chain
                     2. init: the initial distribution for the markov chain
                             if the initial distribution is entered as a row
@@ -241,11 +241,13 @@ class MarkovChain:
 
     Procedures:
         1. absorption_prob(self,state)
-        2. classify_states(self)
-        3. probability(self,state,given)
-        4. reachability(self)
-        5. steady_state(self)
-        6. trans_mat(self,n)
+        2. absorption_steps(self)
+        3. classify_states(self)
+        4. long_run_prob(self)
+        5. probability(self,state,given)
+        6. reachability(self)
+        7. steady_state(self)
+        8. trans_mat(self,n)
     """
     def absorption_prob(self,state):
         """
@@ -317,6 +319,85 @@ class MarkovChain:
                 M[i] = soln[M[i]]
         return M
 
+    def long_run_probs(self):
+        """
+        Procedure Name: long_run_probs
+        Purpose: Returns the long run fraction of time spent in state j,
+            given that the markov chain starts in state i
+        Arguments:  1. None
+        Output:     1. Matrix of probabilities
+        """
+        trans_mat = self.P
+        size = np.size(trans_mat, axis=0)
+        self.classify_states()
+        B = self.reachability()
+        Pi = np.zeros(shape=(size,size))
+        for item in self.index_dict:
+            i = self.index_dict[item]
+            # If a state is absorbing, then all time is spent in that 
+            #   state if the DTMC starts there
+            if sum(B[i,:]) == 1:
+                Pi[i,:] = [1 if j == i else 0 for j in range(size)]
+                abs_prob = self.absorption_prob(item)
+                Pi[:,i] = abs_prob
+        # Solve the problem independently for each recurrent class
+        for item in self.classify:
+            can_reach = 0
+            abs_flag = False
+            for state in self.classify[item]:
+                index = self.index_dict[state]
+                can_reach += sum(B[index,:])
+            if can_reach == len(self.classify[item]):
+                abs_flag = True
+            if item != 'Transient' and abs_flag == False:
+                states_rec = self.classify[item]
+                size_rec = len(states_rec)
+                P_rec = np.zeros(shape = (size_rec,size_rec))
+                for i_rec, item1 in enumerate(states_rec):
+                    for j_rec, item2 in enumerate(states_rec):
+                        i = self.index_dict[item1]
+                        j = self.index_dict[item2]
+                        P_rec[i_rec,j_rec] = trans_mat[i,j]
+                X_rec = MarkovChain(P_rec, states = states_rec)
+                steady_rec = X_rec.steady_state()
+                for item in states_rec:
+                    i_rec = X_rec.index_dict[str(item)]
+                    j = self.index_dict[item]
+                    for item in states_rec:
+                        i = self.index_dict[item]
+                        Pi[i,j] = steady_rec[i_rec][0]
+        # If a state is transient, the long run proportion of
+        #   time spent in each of these states is 0
+        for item in self.classify['Transient']:
+            i = self.index_dict[item]
+            # Find the probability of transition to any
+            #  non-absorbing recurrent class that is reachable
+            #  from the transient state
+            current_prob = sum(Pi[i,:])
+            trans_dict = {}
+            for equiv_class in self.classify:
+                if equiv_class != 'Transient':
+                    can_reach = 0
+                    total_prob = 0
+                    abs_flag = False
+                    for j,state in enumerate(self.classify[equiv_class]):
+                        index = self.index_dict[state]
+                        can_reach += sum(B[index,:])
+                        total_prob = self.P[i,j]
+                    if can_reach == len(self.classify[equiv_class]):
+                        abs_flag = True
+                    if abs_flag == False:
+                        trans_dict[equiv_class]=total_prob
+            trans_sum = sum([trans_dict[key] for key in trans_dict])
+            for key in trans_dict:
+                trans_dict[key] /= trans_sum
+            for equiv_class in self.classify:
+                if equiv_class in trans_dict:
+                    for state in self.classify[equiv_class]:
+                        j = self.index_dict[state]
+                        Piij = Pi[j,j] * trans_dict[equiv_class]
+                        Pi[i,j] = Piij * current_prob
+        return Pi
     
     def classify_states(self):
         """
@@ -355,6 +436,8 @@ class MarkovChain:
                 if B[j,k] == True:
                     C[j] = 0
         classes = ['Transient']
+        num_abs = 0
+        num_rec = 0
         for i in range(1,c):
             classes.append('Recurrent ' + str(i))
         state_dict = {}
