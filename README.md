@@ -3,7 +3,7 @@
 
 ## What is APPLPy?
 
-APPLPy stands for A Probability Programming Language -- Python Edition. The primary goal of APPLPy is to provide an open-source conceptual probability package capable of manipulating random variables symbolically. Although the Python implementation is a recent development, a version based on the Maple computer algebra system has been used for over a decade. The Maple implementation, called APPL, has been successfully integrated into mathematical statistics and computing courses at the College of William and Mary and the United States Military Academy, while also facilitating research in areas ranging from order statistics to queuing theory. The hope of APPLPy is to make the computational capabilities of APPL available to researchers and educators on an open-source platform.
+APPLPy stands for A Probability Programming Language -- Python Edition. The primary goal of APPLPy is to provide an open-source conceptual probability package capable of manipulating random variables symbolically. Although the Python implementation is a recent development, a version based on the Maple computer algebra system has been used for over a decade. The Maple implementation, called APPL, has been successfully integrated into mathematical statistics and computing courses at the College of William and Mary, the United States Military Academy and Colorado College, while also facilitating research in areas ranging from order statistics to queuing theory. The hope of APPLPy is to make the computational capabilities of APPL available to researchers and educators on an open-source platform.
 
 The current capabilities of APPLPy include:
 
@@ -16,6 +16,7 @@ The current capabilities of APPLPy include:
 7. Bootstrapping data sets
 8. Bayesian inference with ad-hoc prior distributions
 9. Computation of distributions for M/M/s queues
+10. Analysis of Discrete Time Markov Chains
 
 ## How is APPLPy Used?
 
