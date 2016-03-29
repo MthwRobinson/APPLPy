@@ -319,7 +319,7 @@ class MarkovChain:
                 M[i] = soln[M[i]]
         return M
 
-    def long_run_probs(self):
+    def long_run_probs(self, method = 'float'):
         """
         Procedure Name: long_run_probs
         Purpose: Returns the long run fraction of time spent in state j,
@@ -327,11 +327,20 @@ class MarkovChain:
         Arguments:  1. None
         Output:     1. Matrix of probabilities
         """
+        if method not in ['float','rational']:
+            err_string = 'The method must be specified as float or rational.'
+            raise StochError(err_string)
+        
         trans_mat = self.P
         size = np.size(trans_mat, axis=0)
         self.classify_states()
         B = self.reachability()
         Pi = np.zeros(shape=(size,size))
+        if method == 'rational':
+            Pi = Pi.astype(object)
+            for i in range(size):
+                for j in range(size):
+                    Pi[i,j] = Rational(Pi[i,j])
         for item in self.index_dict:
             i = self.index_dict[item]
             # If a state is absorbing, then all time is spent in that 
@@ -352,20 +361,26 @@ class MarkovChain:
             if item != 'Transient' and abs_flag == False:
                 states_rec = self.classify[item]
                 size_rec = len(states_rec)
+
                 P_rec = np.zeros(shape = (size_rec,size_rec))
+                if method == 'rational':
+                    P_rec = P_rec.astype(object)
                 for i_rec, item1 in enumerate(states_rec):
                     for j_rec, item2 in enumerate(states_rec):
                         i = self.index_dict[item1]
                         j = self.index_dict[item2]
                         P_rec[i_rec,j_rec] = trans_mat[i,j]
                 X_rec = MarkovChain(P_rec, states = states_rec)
-                steady_rec = X_rec.steady_state()
+                steady_rec = X_rec.steady_state(method = method)
                 for item in states_rec:
                     i_rec = X_rec.index_dict[str(item)]
                     j = self.index_dict[item]
                     for item in states_rec:
                         i = self.index_dict[item]
-                        Pi[i,j] = steady_rec[i_rec][0]
+                        if method == 'float':
+                            Pi[i,j] = steady_rec[i_rec][0]
+                        elif method == 'rational':
+                            Pi[i,j] = steady_rec[i_rec]
         # If a state is transient, the long run proportion of
         #   time spent in each of these states is 0
         for item in self.classify['Transient']:
