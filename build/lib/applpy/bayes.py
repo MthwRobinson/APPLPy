@@ -1,6 +1,26 @@
+"""
+Bayesian Statistics Module
+
+Defines procedures for Bayesian parameter estimation
+
+Bayesian Procedures:
+
+Procedures:
+    1. BayesUpdate(LikeRV,PriorRV,data,param)
+    2. CredibleSet(X,alpha)
+    3. JeffreysPrior(LikeRV,low,high,param)
+    4. Posterior(LikeRV,PriorRV,data,param)
+    5. PosteriorPredictive(LikeRV,PriorRV,data,param)
+    
+"""
+
 from __future__ import division
-from sympy import *
-from rv import *
+from sympy import (Symbol, symbols, oo, integrate, summation, diff,
+                   exp, pi, sqrt, factorial, ln, floor, simplify,
+                   solve, nan, Add, Mul, Integer, function,
+                   binomial, pprint, log)
+from .rv import (RV, RVError, CDF, PDF, BootstrapRV,
+                 ExpectedValue,Mean, Variance, Truncate)
 x,y,z,t=symbols('x y z t')
 
 """
@@ -20,27 +40,6 @@ x,y,z,t=symbols('x y z t')
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
-"""
-
-
-"""
-Bayesian Statistics Module
-
-Defines procedures for Bayesian parameter estimation
-
-"""
-
-"""
-Bayesian Procedures:
-
-Procedures:
-    1. BayesUpdate(LikeRV,PriorRV,data,param)
-    2. CredibleSet(X,alpha)
-    2. JeffreysPrior(LikeRV,low,high,param)
-    3. Posterior(LikeRV,PriorRV,data,param)
-    4. PosteriorPredictive(LikeRV,PriorRV,data,param)
-    
-
 """
 
 def BayesMenu():
@@ -84,7 +83,7 @@ def Posterior(LikeRV,PriorRV,data=[],param=Symbol('theta')):
         #   variable
         likelihood=LikeRV.func[0].subs(x,data[0])
         for i in range(1,len(data)):    
-            likelihood+=LikeRV.func[0].subs(x,data[i])
+            likelihood*=LikeRV.func[0].subs(x,data[i])
         likelihood=simplify(likelihood)
         likelihood=likelihood.subs(param,x)
         # Create a list of proportional posterior distributions
@@ -211,7 +210,7 @@ def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
     Output:     1. PostRV: A posterior distribution
     """
     # Find the posterior distribution for the first observation
-    PostRV=BayesUpdate(LikeRV,PriorRV,data[0],param)
+    PostRV=BayesUpdate(LikeRV,PriorRV,[data[0]],param)
     # If there are multiple observations, continue bayesian updating
     #   for each observation in the data set
     if len(data)>1:
@@ -221,7 +220,7 @@ def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
             NewPrior=PostRV
             # Compute the new posterior distribution for the next
             #   observation in the data set
-            PostRV=BayesUpdate(LikeRV,NewPrior,data[i],param)
+            PostRV=BayesUpdate(LikeRV,NewPrior,[data[i]],param)
     return PostRV
 
 def PosteriorPredictive(LikeRV,PriorRV,data=[],param=Symbol('theta')):
@@ -251,30 +250,3 @@ def PosteriorPredictive(LikeRV,PriorRV,data=[],param=Symbol('theta')):
         postpredict=simplify(postpredict)
         PostPredRV=RV([postpredict],LikeRV.support,LikeRV.ftype)
         return PostPredRV
-
-        
-            
-        
-        
-    
-
-
-
-
-
-     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

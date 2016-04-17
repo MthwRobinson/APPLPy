@@ -1,4 +1,41 @@
 """
+Distribution Subclass Module
+
+Defines commonly used distributions as subclasses of the
+    RV class
+
+Continuous Distributions:
+    ArcSinRV(),ArcTanRV(alpha,phi),BetaRV(alpha,beta)
+    CauchyRV(a,alpha),ChiRV(N),ChiSquareRV(N),ErlangRV(theta,N)
+    ErrorRV(mu,alpha,d),ErrorIIRV(a,b,c),ExponentialRV(theta)
+    ExponentialPowerRV(theta,kappa),ExtremeValueRV(alpha,beta)
+    FRV(n1,n2),GammaRV(theta,kappa),GompertzRV(theta,kappa)
+    GeneralizedParetoRV(theta,delta,kappa),IDBRV(theta,delta,kappa)
+    InverseGaussianRV(theta,mu),InverseGammaRV(alpha,beta)
+    KSRV(n),LaPlaceRV(omega,theta), LogGammaRV(alpha,beta)
+    LogisticRV(kappa,theta),LogLogisticRV(theta,kappa)
+    LogNormalRV(mu,sigma),LomaxRV(kappa,theta)
+    MakehamRV(theta,delta,kappa),MuthRV(kappa),NormalRV(mu,sigma)
+    ParetoRV(theta,kappa),RayleighRV(theta),TriangularRV(a,b,c)
+    TRV(N),UniformRV(a,b),WeibullRV(theta,kappa)
+
+
+Discrete Distributions
+    BenfordRV(),BinomialRV(n,p),GeometricRV(p),PoissonRV(theta)
+"""
+
+from __future__ import division
+from sympy import (Symbol, symbols, oo, integrate, summation, diff,
+                   exp, pi, sqrt, factorial, ln, floor, simplify,
+                   solve, nan, Add, Mul, Integer, function,
+                   binomial,gamma,cos,cot,Rational)
+from random import random
+from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
+                 BootstrapRV, Convert)
+from .bivariate import (BivariateRV)
+x,y,z,t,v=symbols('x y z t v')
+
+"""
     A Probability Progamming Language (APPL) -- Python Edition
     Copyright (C) 2001,2002,2008,2010,2014 Andrew Glen, Larry
     Leemis, Diane Evans, Matthew Robinson
@@ -16,21 +53,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
-
-"""
-Distribution Subclass Module
-
-Defines commonly used distributions as subclasses of the
-    RV class
-
-"""
-
-from sympy import (Symbol, symbols, oo, exp, pi, sqrt, atan,
-                   gamma, factorial, ln, floor, integrate, diff,
-                   log, simplify)
-from .rv import RV
-x,y,z,t,v=symbols('x y z t v')
-
 
 def param_check(param):
     flag=True
@@ -50,13 +72,26 @@ Continuous Distributions
 """
 
 class ArcSinRV(RV):
+    """
+    Procedure Name: ArcSinRV
+    Purpose: Creates an instance of the arc sin distribution
+    Arguments:  1. None
+    Output:     1. An arc sin random variable
+    """
     def __init__(self):
         X_dummy=RV(1/(pi*sqrt(x*(1-x))),[0,1])
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class ArcTanRV(RV):
+    """
+    Procedure Name: ArcTanRV
+    Purpose: Creates an instance of the arc tan distribution
+    Arguments:  1. alpha: a strictly positive parameter
+    Output:     1. An arc tan random variable
+    """
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  phi=Symbol('phi')):
         # Return an error if invalid parameters are entered
@@ -72,8 +107,16 @@ class ArcTanRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class BetaRV(RV):
+    """
+    Procedure Name: BetaRV
+    Purpose: Creates an instance of the beta distribution
+    Arguments:  1. alpha: a strictly positive parameter
+                2. beta: a strictly positive parameter
+    Output:     1. A beta random variable
+    """
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta'),positive=True):
         if alpha in [-oo,oo]:
@@ -89,8 +132,16 @@ class BetaRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class CauchyRV(RV):
+    """
+    Procedure Name: CauchyRV
+    Purpose: Creates an instance of the Cauchy distribution
+    Arguments:  1. a: a real valued parameter
+                2. alpha: a stictly positive parameter
+    Output:     1. A Cauchy random variable
+    """
     def __init__(self,a=Symbol('a'),
                  alpha=Symbol('alpha'),positive=True):
         if a in [-oo,oo]:
@@ -106,17 +157,31 @@ class CauchyRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[a,alpha]
+        self.cache={}
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):        
         # If no parameter is specified, return an error
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
 
-        # Generate exponential variates
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
+
+        # Generate cauchy variates
         idf_func=self.parameter[0]-cot(pi*t)*self.parameter[1]
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -126,6 +191,12 @@ class CauchyRV(RV):
         return varlist
 
 class ChiRV(RV):
+    """
+    Procedure Name: ChiRV
+    Purpose: Creates an instance of the chi distribution
+    Arguments:  1. N: a positive integer parameter
+    Output:     1. A chi random variable
+    """
     def __init__(self,N=Symbol('N',positive=True,
                                integer=True)):
         if N.__class__.__name__!='Symbol':
@@ -133,12 +204,19 @@ class ChiRV(RV):
                 err_string='N must be a positive integer'
                 raise RVError(err_string)
         X_dummy=RV(((x**(N-1))*exp(-x**2/2))/
-                   (2**((N/2)-1)*gamma(N/2)),[0,oo])
+                   (2**((Rational(N,2))-1)*gamma(Rational(N,2))),[0,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class ChiSquareRV(RV):
+    """
+    Procedure Name: ChiSquareRV
+    Purpose: Creates an instance of the chi square distribution
+    Arguments:  1. N: a positive integer parameter
+    Output:     1. A chi squared random variable
+    """
     def __init__(self,N=Symbol('N',positive=True,
                                integer=True)):
         if N.__class__.__name__!='Symbol':
@@ -150,8 +228,16 @@ class ChiSquareRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class ErlangRV(RV):
+    """
+    Procedure Name: ErlangRV
+    Purpose: Creates an instance of the Erlang distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. N: a positive integer parameter
+    Output:     1. An erlang random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  N=Symbol('N',positive=True,integer=True)):
         if N.__class__.__name__!='Symbol':
@@ -170,8 +256,17 @@ class ErlangRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class ErrorRV(RV):
+    """
+    Procedure Name: ErrorRV
+    Purpose: Creates an instance of the error distribution
+    Arguments:  1. mu: a strictly positive parameter
+                2. alpha: a real valued parameter
+                3. d: a real valued parameter
+    Output:     1. An error random variable
+    """
     def __init__(self,mu=Symbol('mu',positive=True),
                  alpha=Symbol('alpha'),d=Symbol('d')):
         if mu.__class__.__name__!='Symbol':
@@ -188,8 +283,17 @@ class ErrorRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class ErrorIIRV(RV):
+    """
+    Procedure Name: ErrorIIRV
+    Purpose: Creates an instance of the error II distribution
+    Arguments:  1. a: a real valued parameter
+                2. b: a real valued parameter
+                3. c: a real valued parameter
+    Output:     1. An error II random variable
+    """
     def __init__(self,a=Symbol('a'),b=Symbol('b'),
                  c=Symbol('c')):
         if a in [-oo,oo]:
@@ -203,8 +307,15 @@ class ErrorIIRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class ExponentialRV(RV):
+    """
+    Procedure Name: ExponentialRV
+    Purpose: Creates an instance of the exponential distribution
+    Arguments:  1. theta: a strictly positive parameter
+    Output:     1. An exponential random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True)):
         if theta.__class__.__name__!='Symbol':
             if theta<=0:
@@ -218,17 +329,31 @@ class ExponentialRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta]
+        self.cache={}
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):       
         # If no parameter is specified, return an error
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         # Generate exponential variates
         idf_func=(-ln(1-t))/(self.parameter[0])
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -238,6 +363,13 @@ class ExponentialRV(RV):
         return varlist
 
 class ExponentialPowerRV(RV):
+    """
+    Procedure Name: ExponentialPowerRV
+    Purpose: Creates an instance of the exponential power distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a strictly positive parameter
+    Output:     1. An exponential power random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
         if theta.__class__.__name__!='Symbol':
@@ -251,18 +383,32 @@ class ExponentialPowerRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+        self.cache={}
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         # If no parameter is specified, return an error
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         # Generate exponential power variates
         idf_func=exp((-ln(self.parameter[0])+ln(ln(1-ln(1-s))))/
                      self.parameter[1])
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -272,6 +418,13 @@ class ExponentialPowerRV(RV):
         return varlist
 
 class ExtremeValueRV(RV):
+    """
+    Procedure Name: ExtremeValueRV
+    Purpose: Creates an instance of the extreme value distribution
+    Arguments:  1. alpha: a real valued parameter
+                2. beta: a real valued parameter
+    Output:     1. An extreme value random variable
+    """
     def __init__(self,alpha=Symbol('alpha'),beta=Symbol('beta')):
         if alpha in [-oo,oo]:
             if beta in [-oo,oo]:
@@ -283,15 +436,30 @@ class ExtremeValueRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[alpha,beta]
+        self.cache={}
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         idf_func=(ln(self.parameter[0])+ln(ln(-1/(t-1))))/self.parameter[1]
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -300,6 +468,13 @@ class ExtremeValueRV(RV):
         return varlist
 
 class FRV(RV):
+    """
+    Procedure Name: FRV
+    Purpose: Creates an instance of the f distribution
+    Arguments:  1. n1: a strictly positive parameter
+                2. n2: a strictly positive parameter
+    Output:     1. A chi squared random variable
+    """
     def __init__(self,n1=Symbol('n1',positive=True),
                  n2=Symbol('n2',positive=True)):
         if n1.__class__.__name__!='Symbol':
@@ -316,8 +491,16 @@ class FRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class GammaRV(RV):
+    """
+    Procedure Name: GammaRV
+    Purpose: Creates an instance of the gamma distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a strictly positive parameter
+    Output:     1. A chi squared random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
         if theta.__class__.__name__!='Symbol':
@@ -334,8 +517,17 @@ class GammaRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+        self.cache={}
 
 class GeneralizedParetoRV(RV):
+    """
+    Procedure Name: GeneralizedParetoRV
+    Purpose: Creates an instance of the generalized pareto distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. delta: a real valued parameter
+                3. kappa: a real valued parameter
+    Output:     1. A generalized pareto random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  delta=Symbol('delta'),kappa=Symbol('kappa')):
         if theta.__class__.__name__!='Symbol':
@@ -350,8 +542,16 @@ class GeneralizedParetoRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class GompertzRV(RV):
+    """
+    Procedure Name: GompertzRV
+    Purpose: Creates an instance of the gompertz distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a real valued parameter
+    Output:     1. A gompertz random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa')):
         if theta.__class__.__name__!='Symbol':
@@ -367,17 +567,31 @@ class GompertzRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+        self.cache={}
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         idf_func=-((ln(self.parameter[0])-
                    ln(self.parameter[0]-ln(1-t)*ln(self.parameter[1])))
                    /ln(self.parameter[1]))
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -386,6 +600,14 @@ class GompertzRV(RV):
         return varlist
 
 class IDBRV(RV):
+    """
+    Procedure Name: IDBRV
+    Purpose: Creates an instance of the idb distribution
+    Arguments:  1. theta: a real valued parameter
+                2. delta: a real valued parameter
+                3. kappa: a real valued parameter
+    Output:     1. An idb random variable
+    """
     def __init__(self,theta=Symbol('theta'),delta=Symbol('delta'),
                  kappa=Symbol('kappa')):
         if theta in [-oo,oo] or delta in [-oo,oo] or kappa in [-oo,oo]:
@@ -396,8 +618,16 @@ class IDBRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class InverseGaussianRV(RV):
+    """
+    Procedure Name: InverseGaussianRV
+    Purpose: Creates an instance of the inverse gaussian distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. mu: a strictly positive parameter
+    Output:     1. An inverse gaussian random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  mu=Symbol('mu',positive=True)):
         if theta.__class__.__name__!='Symbol':
@@ -414,9 +644,17 @@ class InverseGaussianRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 
 class InverseGammaRV(RV):
+    """
+    Procedure Name: InverseGammaRV
+    Purpose: Creates an instance of the inverse gamma distribution
+    Arguments:  1. alpha: a strictly positive parameter
+                2. beta: a strictly positive parameter
+    Output:     1. An inverse gamma random variable
+    """
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta',positive=True)):
         if alpha.__class__.__name__!='Symbol':
@@ -432,8 +670,15 @@ class InverseGammaRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class KSRV(RV):
+    """
+    Procedure Name: KSRV
+    Purpose: Creates an instance of the kolmogoroff-smirnov distribution
+    Arguments:  1. n: a positive integer parameter
+    Output:     1. A kolmogoroff-smirnov random variable
+    """
     def __init__(self,n=Symbol('n',positive=True,
                                integer=True)):
         if n.__class__.__name__!='Symbol':
@@ -445,10 +690,10 @@ class KSRV(RV):
         N=n
         m=floor(3*N/2)+(N%2)-1
         vv=range(m+1)
-        vval=[]
+        vvalue=[]
         for i in range(len(vv)):
-            vval.append(None)
-        vv=dict(zip(vv,vval))
+            vvalue.append(0)
+        vv=dict(zip(vv,vvalue))
         vv[0]=0
         g=1/(2*N)
         mm=0
@@ -474,7 +719,7 @@ class KSRV(RV):
         # Generate an NxN A array
         aidx=range(1,N+1);aval=[]
         for i in aidx:
-            aval.append(None)
+            aval.append(0)
         arow=dict(zip(aidx,aval));A=dict(zip(aidx,aval))
         for i in aidx:
             A[i]=arow
@@ -495,19 +740,19 @@ class KSRV(RV):
         Pidx=[];Pval=[]
         for i in range(1,m+1):
             Pidx.append(i)
-            Pval.append(None)
+            Pval.append(0)
         P=dict(zip(Pidx,Pval))
         # Create an NxN F array
         fidx=range(1,N+1);fval=[]
         for i in fidx:
-            fval.append(None)
+            fval.append(0)
         frow=dict(zip(fidx,fval));F=dict(zip(fidx,fval))
         for i in fidx:
             F[i]=frow
         # Create an NxN V array
         vidx=range(1,N+1);vval=[]
         for i in vidx:
-            vval.append(None)
+            vval.append(0)
         vrow=dict(zip(vidx,vval));V=dict(zip(vidx,vval))
         for i in vidx:
             V[i]=vrow
@@ -519,7 +764,7 @@ class KSRV(RV):
             l=int(min(floor(2*N*c[k])+1,N))
             F[N][N]=integrate(1,(u[N],x[N]-v,1))
             V[N][N]=integrate(1,(u[N],u[N-1],1))
-            for i in reversed(range(2,N,-1)):
+            for i in range(N-1,1,-1):
                 if i+l>N:
                     S=0
                 else:
@@ -536,7 +781,7 @@ class KSRV(RV):
                     F[i][i+l-1]=integrate(V[i+1][i+l-1]+S,
                                           (u[i],x[N]-v,x[i]+v))
                 S+=F[i+1][min(i+l-1,N)]
-                for j in reversed(range(max(i+1,z+2),min(N-1,i+l-2)+1,-1)):
+                for j in range(min(N-1,i+l-2),max(i+1-1,z+2-1),-1):
                     F[i][j]=integrate(V[i+1][j]+S,
                                       (u[i],x[j]-v,x[j+1]-v))
                     V[i][j]=integrate(V[i+1][j]+S,
@@ -551,15 +796,16 @@ class KSRV(RV):
                     F[i][i]=integrate(S,(u[i],x[i]-v,x[i+1]-v))
             if l==N:
                 S=0
+                F[1][N] = integrate(V[2][N],(u[1],x[N]-v,x[1]+v))
             else:
                 S=F[2][l+1]
             if l<N:
                 F[1][l]=integrate(V[2][l]+S,(u[1],x[l]-v,x[1]+v))
             S+=F[2][j]
-            for j in reversed(range(max(2,z+1),min(N-1,l-1)+1,-1)):
+            for j in range(min(N-1,i+l-2),max(i,z+1),-1):
                 F[1][j]=integrate(V[2][j]+S,
-                                  (u[1],(x[j]-v)*(floor(x[j]-c[k])+1),
-                               x[j+1]-v))
+                          (u[1],(x[j]-v)*(floor(x[j]-c[k])+1),
+                           x[j+1]-v))
                 S+=F[2][j]
             if z==0:
                 F[1][1]=integrate(S,(u[1],0,x[2]-v))
@@ -573,8 +819,12 @@ class KSRV(RV):
         for i in range(0,m+1):
             KSspt.append(vv[i]+1/(2*N))
         for i in range(1,m+1):
-            func=(x-1)/(2*N)
-            KSCDF.append(simplify(func.subs(v,P[i])))
+            func = P[i]
+            if type(func) in [int,float]:
+                ksfunc = func
+            else:
+                ksfunc = func.subs(v, (x-1/(2*N)))
+            KSCDF.append(simplify(ksfunc))
         # Remove redundant elements from the list
         KSCDF2=[];KSspt2=[]
         KSspt2.append(KSspt[0])
@@ -584,12 +834,20 @@ class KSRV(RV):
                 KSCDF2.append(KSCDF[i])
                 KSspt2.append(KSspt[i])
         KSspt2.append(KSspt[-1])
-        X_dummy=RV(KSCDF2,KSspt2,['continuous','cdf'])
+        X_dummy=RV(KSCDF,KSspt,['continuous','cdf'])
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class LaPlaceRV(RV):
+    """
+    Procedure Name: LaPlaceRV
+    Purpose: Creates an instance of the LaPlace distribution
+    Arguments:  1. omega: a strictly positive parameter
+                2. theta: a real valued parameter
+    Output:     1. A LaPlace random variable
+    """
     def __init__(self,omega=Symbol('omega',positive=True),
                  theta=Symbol('theta')):
         if omega.__class__.__name__!='Symbol':
@@ -602,8 +860,16 @@ class LaPlaceRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
         
 class LogGammaRV(RV):
+    """
+    Procedure Name: LogGammaRV
+    Purpose: Creates an instance of the log gamma distribution
+    Arguments:  1. alpha: a strictly positive parameter
+                2. beta: a strictly positive parameter
+    Output:     1. A log gamma random variable
+    """
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta',positive=True)):
         if alpha.__class__.__name__!='Symbol':
@@ -619,8 +885,16 @@ class LogGammaRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class LogisticRV(RV):
+    """
+    Procedure Name: LogisticRV
+    Purpose: Creates an instance of the logistic distribution
+    Arguments:  1. kappa: a strictly positive parameter
+                2. theta: a strictly positive parameter
+    Output:     1. A logistic random variable
+    """
     def __init__(self,kappa=Symbol('kappa',positive=True),
                  theta=Symbol('theta',positive=True)):
         if kappa.__class__.__name__!='Symbol':
@@ -637,16 +911,30 @@ class LogisticRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[kappa,theta]
+        self.cache={}
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         idf_func=-((ln(-t/(t-1))+self.parameter[0]*ln(self.parameter[1]))/
                    self.parameter[1])
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -655,6 +943,13 @@ class LogisticRV(RV):
         return varlist
 
 class LogLogisticRV(RV):
+    """
+    Procedure Name: LogLogisticRV
+    Purpose: Creates an instance of the log logistic distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a strictly positive parameter
+    Output:     1. A chi squared random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
         if kappa.__class__.__name__:
@@ -671,16 +966,30 @@ class LogLogisticRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+        self.cache={}
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         idf_func=exp((ln(-t/(t-1))-self.parameter[1]*ln(self.parameter[0]))/
                      self.parameter[1])
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -689,6 +998,13 @@ class LogLogisticRV(RV):
         return varlist
     
 class LogNormalRV(RV):
+    """
+    Procedure Name: LogNormalRV
+    Purpose: Creates an instance of the log normal distribution
+    Arguments:  1. mu: a real valued parameter
+                2. sigma: a strictly positive parameter
+    Output:     1. A log normal random variable
+    """
     def __init__(self,mu=Symbol('mu'),
                  sigma=Symbol('sigma',positive=True)):
         if sigma.__class__.__name__!='Symbol':
@@ -703,8 +1019,16 @@ class LogNormalRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class LomaxRV(RV):
+    """
+    Procedure Name: LomaxRV
+    Purpose: Creates an instance of the lomax distribution
+    Arguments:  1. kappa: a strictly positive parameter
+                2. theta: a strictly positive parameter
+    Output:     1. A lomax random variable
+    """
     def __init__(self,kappa=Symbol('kappa',positive=True),
                  theta=Symbol('theta',positive=True)):
         if kappa.__class__.__name__!='Symbol':
@@ -720,15 +1044,29 @@ class LomaxRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameters=[kappa,theta]
+        self.cache={}
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         idf_func=((1-t)**(1/self.parameter[0])-1)/self.parameter[1]
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -737,6 +1075,14 @@ class LomaxRV(RV):
         return varlist
 
 class MakehamRV(RV):
+    """
+    Procedure Name: MakehamRV
+    Purpose: Creates an instance of the Makeham distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. delta: a strictly positive parameter
+                3: kappa: a strictly positive parameter
+    Output:     1. A log normal random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  delta=Symbol('delta',positive=True),
                  kappa=Symbol('kappa')):
@@ -753,8 +1099,15 @@ class MakehamRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class MuthRV(RV):
+    """
+    Procedure Name: MuthRV
+    Purpose: Creates an instance of the Muth distribution
+    Arguments:  1. kappa: a strictly positive parameter
+    Output:     1. A log normal random variable
+    """
     def __init__(self,kappa=Symbol('kappa',positive=True)):
         if kappa.__class__.__name__!='Symbol':
             if kappa<=0:
@@ -769,8 +1122,16 @@ class MuthRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class NormalRV(RV):
+    """
+    Procedure Name: NormalRV
+    Purpose: Creates an instance of the normal distribution
+    Arguments:  1. mu: a real valued parameter
+                2. sigma: a strictly positive parameter
+    Output:     1. A normal random variable
+    """
     def __init__(self,mu=Symbol('mu'),
                  sigma=Symbol('sigma',positive=True)):
         if sigma.__class__.__name__!='Symbol':
@@ -786,8 +1147,46 @@ class NormalRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[mu,sigma]
+        self.cache={}
+
+    def variate(self,n=1,s=None,method='special'):
+        # If no parameter is specified, return an error
+        if param_check(self.parameter)==False:
+            raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
+
+        # Otherwise, use the Box-Muller method to compute variates
+        mean=self.parameter[0];var=self.parameter[1]
+        U=UniformRV(0,1)
+        Z1=lambda (val1,val2): sqrt(-2*ln(val1))*cos(2*pi*val2).evalf()
+        gen_uniform=lambda x: U.variate(n=1)[0]
+        val_pairs=[(gen_uniform(1),gen_uniform(1)) for i in range(1,n+1)]
+        varlist=[Z1(pair) for pair in val_pairs]
+        normlist=[(mean+sqrt(var)*val).evalf() for val in varlist]
+        return normlist
+        
+        
 
 class ParetoRV(RV):
+    """
+    Procedure Name: ParetoRV
+    Purpose: Creates an instance of the pareto distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a strictly positive parameter
+    Output:     1. A Paerto random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
         if theta.__class__.__name__!='Symbol':
@@ -802,8 +1201,15 @@ class ParetoRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class RayleighRV(RV):
+    """
+    Procedure Name: RayleighRV
+    Purpose: Creates an instance of the Rayleigh distribution
+    Arguments:  1. theta: a strictly positive parameter
+    Output:     1. A log normal random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True)):
         if theta.__class__.__name__!='Symbol':
             if theta<=0:
@@ -815,8 +1221,18 @@ class RayleighRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class TriangularRV(RV):
+    """
+    Procedure Name: TriangularRV
+    Purpose: Creates an instance of the triangular distribution
+    Arguments:  1. a: a real valued parameter
+                2. b: a real valued parameter
+                3. c: a real valued parameter
+                ** Note: a<b<c ***
+    Output:     1. A triangular variable
+    """
     def __init__(self,a=Symbol('a'),b=Symbol('b'),c=Symbol('c')):
         if a.__class__.__name__!='Symbol':
             if b.__class__.__name__!='Symbol':
@@ -833,8 +1249,15 @@ class TriangularRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[a,b,c]
+        self.cache={}
 
 class TRV(RV):
+    """
+    Procedure Name: TRV
+    Purpose: Creates an instance of the t distribution
+    Arguments:  1. N: a positive integer parameter
+    Output:     1. A log normal random variable
+    """
     def __init__(self,N=Symbol('N'),positive=True,integer=True):
         if N.__class__.__name__!='Symbol':
             if N<=0:
@@ -846,8 +1269,17 @@ class TRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class UniformRV(RV):
+    """
+    Procedure Name: UniformRV
+    Purpose: Creates an instance of the uniform distribution
+    Arguments:  1. a: a real valued parameter
+                2. b: a real valued parameter
+                ** Note: b>a **
+    Output:     1. A uniform random variable
+    """
     def __init__(self,a=Symbol('a'),b=Symbol('b')):
         if a.__class__.__name__!='Symbol':
             if b.__class__.__name__!='Symbol':
@@ -862,17 +1294,31 @@ class UniformRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[a,b]
+        self.cache={}
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         # If no parameter is specified, return an error
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         # Generate uniform variates
         idf_func=-t*self.parameter[0]+t*self.parameter[1]+self.parameter[0]
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -881,7 +1327,14 @@ class UniformRV(RV):
         varlist.sort()
         return varlist
 
-class WeibullRV(RV):   
+class WeibullRV(RV):
+    """
+    Procedure Name: WeibullRV
+    Purpose: Creates an instance of the weibull distribution
+    Arguments:  1. theta: a strictly positive parameter
+                2. kappa: a strictly positive parameter
+    Output:     1. A weibull random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
         if theta.__class__.__name__!='Symbol':
@@ -898,19 +1351,33 @@ class WeibullRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+        self.cache={}
 
 
-    def variate(self,n=1,s='sim'):
+    def variate(self,n=1,s=None,method='special'):
         # If no parameter is specified, return an error
         if param_check(self.parameter)==False:
             raise RVError('Not all parameters specified')
+
+        # Check to see if the user specified a valid method
+        method_list=['special','inverse']
+        if method not in method_list:
+            error_string='an invalid method was specified'
+            raise RVError(error_string)
+
+        # If the inverse method is specified, compute variates using
+        #   the IDF function
+        if method=='inverse':
+            Xidf=IDF(self)
+            varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
+            return varlist
 
         # Generate weibull variates
         idf_func=exp(-(-ln(-ln(1-t))+self.parameter[1]*ln(self.parameter[0]))/
                      self.parameter[1])
         varlist=[]
         for i in range(n):
-            if s=='sim':
+            if s==None:
                 val=random()
             else:
                 val=s
@@ -925,13 +1392,27 @@ Discrete Distributions
 """
 
 class BenfordRV(RV):
+    """
+    Procedure Name: BenfordRV
+    Purpose: Creates an instance of the Benford distribution
+    Arguments:  1. None
+    Output:     1. A Benford random variable
+    """
     def __init__(self):
         X_dummy=RV([(ln((1/x)+1))/(ln(10))],[1,9],['Discrete','pdf'])
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class BinomialRV(RV):
+    """
+    Procedure Name: BinomialRV
+    Purpose: Creates an instance of the binomial distribution
+    Arguments:  1. N: a positive integer parameter
+                2. p: a positive parameter between 0 and 1
+    Output:     1. A binomial random variable
+    """
     def __init__(self,N=Symbol('N',positive=True,integer=True),
                  p=Symbol('p',positive=True)):
         if N.__class__.__name__!='Symbol':
@@ -949,8 +1430,29 @@ class BinomialRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
+
+class BernoulliRV(BinomialRV):
+    """
+    Procedure Name: BernoulliRV
+    Purpose: Creates an instance of the bernoulli distribution
+    Arguments:  1. p: a positive parameter between 0 and 1
+    Output:     1. A bernoulli random variable
+    """
+    def __init__(self,p=Symbol('p',positive=True)):
+        X_dummy = BinomialRV(1,p)
+        self.func=X_dummy.func
+        self.support=X_dummy.support
+        self.ftype=X_dummy.ftype
+        self.cache={}
 
 class GeometricRV(RV):
+    """
+    Procedure Name: GeometricRV
+    Purpose: Creates an instance of the geometric distribution
+    Arguments:  1. p: a positive parameter between 0 and 1
+    Output:     1. A geometric random variable
+    """
     def __init__(self,p=Symbol('p',positive=True)):
         if p.__class__.__name__!='Symbol':
             if p<=0 or p>=1:
@@ -960,8 +1462,15 @@ class GeometricRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
 
 class PoissonRV(RV):
+    """
+    Procedure Name: PoissonRV
+    Purpose: Creates an instance of the poisson distribution
+    Arguments:  1. theta: a strictly positive parameter
+    Output:     1. A poisson random variable
+    """
     def __init__(self,theta=Symbol('theta',positive=True)):
         if theta.__class__.__name__!='Symbol':
             if theta<=0:
@@ -975,4 +1484,77 @@ class PoissonRV(RV):
         self.func=X_dummy.func
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
+        self.cache={}
+
+class UniformDiscreteRV(RV):
+    """
+    Procedure Name: UniformDiscreteRV
+    Purpose: Creates an instance of the uniform discrete distribution
+    Arguments:  1. a: the beggining point of the interval
+                2. b: the end point of the interval (note: b>a)
+    Output:     1. A uniform discrete random variable
+    """
+    def __init__(self,a=Symbol('a'),b=Symbol('b'),k=1):
+        if b<=a:
+            err_string='b is only valid if b > a'
+            raise RVError(err_string)
+        if (b-a)%k != 0:
+            err_string='(b-a) must be divisble by k'
+            raise RVError(err_string)
+        n = int((b-a)/k)
+        X_dummy=RV([Rational(1,n+1) for i in range(1,n+2)],
+                   [a+i*k for i in range(n+1)], ['discrete','pdf'])
+        self.func=X_dummy.func
+        self.support=X_dummy.support
+        self.ftype=X_dummy.ftype
+        self.cache={}
+        
+        
+
+
+"""
+Bivariate Distributions
+"""
+
+class BivariateNormalRV(BivariateRV):
+    """
+    Procedure Name: BivariateNormalRV
+    Purpose: Creates an instance of the bivariate normal distribution
+    Arugments:  1. mu: a real valued parameter
+                2. sigma1: a strictly positive parameter
+                3. sigma2: a strictly positive parameter
+                4. rho: a parameter >=0 and <=1
+    Output:     1. A bivariate normal random variable
+    """
+    def __init__(self,mu=Symbol('mu'),sigma1=Symbol('sigma1',positive=True),
+                 sigma2=Symbol('sigma2',positive=True),rho=Symbol('rho')):
+        if rho.__class__.__name__!='Symbol':
+            if rho<0 or rho>1 :
+                err_string='rho must be >=0 and <=1'
+                raise RVError(err_string)
+        if sigma1.__class__.__name__!='Symbol':
+            if sigma1<=0:
+                err_string='sigma1 must be positive'
+                raise RVError(err_string)
+        if sigma2.__class__.__name__!='Symbol':
+            if sigma2<=0:
+                err_string='sigma2 must be positive'
+                raise RVError(err_string)
+
+        pdf_func=((1/(2*pi*sigma1*sigma2*sqrt(1-rho**2)))*
+                   exp(-mu/(2*(1-rho**2))))
+        X_dummy=BivariateRV([pdf_func],[[oo],[oo]],['continuous','pdf'])
+
+        self.func=X_dummy.func
+        self.constraints=X_dummy.constraints
+        self.ftype=X_dummy.ftype
+
+class ExampleRV(BivariateRV):
+    def __init__(self):
+        X_dummy=BivariateRV([(21/4)*x**2*y],[[1-y,y-sqrt(x)]]
+                                             ,['continuous','pdf'])
+        self.func=X_dummy.func
+        self.constraints=X_dummy.constraints
+        self.ftype=X_dummy.ftype
+
 
