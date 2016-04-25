@@ -1,4 +1,12 @@
-v0.4.0,
+v0.4.1,
+
+New Capabilities:
+
+Fixed Bugs:
+	1. Imported atan function in dist_type to allow for proper
+		initialization of the ArcTanRV
+
+v0.4.0, 17 APR 2016
 
 New Capabilities:
 	1. Discrete Time Markov Chains module
