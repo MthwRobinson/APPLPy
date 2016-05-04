@@ -8,6 +8,12 @@ Current APPLPy Bugs:
 4. Credible Set seems to return incorrect upper values in 
 	the Bayes module
 5. Errors in distributions (see e-mail from Andy)
+6. The following does not work unless the inputs are coerced to
+	rational:
+	T1 = TriangularRV(-1,2,3)
+	T2 = TriangularRV(-1/2, 0, 3/4)
+	Z = T1 + T2
+   Convolution works with rational when all inputs are positive
 
 To do list:
 1. Update documentation on site to include RangeStat and OrderStat wo and MaximumIID with n unspecified
