@@ -14,6 +14,12 @@ Current APPLPy Bugs:
 	T2 = TriangularRV(-1/2, 0, 3/4)
 	Z = T1 + T2
    Convolution works with rational when all inputs are positive
+7. U1 = UniformRV(Rational(0),Rational(1))
+   Z = ExponentialRV(Rational(1))
+	V = Z*U1 doesn't work
+	V = U1*Z works
+8. V2 = UniformRV(-Rational(1),Rational(1)) * UniformRV(-Rat(2),Rat(2))
+	only works with floats
 
 To do list:
 1. Update documentation on site to include RangeStat and OrderStat wo and MaximumIID with n unspecified
