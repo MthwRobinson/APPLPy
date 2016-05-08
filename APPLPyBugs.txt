@@ -8,17 +8,12 @@ Current APPLPy Bugs:
 4. Credible Set seems to return incorrect upper values in 
 	the Bayes module
 5. Errors in distributions (see e-mail from Andy)
-6. The following does not work unless the inputs are coerced to
-	rational:
-	T1 = TriangularRV(-1,2,3)
-	T2 = TriangularRV(-1/2, 0, 3/4)
-	Z = T1 + T2
    Convolution works with rational when all inputs are positive
-7. U1 = UniformRV(Rational(0),Rational(1))
+6. U1 = UniformRV(Rational(0),Rational(1))
    Z = ExponentialRV(Rational(1))
 	V = Z*U1 doesn't work
 	V = U1*Z works
-8. V2 = UniformRV(-Rational(1),Rational(1)) * UniformRV(-Rat(2),Rat(2))
+7. V2 = UniformRV(-Rational(1),Rational(1)) * UniformRV(-Rat(2),Rat(2))
 	only works with floats
 
 To do list:
