@@ -7,6 +7,8 @@ Fixed Bugs:
 		initialization of the ArcTanRV
 	2. Fixed Transform to work with float fractions in the
 		transformation
+	3. Fixed bug in Product that didn't allow for the use of
+		rational numbers as parameters
 
 v0.4.0, 17 APR 2016
 

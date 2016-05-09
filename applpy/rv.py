@@ -3858,13 +3858,13 @@ def Product(RVar1,RVar2):
                     else:
                         gj=Y_dummy.func[j]
                     fi=X_dummy.func[i]
-                    pv=simplify(integrate(fi*gj*(1/x),(x,a,b)))
+                    pv=integrate(fi*gj*(1/x),(x,a,b))
                     if d<oo:
-                        qv=simplify(integrate(fi*gj*(1/x),(x,v/d,b)))
+                        qv=integrate(fi*gj*(1/x),(x,v/d,b))
                     if c>0:
-                        rv=simplify(integrate(fi*gj*(1/x),(x,a,v/c)))
+                        rv=integrate(fi*gj*(1/x),(x,a,v/c))
                     if c>0 and d<oo and a*d<b*c:
-                        sv=simplify(integrate(fi*gj*(1/x),(x,v/d,v/c)))
+                        sv=integrate(fi*gj*(1/x),(x,v/d,v/c))
                     # 1st Qd, Scenario 1
                     if c==0 and d==oo:
                         for k in range(len(vfunc)):
@@ -3920,13 +3920,13 @@ def Product(RVar1,RVar2):
                     else:
                         gj=Y_dummy.func[j]
                     fi=X_dummy.func[i]
-                    pv=-simplify(integrate(fi*gj*(1/x),(x,a,b)))
+                    pv=-integrate(fi*gj*(1/x),(x,a,b))
                     if d<0:
-                        qv=-simplify(integrate(fi*gj*(1/x),(x,(v/d),b)))
+                        qv=-integrate(fi*gj*(1/x),(x,(v/d),b))
                     if c>-oo:
-                        rv=-simplify(integrate(fi*gj*(1/x),(x,a,(v/c))))
+                        rv=-integrate(fi*gj*(1/x),(x,a,(v/c)))
                     if c>-oo and d<0:
-                        sv=-simplify(integrate(fi*gj*(1/x),(x,(v/d),(v/c))))
+                        sv=-integrate(fi*gj*(1/x),(x,(v/d),(v/c)))
                     # 2nd Qd, Scenario 1
                     if c==-oo and d==0:
                         for k in range(len(vfunc)):
@@ -3982,13 +3982,13 @@ def Product(RVar1,RVar2):
                     else:
                         gj=Y_dummy.func[j]
                     fi=X_dummy.func[i]
-                    pv=-simplify(integrate(fi*gj*(1/x),(x,a,b)))
+                    pv=-integrate(fi*gj*(1/x),(x,a,b))
                     if d<oo:
-                        qv=-simplify(integrate(fi*gj*(1/x),(x,a,(v/d))))
+                        qv=-integrate(fi*gj*(1/x),(x,a,(v/d)))
                     if c>0:
-                        rv=-simplify(integrate(fi*gj*(1/x),(x,(v/b),c)))
+                        rv=-integrate(fi*gj*(1/x),(x,(v/b),c))
                     if c>0 and d<oo:
-                        sv=-simplify(integrate(fi*gj*(1/x),(x,(v/c),(v/d))))
+                        sv=-integrate(fi*gj*(1/x),(x,(v/c),(v/d)))
                     # 3rd Qd, Scenario 1
                     if c==0 and d==oo:
                         for k in range(len(vfunc)):
@@ -4044,13 +4044,13 @@ def Product(RVar1,RVar2):
                     else:
                         gj=Y_dummy.func[j]
                     fi=X_dummy.func[i]
-                    pv=simplify(integrate(fi*gj*(1/x),(x,a,b)))
+                    pv=integrate(fi*gj*(1/x),(x,a,b))
                     if d<0:
-                        qv=simplify(integrate(fi*gj*(1/x),(x,a,(v/d))))
+                        qv=integrate(fi*gj*(1/x),(x,a,(v/d)))
                     if c>-oo:
-                        rv=simplify(integrate(fi*gj*(1/x),(x,(v/c),b)))
+                        rv=integrate(fi*gj*(1/x),(x,(v/c),b))
                     if c>-oo and d<0:
-                        sv=simplify(integrate(fi*gj*(1/x),(x,(v/c),(v/d))))
+                        sv=integrate(fi*gj*(1/x),(x,(v/c),(v/d)))
                     # 4th Qd, Scenario 1
                     if c==oo and d==0:
                         for k in range(len(vfunc)):

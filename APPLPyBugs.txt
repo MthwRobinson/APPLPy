@@ -13,8 +13,7 @@ Current APPLPy Bugs:
    Z = ExponentialRV(Rational(1))
 	V = Z*U1 doesn't work
 	V = U1*Z works
-7. V2 = UniformRV(-Rational(1),Rational(1)) * UniformRV(-Rat(2),Rat(2))
-	only works with floats
+   *** Looks like the error occurs in the Sympy integrate command ***
 
 To do list:
 1. Update documentation on site to include RangeStat and OrderStat wo and MaximumIID with n unspecified
