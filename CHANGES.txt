@@ -12,6 +12,9 @@ Fixed Bugs:
 	4. Fixed CDF and SF so that values passed outside of the
 		support are returned as 0 or 1 instead of returning
 		an error
+	5. If Convolution or Product cannot compute, APPLPy is now
+		programmed to try to reverse the order of the
+		calculation before returning and error
 
 v0.4.0, 17 APR 2016
 

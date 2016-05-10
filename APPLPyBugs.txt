@@ -7,11 +7,6 @@ Current APPLPy Bugs:
 	the Bayes module
 4. Errors in distributions (see e-mail from Andy)
    Convolution works with rational when all inputs are positive
-5. U1 = UniformRV(Rational(0),Rational(1))
-   Z = ExponentialRV(Rational(1))
-	V = Z*U1 doesn't work
-	V = U1*Z works
-   *** Looks like the error occurs in the Sympy integrate command ***
 
 To do list:
 1. Update documentation on site to include RangeStat and OrderStat wo and MaximumIID with n unspecified

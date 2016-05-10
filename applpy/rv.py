@@ -259,7 +259,12 @@ class RV:
         # If the random variable is added to another random variable,
         #   return the convolution of the two random variables
         if 'RV' in other.__class__.__name__:
-            return Convolution(self,other)
+            try:
+                return Convolution(self,other)
+            except:
+                return Convolution(other,self)
+            else:
+                raise RVError('Could not compute the convolution')
         # If the random variable is added to a constant, shift
         # the random variable
         if type(other) in [float,int]:
@@ -336,7 +341,12 @@ class RV:
         # If the random variable is multiplied by another random variable,
         #   return the product of the two random variables
         if 'RV' in other.__class__.__name__:
-            return Product(self,other)
+            try:
+                return Product(self,other)
+            except:
+                return Product(other,self)
+            else:
+                raise RVError('Could not compute the product')
         # If the random variable is multiplied by a constant, scale
         # the random variable
         if type(other) in [float,int]:
