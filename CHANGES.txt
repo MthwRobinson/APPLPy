@@ -9,6 +9,9 @@ Fixed Bugs:
 		transformation
 	3. Fixed bug in Product that didn't allow for the use of
 		rational numbers as parameters
+	4. Fixed CDF and SF so that values passed outside of the
+		support are returned as 0 or 1 instead of returning
+		an error
 
 v0.4.0, 17 APR 2016
 

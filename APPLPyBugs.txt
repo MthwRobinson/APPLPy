@@ -3,13 +3,11 @@ Current APPLPy Bugs:
 1. MGF(X) comes out as a piecewise function for gamma,
 	may need to add assumptions
 2. Cannot handle functions that include abs(*) (Sympy problem)
-3. CDF throws an error when an out of support value is plugged
-	in, should return 0 or 1
-4. Credible Set seems to return incorrect upper values in 
+3. Credible Set seems to return incorrect upper values in 
 	the Bayes module
-5. Errors in distributions (see e-mail from Andy)
+4. Errors in distributions (see e-mail from Andy)
    Convolution works with rational when all inputs are positive
-6. U1 = UniformRV(Rational(0),Rational(1))
+5. U1 = UniformRV(Rational(0),Rational(1))
    Z = ExponentialRV(Rational(1))
 	V = Z*U1 doesn't work
 	V = U1*Z works
@@ -18,4 +16,6 @@ Current APPLPy Bugs:
 To do list:
 1. Update documentation on site to include RangeStat and OrderStat wo and MaximumIID with n unspecified
 2. Add Wiki page for Transform
+3. Add 'short cuts' for Weibull and Gamma distributions into the CDF
+	procedure
 

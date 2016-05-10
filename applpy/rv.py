@@ -835,9 +835,10 @@ def CDF(RVar,value=x,cache=False):
     # Check to make sure the value given is within the random
     #   variable's support
     if value.__class__.__name__!='Symbol':
-        if value>RVar.support[-1] or value<RVar.support[0]:
-            string='Value is not within the support of the random variable'        
-            raise RVError(string)
+        if value > RVar.support[-1]:
+            return 1
+        if value < RVar.support[0]:
+            return 0
 
     # If the CDF of the random variable is already cached in memory,
     #   retriew the value of the CDF and return in.
@@ -1773,9 +1774,10 @@ def SF(RVar,value=x,cache=False):
     # Check to make sure the value given is within the random
     #   variable's support
     if value.__class__.__name__!='Symbol':
-        if value>RVar.support[-1] or value<RVar.support[0]:
-            string='Value is not within the support of the random variable'        
-            raise RVError(string)
+        if value > RVar.support[-1]:
+            return 0        
+        if value < RVar.support[0]:
+            return 1
 
     # If the SF of the random variable is already cached in memory,
     #   retriew the value of the SF and return in.
