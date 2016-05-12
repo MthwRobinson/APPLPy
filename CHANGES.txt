@@ -15,6 +15,8 @@ Fixed Bugs:
 	5. If Convolution or Product cannot compute, APPLPy is now
 		programmed to try to reverse the order of the
 		calculation before returning and error
+	6. Assumptions added to the following some distributions to 
+		make computation of CDF more feasible
 
 v0.4.0, 17 APR 2016
 

@@ -79,6 +79,7 @@ class ArcSinRV(RV):
     Output:     1. An arc sin random variable
     """
     def __init__(self):
+        x = Symbol('x', postive=True)
         X_dummy=RV(1/(pi*sqrt(x*(1-x))),[0,1])
         self.func=X_dummy.func
         self.support=X_dummy.support
@@ -119,6 +120,7 @@ class BetaRV(RV):
     """
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta'),positive=True):
+        x = Symbol('x', positive = True)
         if alpha in [-oo,oo]:
             if beta in [-oo,oo]:
                 err_string='Both parameters must be finite'
@@ -199,6 +201,7 @@ class ChiRV(RV):
     """
     def __init__(self,N=Symbol('N',positive=True,
                                integer=True)):
+        x = Symbol('x', positive = True)
         if N.__class__.__name__!='Symbol':
             if N<=0 or type(N)!=int:
                 err_string='N must be a positive integer'
@@ -219,6 +222,7 @@ class ChiSquareRV(RV):
     """
     def __init__(self,N=Symbol('N',positive=True,
                                integer=True)):
+        x = Symbol('x', positive = True)
         if N.__class__.__name__!='Symbol':
             if N<=0 or type(N)!=int:
                 err_string='N must be a positive integer'
@@ -240,6 +244,7 @@ class ErlangRV(RV):
     """
     def __init__(self,theta=Symbol('theta',positive=True),
                  N=Symbol('N',positive=True,integer=True)):
+        x = Symbol('x', positive = True)
         if N.__class__.__name__!='Symbol':
             if N<=0 or type(N)!=int:
                 err_string='N must be a positive integer'
@@ -317,6 +322,7 @@ class ExponentialRV(RV):
     Output:     1. An exponential random variable
     """
     def __init__(self,theta=Symbol('theta',positive=True)):
+        x = Symbol('x', positive = True)
         if theta.__class__.__name__!='Symbol':
             if theta<=0:
                 err_string='theta must be positive'
@@ -372,6 +378,7 @@ class ExponentialPowerRV(RV):
     """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
+        x = Symbol('x', positive = True)
         if theta.__class__.__name__!='Symbol':
             if kappa.__class__.__name__!='Symbol':
                 if theta<=0 or kappa<=0:
@@ -477,6 +484,7 @@ class FRV(RV):
     """
     def __init__(self,n1=Symbol('n1',positive=True),
                  n2=Symbol('n2',positive=True)):
+        x = Symbol('x', positive = True)
         if n1.__class__.__name__!='Symbol':
             if n2.__class__.__name__!='Symbol':
                 if n1<=0 or n2<=0:
@@ -503,6 +511,7 @@ class GammaRV(RV):
     """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
+        x = Symbol('x', positive = True)
         if theta.__class__.__name__!='Symbol':
             if kappa.__class__.__name__!='Symbol':
                 if theta<=0 or kappa<=0:
@@ -530,6 +539,7 @@ class GeneralizedParetoRV(RV):
     """
     def __init__(self,theta=Symbol('theta',positive=True),
                  delta=Symbol('delta'),kappa=Symbol('kappa')):
+        x = Symbol('x', positive = True)
         if theta.__class__.__name__!='Symbol':
             if theta<=0:
                 err_string='theta must be positive'
@@ -554,6 +564,7 @@ class GompertzRV(RV):
     """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa')):
+        x = Symbol('x', positive = True)
         if theta.__class__.__name__!='Symbol':
             if theta<=0:
                 err_string='theta must be positive'
@@ -610,6 +621,7 @@ class IDBRV(RV):
     """
     def __init__(self,theta=Symbol('theta'),delta=Symbol('delta'),
                  kappa=Symbol('kappa')):
+        x = Symbol('x', positive = True)
         if theta in [-oo,oo] or delta in [-oo,oo] or kappa in [-oo,oo]:
             err_string='all parameters must be finite'
             raise RVError(err_string)
@@ -630,6 +642,7 @@ class InverseGaussianRV(RV):
     """
     def __init__(self,theta=Symbol('theta',positive=True),
                  mu=Symbol('mu',positive=True)):
+        x = Symbol('x', positive = True)
         if theta.__class__.__name__!='Symbol':
             if mu.__class__.__name__!='Symbol':
                 if theta<=0 or mu<=0:
@@ -657,6 +670,7 @@ class InverseGammaRV(RV):
     """
     def __init__(self,alpha=Symbol('alpha',positive=True),
                  beta=Symbol('beta',positive=True)):
+        x = Symbol('x', positive = True)
         if alpha.__class__.__name__!='Symbol':
             if beta.__class__.__name__!='Symbol':
                 if alpha<=0 or beta<=0:
@@ -952,6 +966,7 @@ class LogLogisticRV(RV):
     """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
+        x = Symbol('x', positive = True)
         if kappa.__class__.__name__:
             if theta.__class__.__name__:
                 if theta<=0 or kappa<=0:
@@ -1007,6 +1022,7 @@ class LogNormalRV(RV):
     """
     def __init__(self,mu=Symbol('mu'),
                  sigma=Symbol('sigma',positive=True)):
+        x = Symbol('x', positive = True)
         if sigma.__class__.__name__!='Symbol':
             if sigma<=0:
                 err_string='sigma must be positive'
@@ -1031,6 +1047,7 @@ class LomaxRV(RV):
     """
     def __init__(self,kappa=Symbol('kappa',positive=True),
                  theta=Symbol('theta',positive=True)):
+        x = Symbol('x', positive = True)
         if kappa.__class__.__name__!='Symbol':
             if theta.__class__.__name__!='Symbol':
                 if kappa<=0 or theta<=0:
@@ -1086,6 +1103,7 @@ class MakehamRV(RV):
     def __init__(self,theta=Symbol('theta',positive=True),
                  delta=Symbol('delta',positive=True),
                  kappa=Symbol('kappa')):
+        x = Symbol('x', positive = True)
         if theta.__class__.__name__!='Symbol':
             if delta.__class__.__name__!='Symbol':
                 if theta<=0 or delta<=0:
@@ -1109,6 +1127,7 @@ class MuthRV(RV):
     Output:     1. A log normal random variable
     """
     def __init__(self,kappa=Symbol('kappa',positive=True)):
+        x = Symbol('x', positive = True)
         if kappa.__class__.__name__!='Symbol':
             if kappa<=0:
                 err_string='kappa must be positive'
@@ -1189,6 +1208,7 @@ class ParetoRV(RV):
     """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
+        x = Symbol('x', positive = True)
         if theta.__class__.__name__!='Symbol':
             if kappa.__class__.__name__!='Symbol':
                 if theta<=0 or kappa<=0:
@@ -1211,6 +1231,7 @@ class RayleighRV(RV):
     Output:     1. A log normal random variable
     """
     def __init__(self,theta=Symbol('theta',positive=True)):
+        x = Symbol('x', positive = True)
         if theta.__class__.__name__!='Symbol':
             if theta<=0:
                 err_string='both parameters must be positive'
@@ -1337,6 +1358,7 @@ class WeibullRV(RV):
     """
     def __init__(self,theta=Symbol('theta',positive=True),
                  kappa=Symbol('kappa',positive=True)):
+        x = Symbol('x', positive = True)
         if theta.__class__.__name__!='Symbol':
             if kappa.__class__.__name__!='Symbol':
                 if theta<=0 or kappa<=0:

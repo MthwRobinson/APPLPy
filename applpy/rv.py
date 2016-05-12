@@ -469,11 +469,12 @@ class RV:
     Procedures:
         1. add_to_cache(self,object_name,object)
         2. display(self)
-        3. init_cache(self)
-        4. latex(self)
-        5. simplify(self,assumption)
-        6. verifyPDF(self)
-        7. variate(self,n)
+        3. drop_assumptions(self)
+        4. init_cache(self)
+        5. latex(self)
+        6. simplify(self,assumption)
+        7. verifyPDF(self)
+        8. variate(self,n)
     """
 
     def add_to_cache(self,object_name,obj):
@@ -527,6 +528,20 @@ class RV:
                     print '{%s -> %s}'%(self.support[i],
                                         self.func[i])
 
+    def drop_assumptions(self):
+        """
+        Procedure Name: drop_assumptions
+        Purpose: Drops assumptions on the random variable to support operations
+            on multiple random variables
+        Arugments:  1. self: the random variable
+        Output:     1. Modified function with assumptions dropped
+        """
+        x = Symbol('x')
+        for i,function in enumerate(self.func):
+            function = function.subs(Symbol('x', positive = True), x)
+            self.func[i] = function
+                
+    
     def init_cache(self):
         """
         Procedure Name: init_cache
@@ -3320,6 +3335,8 @@ def Convolution(RVar1,RVar2):
     # If the distributions are continuous, find and return the convolution
     #   of the two random variables
     if RVar1.ftype[0]=='continuous':
+        X1_dummy.drop_assumptions()
+        X2_dummy.drop_assumptions()
         # If the two distributions are both lifetime distributions, treat
         #   as a special case
         if RVar1.support==[0,oo] and RVar2.support==[0,oo]:
@@ -3435,6 +3452,8 @@ def MaximumRV(RVar1,RVar2):
 
     # If the distributions are continuous, find and return the max
     if RVar1.ftype[0]=='continuous':
+        X1_dummy.drop_assumptions()
+        X2_dummy.drop_assumptions()
         # Special case for lifetime distributions
         if RVar1.support==[0,oo] and RVar2.support==[0,oo]:
             cdf_dummy1=CDF(RVar1)
@@ -3581,6 +3600,8 @@ def MinimumRV(RVar1,RVar2):
 
     # If the distributions are continuous, find and return the min
     if RVar1.ftype[0]=='continuous':
+        X1_dummy.drop_assumptions()
+        X2_dummy.drop_assumptions()
         # Special case for lifetime distributions
         if RVar1.support==[0,oo] and RVar2.support==[0,oo]:
             sf_dummy1=SF(RVar1)
@@ -3731,6 +3752,8 @@ def Mixture(MixParameters,MixRVs):
     # If the distributions are continuous, find and return the
     #   mixture pdf
     if Mixfx[0].ftype[0]=='continuous':
+        X1_dummy.drop_assumptions()
+        X2_dummy.drop_assumptions()
         # Compute the support of the mixture as the union of the supports
         #   of the mix rvs
         MixSupp=[]
@@ -3811,6 +3834,8 @@ def Product(RVar1,RVar2):
     # If the random variable is continuous, find and return the
     #   product of the two random variables
     if RVar1.ftype[0]=='continuous':
+        X1_dummy.drop_assumptions()
+        X2_dummy.drop_assumptions()
         v=Symbol('v',positive=True)
         # Place zero in the support of X if it is not there already
         X1=PDF(RVar1)
