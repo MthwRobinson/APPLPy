@@ -17,6 +17,8 @@ Fixed Bugs:
 		calculation before returning and error
 	6. Assumptions added to the following some distributions to 
 		make computation of CDF more feasible
+	7. Truncate modified to divide by the correct normalizing
+		constant
 
 v0.4.0, 17 APR 2016
 

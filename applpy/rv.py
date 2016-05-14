@@ -467,14 +467,15 @@ class RV:
     Utility Methods
 
     Procedures:
-        1. add_to_cache(self,object_name,object)
-        2. display(self)
-        3. drop_assumptions(self)
-        4. init_cache(self)
-        5. latex(self)
-        6. simplify(self,assumption)
-        7. verifyPDF(self)
-        8. variate(self,n)
+        1. add_assumptions(self,option)
+        2. add_to_cache(self,object_name,object)
+        3. display(self)
+        4. drop_assumptions(self)
+        5. init_cache(self)
+        6. latex(self)
+        7. simplify(self,assumption)
+        8. verifyPDF(self)
+        9. variate(self,n)
     """
     def add_assumptions(self, option):
         """
@@ -3118,12 +3119,13 @@ def Truncate(RVar,supp):
     #   the truncated random variable
     if RVar.ftype[0]=='continuous':
         # Find the area of the truncated random variable
-        #area=CDF(cdf_dummy,supp[1])-CDF(cdf_dummy,supp[0])
-        area=0
-        for i in range(len(X_dummy.func)):
-            val=integrate(X_dummy.func[i],(x,X_dummy.support[i],
-                            X_dummy.support[i+1]))
-            area+=val
+        area=CDF(cdf_dummy,supp[1])-CDF(cdf_dummy,supp[0])
+        #area=0
+        #for i in range(len(X_dummy.func)):
+        #    val=integrate(X_dummy.func[i],(x,X_dummy.support[i],
+        #                    X_dummy.support[i+1]))
+        #    area+=val
+        #print area
         # Cut out parts of the distribution that don't fall
         #   within the new limits
         for i in range(len(X_dummy.func)):
