@@ -476,6 +476,30 @@ class RV:
         7. verifyPDF(self)
         8. variate(self,n)
     """
+    def add_assumptions(self, option):
+        """
+        Procedure Name: drop_assumptions
+        Purpose: Adds assumptions on the random variable to support operations
+            on multiple random variables
+        Arugments:  1. self: the random variable
+                    2. option: the type of assumption to add
+        Output:     1. Modified function with assumptions added
+        """
+        if option not in ['positive','negative','nonpositive','nonnegative']:
+            err_str = 'The only available options are positive, negative,'
+            err_str += ' nonpositive and nonnegative'
+            raise RVError(err_str)
+        if option == 'positive':
+            x = Symbol('x', positive = True)
+        elif option == 'negative':
+            x = Symbol('x', negative = True)
+        elif option == 'nonpositive':
+            x = Symbol('x', nonpositive = True)
+        elif option == 'nonnegative':
+            x = Symbol('x', nonnegative = True)
+        for i,function in enumerate(self.func):
+            function = function.subs(Symbol('x'), x)
+            self.func[i] = function
 
     def add_to_cache(self,object_name,obj):
         """
@@ -538,6 +562,9 @@ class RV:
         """
         x = Symbol('x')
         for i,function in enumerate(self.func):
+            function = function.subs(Symbol('x', negative = True), x)
+            function = function.subs(Symbol('x', nonnegative = True), x)
+            function = function.subs(Symbol('x', nonpositive = True), x)
             function = function.subs(Symbol('x', positive = True), x)
             self.func[i] = function
                 
