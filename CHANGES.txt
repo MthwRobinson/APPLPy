@@ -19,6 +19,7 @@ Fixed Bugs:
 		make computation of CDF more feasible
 	7. Truncate modified to divide by the correct normalizing
 		constant
+	8. SF discrete was modified the handle intermediate values
 
 v0.4.0, 17 APR 2016
 

@@ -1946,15 +1946,17 @@ def SF(RVar,value=x,cache=False):
     # If the distribution is a discrete function, find and return the
     # sf of the random variable
     if RVar.ftype[0]=='discrete':
+        if value!=x:
+            return 1 - CDF(RVar,value)
         # If the distribution is already an sf, nothing needs to be done
         if RVar.ftype[1]=='sf':
             if value==x:
                 return RVar
-            if value!=x:
-                if value not in RVar.support:
-                    return 0
-                else:
-                    return RVar.func[RVar.support.index(value)]
+                #
+                #if value not in RVar.support:
+                #    return 0
+                #else:
+                #    return RVar.func[RVar.support.index(value)]
         # If the distribution is a chf use exp(-chf) to find sf
         if RVar.ftype[1]=='chf':
             X_dummy=CHF(RVar)
