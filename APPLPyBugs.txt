@@ -4,13 +4,8 @@ Current APPLPy Bugs:
 	may need to add assumptions
 2. Cannot handle functions that include abs(*) (Sympy problem)
 3. Credible Set seems to return incorrect upper values in 
-	the Bayes module
+	the Bayes module (*** this is not a problem in credible set,
+	it's an issue with convergence conditions in the variate 
+	generation algorithm)
 
-To do list:
-1. Update documentation on site to include RangeStat and OrderStat wo and MaximumIID with n unspecified
-2. Add Wiki page for Transform
-3. Add 'short cuts' for Weibull and Gamma distributions into the CDF
-	procedure
-
-Notes on distributions:
 
