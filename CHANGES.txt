@@ -20,6 +20,7 @@ Fixed Bugs:
 	7. Truncate modified to divide by the correct normalizing
 		constant
 	8. SF discrete was modified the handle intermediate values
+	9. Added 'shortcut' for Weibull CDF
 
 v0.4.0, 17 APR 2016
 

@@ -904,6 +904,15 @@ def CDF(RVar,value=x,cache=False):
     # If the distribution is continous, find and return the distribution
     #   of the random variable
     if RVar.ftype[0]=='continuous':
+        # Short-cut for Weibull, jump straight to the closed form CDF
+        if 'Weibull' in RVar.__class__.__name__:
+            if value == x:
+                Fx = RV(RVar.cdf,[0,oo],['continuous','cdf'])
+                return Fx
+            else:
+                return simplify(RVar.cdf.subs(x,value))
+
+        
         # If the random variable is already a cdf, nothing needs to
         #   be done
         if RVar.ftype[1]=='cdf':
