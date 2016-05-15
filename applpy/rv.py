@@ -804,20 +804,22 @@ class RV:
             # If sensitivity is not specified, set the sensitivity to be
             #   .1% of the mean value for random variates
             if s==None:
-                sensitivity=0.001*mean
+                sensitivity=abs(0.000001*mean)
             # If a percentile is specified, set sensitivity to be .01%
             #   of the mean value
             else:
-                sensitivity=0.0001*mean
+                sensitivity=abs(0.000001*mean)
         # Create a list of variates
         varlist=[]
         for i in range(n):
+            guess_last = oo
             guess=mean
             if s==None:
                 val=random()
             else:
                 val=s
-            for i in range(10):
+            while abs(guess_last - guess) > sensitivity:
+                guess_last = guess
                 try:
                     if len(self.func)==1:
                         guess=(guess-
@@ -836,6 +838,7 @@ class RV:
                         cfunc=cdf.func[0].subs(x,guess)
                         pfunc=pdf.func[0].subs(x,guess)
                         guess=(guess-((cfunc-val)/pfunc)).evalf()
+                #print guess
             varlist.append(guess)            
         varlist.sort()
         return varlist
