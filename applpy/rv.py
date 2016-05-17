@@ -3378,8 +3378,8 @@ def Convolution(RVar1,RVar2):
     # If the distributions are continuous, find and return the convolution
     #   of the two random variables
     if RVar1.ftype[0]=='continuous':
-        X1_dummy.drop_assumptions()
-        X2_dummy.drop_assumptions()
+        # X1_dummy.drop_assumptions()
+        #X2_dummy.drop_assumptions()
         # If the two distributions are both lifetime distributions, treat
         #   as a special case
         if RVar1.support==[0,oo] and RVar2.support==[0,oo]:
@@ -3495,8 +3495,8 @@ def MaximumRV(RVar1,RVar2):
 
     # If the distributions are continuous, find and return the max
     if RVar1.ftype[0]=='continuous':
-        X1_dummy.drop_assumptions()
-        X2_dummy.drop_assumptions()
+        #X1_dummy.drop_assumptions()
+        #X2_dummy.drop_assumptions()
         # Special case for lifetime distributions
         if RVar1.support==[0,oo] and RVar2.support==[0,oo]:
             cdf_dummy1=CDF(RVar1)
@@ -3643,8 +3643,8 @@ def MinimumRV(RVar1,RVar2):
 
     # If the distributions are continuous, find and return the min
     if RVar1.ftype[0]=='continuous':
-        X1_dummy.drop_assumptions()
-        X2_dummy.drop_assumptions()
+        #X1_dummy.drop_assumptions()
+        #X2_dummy.drop_assumptions()
         # Special case for lifetime distributions
         if RVar1.support==[0,oo] and RVar2.support==[0,oo]:
             sf_dummy1=SF(RVar1)
@@ -3795,8 +3795,8 @@ def Mixture(MixParameters,MixRVs):
     # If the distributions are continuous, find and return the
     #   mixture pdf
     if Mixfx[0].ftype[0]=='continuous':
-        X1_dummy.drop_assumptions()
-        X2_dummy.drop_assumptions()
+        #X1_dummy.drop_assumptions()
+        #X2_dummy.drop_assumptions()
         # Compute the support of the mixture as the union of the supports
         #   of the mix rvs
         MixSupp=[]
@@ -3877,8 +3877,8 @@ def Product(RVar1,RVar2):
     # If the random variable is continuous, find and return the
     #   product of the two random variables
     if RVar1.ftype[0]=='continuous':
-        X1_dummy.drop_assumptions()
-        X2_dummy.drop_assumptions()
+        #X1_dummy.drop_assumptions()
+        #X2_dummy.drop_assumptions()
         v=Symbol('v',positive=True)
         # Place zero in the support of X if it is not there already
         X1=PDF(RVar1)
