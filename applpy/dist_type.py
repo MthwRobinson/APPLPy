@@ -1186,6 +1186,9 @@ class NormalRV(RV):
             varlist=[IDF(Xidf,random()) for i in range(1,n+1)]
             return varlist
 
+        if s != None and n == 1:
+            return [IDF(self,s)]
+
         # Otherwise, use the Box-Muller method to compute variates
         mean=self.parameter[0];var=self.parameter[1]
         U=UniformRV(0,1)
@@ -1373,6 +1376,7 @@ class WeibullRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
+        self.cdf = 1 - exp( - (x/theta)**kappa)
         self.cache={}
 
 
