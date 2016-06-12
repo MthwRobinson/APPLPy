@@ -1,3 +1,17 @@
+v0.4.2, 12 June 2016
+
+New Capabilities:
+	1. New style plots
+
+Fixed Bugs:
+	1. Added code that allows users to specify variate 
+		in X.variate for NormalRV
+
+Other Comments:
+	1. Removed the plot.py file. Plotting no longer depends on it
+	2. setup.py file has been updated. pip install now downloads
+		all dependencies
+
 v0.4.1,
 
 New Capabilities:
