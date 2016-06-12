@@ -807,11 +807,11 @@ class RV:
             # If sensitivity is not specified, set the sensitivity to be
             #   .1% of the mean value for random variates
             if s==None:
-                sensitivity=abs(0.1*mean)
+                sensitivity=abs(0000.1*mean)
             # If a percentile is specified, set sensitivity to be .01%
             #   of the mean value
             else:
-                sensitivity=abs(0.1*mean)
+                sensitivity=abs(0000.1*mean)
         # Create a list of variates
         varlist=[]
         for i in range(n):
@@ -4333,7 +4333,16 @@ def Histogram(Sample,Bins=None):
     plt.title('Histogram')
     plt.grid(True)
 
-def PlotDist(RVar,suplist=None,opt=None,color='red',
+def PlotClear():
+    """
+    Procedure: PlotClear
+    Purpose: Clears the plot display
+    Arguments:  None
+    Output:     1. Clear plot display
+    """
+    plt.clf()
+
+def PlotDist(RVar,suplist=None,opt=None,color='r',
              display=True):
     """
     Procedure: Plot Dist
@@ -4344,22 +4353,22 @@ def PlotDist(RVar,suplist=None,opt=None,color='red',
     """
     # Create the labels for the plot
     if RVar.ftype[1]=='cdf':
-        lab1='F(x)'
+        #lab1='F(x)'
         lab2='Cumulative Distribution Function'
     elif RVar.ftype[1]=='chf':
-        lab1='H(x)'
+        #lab1='H(x)'
         lab2='Cumulative Hazard Function'
     elif RVar.ftype[1]=='hf':
-        lab1='h(x)'
+        #lab1='h(x)'
         lab2='Hazard Function'
     elif RVar.ftype[1]=='idf':
-        lab1='F-1(s)'
+        #lab1='F-1(s)'
         lab2='Inverse Density Function'
     elif RVar.ftype[1]=='pdf':
-        lab1='f(x)'
+        #lab1='f(x)'
         lab2='Probability Density Function'
     elif RVar.ftype[1]=='sf':
-        lab1='S(X)'
+        #lab1='S(X)'
         lab2='Survivor Function'
 
     if opt=='EMPCDF':
@@ -4409,19 +4418,36 @@ def PlotDist(RVar,suplist=None,opt=None,color='red',
             if i>lwindx and i<upindx:
                 plotsupp.append(RVar.support[i])
         plotsupp.append(suplist[1])
+
+        #print plotfunc, plotsupp    
+        for i, function in enumerate(plotfunc):
+            f = lambda y: function.subs(x,y).evalf()
+            x_range = np.arange(plotsupp[i],
+                                plotsupp[i+1],
+                        abs(plotsupp[i+1]-plotsupp[i])/1000)
+            y_range = np.array( [f(num) for num in x_range])
+            plt.plot(x_range, y_range, color)
+        plt.title(lab2)
+
+
+        '''
+        Old plot method using the sympy plot
         plt.ioff()
+        print plotfunc, plotsupp
         initial_plot=plot(plotfunc[0],(x,plotsupp[0],plotsupp[1]),
                           title=lab2,show=False,line_color=color)
         for i in range(1,len(plotfunc)):
             plot_extension=plot(plotfunc[i],
-                                (x,plotsupp[i],plotsupp[i+1]),
+                               (x,plotsupp[i],plotsupp[i+1]),
                                 show=False,line_color=color)
             initial_plot.append(plot_extension[0])
         if display==True:
             plt.ion()
             initial_plot.show()
+            return initial_plot
         else:
             return initial_plot
+        '''
 
         # Old PlotDist code before sympy created the
         #   plotting front-end
@@ -4450,13 +4476,13 @@ def PlotDist(RVar,suplist=None,opt=None,color='red',
                 newsupport[-1]=i
                 RVar=RV(RVar.func,newsupport,RVar.ftype)
                 RVar=Convert(RVar)
-        if display==True:
-            plt.ion()
+        #if display==True:
+        #    plt.ion()
         #plt.mat_plot(RVar.func,RVar.support,lab1,lab2,'discrete')
-        plt.plot(RVar.support,RVar.func,'ro')
-        plt.xlabel('x')
-        if lab1!=None:
-            plt.ylabel(lab1)
+        plt.step(RVar.support,RVar.func)
+        #plt.xlabel('x')
+        #if lab1!=None:
+        #    plt.ylabel(lab1)
         if lab2!=None:
             plt.title(lab2)
 
