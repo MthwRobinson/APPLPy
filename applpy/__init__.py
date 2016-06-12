@@ -23,7 +23,7 @@ from sympy import *
 
 from .rv import *
 from .stoch import *
-from .plot import *
+from .appl_plot import *
 from .dist_type import *
 from .stats import *
 from .bayes import *

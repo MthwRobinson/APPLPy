@@ -16,7 +16,6 @@ from sympy.plotting.plot import plot
 from random import random
 import numpy as np
 import pandas as pd
-import plot as plt
 import pylab as pyplt
 x,y,z,t=symbols('x y z t')
 

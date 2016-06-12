@@ -68,8 +68,11 @@ from sympy import (Symbol, symbols, oo, integrate, summation, diff,
 from sympy.plotting.plot import plot
 from random import random
 import numpy as np
-import plot as plt
-import pylab as pyplt
+try:
+    import seaborn
+except:
+    pass
+import matplotlib.pylab as plt
 x,y,z,t=symbols('x y z t')
 
 """
@@ -77,7 +80,7 @@ x,y,z,t=symbols('x y z t')
     Copyright (C) 2001,2002,2008,2010,2014 Andrew Glen, Larry
     Leemis, Diane Evans, Matthew Robinson
 
-    This program is free software: you can redistribute it and/or modify
+    This program is free softwarexie: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     any later version.
@@ -804,11 +807,11 @@ class RV:
             # If sensitivity is not specified, set the sensitivity to be
             #   .1% of the mean value for random variates
             if s==None:
-                sensitivity=abs(0.000001*mean)
+                sensitivity=abs(0.1*mean)
             # If a percentile is specified, set sensitivity to be .01%
             #   of the mean value
             else:
-                sensitivity=abs(0.000001*mean)
+                sensitivity=abs(0.1*mean)
         # Create a list of variates
         varlist=[]
         for i in range(n):
@@ -4448,14 +4451,14 @@ def PlotDist(RVar,suplist=None,opt=None,color='red',
                 RVar=RV(RVar.func,newsupport,RVar.ftype)
                 RVar=Convert(RVar)
         if display==True:
-            pyplt.ion()
+            plt.ion()
         #plt.mat_plot(RVar.func,RVar.support,lab1,lab2,'discrete')
-        pyplt.plot(RVar.support,RVar.func,'ro')
-        pyplt.xlabel('x')
+        plt.plot(RVar.support,RVar.func,'ro')
+        plt.xlabel('x')
         if lab1!=None:
-            pyplt.ylabel(lab1)
+            plt.ylabel(lab1)
         if lab2!=None:
-            pyplt.title(lab2)
+            plt.title(lab2)
 
 def PlotDisplay(plot_list):
     if len(plot_list)<2:
