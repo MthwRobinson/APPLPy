@@ -17,7 +17,6 @@ setup(
         "matplotlib",
         "seaborn",
         "numpy",
-        "random",
         "pylab",
         "mpmath",
         "pandas"
