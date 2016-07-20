@@ -68,6 +68,7 @@ from sympy import (Symbol, symbols, oo, integrate, summation, diff,
 from sympy.plotting.plot import plot
 from random import random
 import numpy as np
+import pickle
 try:
     import seaborn
 except:
@@ -160,10 +161,11 @@ class RV:
                     if support[i]>support[i+1]:
                         raise RVError('Support is not in ascending order')
         # Initialize the random variable
-        self.func=func
-        self.support=support
-        self.ftype=ftype
-        self.cache=None
+        self.func = func
+        self.support = support
+        self.ftype = ftype
+        self.cache = None
+        self.filename = None
 
     """
     Special Class Methods
@@ -476,9 +478,10 @@ class RV:
         4. drop_assumptions(self)
         5. init_cache(self)
         6. latex(self)
-        7. simplify(self,assumption)
-        8. verifyPDF(self)
-        9. variate(self,n)
+        7. save(self,filename)
+        8. simplify(self,assumption)
+        9. verifyPDF(self)
+        10. variate(self,n)
     """
     def add_assumptions(self, option):
         """
@@ -616,6 +619,30 @@ class RV:
 
         p=eval(piece3)
         return latex(p)
+
+    def save(self, filename = None):
+        """
+        Procedure Name: save
+        Purpose: Saves a random variable to disk in binary format
+        Arguments:  1. self: the random variable
+                    2. filename: the name of the file that will
+                        store the random variable. If none is
+                        specified, the most recently used file
+                        name is used
+        Output:     1. The random variable is stored to disk
+        """
+        if filename == None:
+            if self.filename == None:
+                err_string = 'Please specify a file name, this random '
+                err_string += 'has never been saved before '
+                raise RVError(err_string)
+            else:
+                filename = self.filename
+        else:
+            self.filename = filename
+        fileObject = open(filename, 'wb')
+        pickle.dump(self, fileObject)
+
 
     def simplify(self, assumption=None):
         """
@@ -4299,11 +4326,12 @@ Utilities
 
 Procedures:
     1. Histogram(Sample,bins)
-    2. PlotDist(RVar,suplist)
-    3. PlotDisplay(plot_list,suplist)
-    4. PlotEmpCDF(data)
-    5. PPPlot(RVar,Sample)
-    6. QQPlot(RVar,Sample)
+    2. LoadRV(filename)
+    3. PlotDist(RVar,suplist)
+    4. PlotDisplay(plot_list,suplist)
+    5. PlotEmpCDF(data)
+    6. PPPlot(RVar,Sample)
+    7. QQPlot(RVar,Sample)
 """
 
 def Histogram(Sample,Bins=None):
@@ -4332,6 +4360,21 @@ def Histogram(Sample,Bins=None):
     plt.xlabel('Observation Value')
     plt.title('Histogram')
     plt.grid(True)
+
+def LoadRV(filename):
+    """
+    Procedure: LoadRV
+    Purpose: Load a random variable from a binary file
+    Aruments:   1. filename: the name of the file
+                    where the random variable is stored
+    Output:     1. The stored random variable 
+    """
+    fileObject = open(filename, 'r')
+    RVar = pickle.load(fileObject)
+    if 'RV' not in RVar.__class__.__name__:
+        print 'WARNING: Object loaded is not a random variable'
+    return RVar
+
 
 def PlotClear():
     """

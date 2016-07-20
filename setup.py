@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='APPLPy',
-    version='0.4.2',
+    version='0.4.3',
     author='Matthew Robinson',
     author_email='mthw.wm.robinson@gmail.com',
     packages=['applpy','applpy.test'],
@@ -19,7 +19,8 @@ setup(
         "numpy",
         "pylab",
         "mpmath",
-        "pandas"
+        "pandas",
+        "pickle"
 
         ]
     )

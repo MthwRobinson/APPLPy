@@ -1,3 +1,10 @@
+v0.4.3, 19 July 2016
+New Capabilities:
+	1. X.save() method implemented to stored random variables
+		as binary
+	2. LoadRV() function implemented to load random variables
+		from binary
+
 v0.4.2, 12 June 2016
 
 New Capabilities:
