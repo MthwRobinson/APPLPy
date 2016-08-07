@@ -1,3 +1,11 @@
+v0.4.4,
+New Capabilities:
+	1. PlotLimits implemented to change the limits of a plot
+
+Fixed Bugs:
+	1. Fixed an issue in IDF where output wasn't returned
+		for continuous distributions
+
 v0.4.3, 19 July 2016
 New Capabilities:
 	1. X.save() method implemented to stored random variables

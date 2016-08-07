@@ -4327,12 +4327,22 @@ Utilities
 Procedures:
     1. Histogram(Sample,bins)
     2. LoadRV(filename)
-    3. PlotDist(RVar,suplist)
-    4. PlotDisplay(plot_list,suplist)
-    5. PlotEmpCDF(data)
-    6. PPPlot(RVar,Sample)
-    7. QQPlot(RVar,Sample)
+    3. PlotLimits(limits, axis)
+    4. PlotDist(RVar,suplist)
+    5. PlotDisplay(plot_list,suplist)
+    6. PlotEmpCDF(data)
+    7. PPPlot(RVar,Sample)
+    8. QQPlot(RVar,Sample)
 """
+
+def ClearPlot():
+    """
+    Procedure: Clear Plot
+    Purpose: Clears the current plot display
+    Arugments:  1. None
+    OUtput:     1. Cleared plot screen
+    """
+    plt.clf()
 
 def Histogram(Sample,Bins=None):
     """
@@ -4385,10 +4395,29 @@ def PlotClear():
     """
     plt.clf()
 
+def PlotLimits(limits, axis):
+    """
+    Procedure: PlotLimits
+    Purpose: Sets the limits of a plot
+    Arguments:  1. limits: A list of plot limits
+    Output:     1. Plot with limits reset
+    """
+    axes = plt.gca()
+    if axis == 0:
+        axes.set_xlim(limits)
+    elif axis == 1:
+        axes.set_ylim(limits)
+    else:
+        err_str = 'The axis argument must be 0 or 1. '
+        err_str += 'Enter 0 for the x-axis or 1 '
+        err_str += 'for the y-axis'
+        raise RVError
+
+
 def PlotDist(RVar,suplist=None,opt=None,color='r',
              display=True):
     """
-    Procedure: Plot Dist
+    Procedure: PlotDist
     Purpose: Plot a random variable
     Arguments:  1. RVar: A random variable
                 2. suplist: A list of supports for the plot
