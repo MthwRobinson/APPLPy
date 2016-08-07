@@ -7,5 +7,7 @@ Current APPLPy Bugs:
 	the Bayes module (*** this is not a problem in credible set,
 	it's an issue with convergence conditions in the variate 
 	generation algorithm)
-
+4. Problem in Queue when the initial number of customers in the
+	system is equal to the number of servers. Problems
+	looks like it could be related to mpmath
 

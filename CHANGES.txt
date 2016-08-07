@@ -1,4 +1,4 @@
-v0.4.4,
+v0.4.4, 20 August 2016
 New Capabilities:
 	1. PlotLimits implemented to change the limits of a plot
 
