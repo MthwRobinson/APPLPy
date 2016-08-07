@@ -4327,28 +4327,20 @@ Utilities
 Procedures:
     1. Histogram(Sample,bins)
     2. LoadRV(filename)
-    3. PlotLimits(limits, axis)
+    3. PlotClear()
     4. PlotDist(RVar,suplist)
     5. PlotDisplay(plot_list,suplist)
     6. PlotEmpCDF(data)
-    7. PPPlot(RVar,Sample)
-    8. QQPlot(RVar,Sample)
+    7. PlotLimits(limits, axis)
+    8. PPPlot(RVar,Sample)
+    9. QQPlot(RVar,Sample)
 """
-
-def ClearPlot():
-    """
-    Procedure: Clear Plot
-    Purpose: Clears the current plot display
-    Arugments:  1. None
-    OUtput:     1. Cleared plot screen
-    """
-    plt.clf()
 
 def Histogram(Sample,Bins=None):
     """
     Procedure: Histogram
     Purpose: Construct a histogram from a sample of data
-    Arguments: 1. Sample: The data sample from which to construct
+    Arguments: 1. Sample: The data sample from which to construct 
                     the histogram
                2. bins: The number of bins in the histogram
     Output:    1. A histogram plot   
@@ -4403,15 +4395,13 @@ def PlotLimits(limits, axis):
     Output:     1. Plot with limits reset
     """
     axes = plt.gca()
-    if axis == 0:
+    if axis == 'x':
         axes.set_xlim(limits)
-    elif axis == 1:
+    elif axis == 'y':
         axes.set_ylim(limits)
     else:
-        err_str = 'The axis argument must be 0 or 1. '
-        err_str += 'Enter 0 for the x-axis or 1 '
-        err_str += 'for the y-axis'
-        raise RVError
+        err_str = 'The axis parameter in PlotLimits must be "x" or "y"'
+        raise RVError(err_str)
 
 
 def PlotDist(RVar,suplist=None,opt=None,color='r',
