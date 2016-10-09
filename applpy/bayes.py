@@ -97,9 +97,18 @@ def Posterior(LikeRV,PriorRV,data=[],param=Symbol('theta')):
             proppost=simplify(proppost)
             # add to the function list
             FunctionList.append(proppost)
-        PropPost=RV(FunctionList,PriorRV.support,['continuous','pdf'])
-        # Normalize the posterior distribution
-        PostRV=Truncate(PropPost,[PriorRV.support[0],PriorRV.support[-1]])
+        if len(FunctionList) == 1:
+            c = integrate(FunctionList[0],
+                (x,PriorRV.support[0],PriorRV.support[1]))
+            func = (1/c)*FunctionList[0]
+            PostRV = RV(func, 
+                PriorRV.support,['continuous','pdf'])
+        else:
+            PropPost=RV(FunctionList,
+                PriorRV.support,['continuous','pdf'])
+            # Normalize the posterior distribution
+            PostRV=Truncate(PropPost,
+                [PriorRV.support[0],PriorRV.support[-1]])
         return PostRV
     # If the prior distribution is discrete and the likelihood function
     #   is continuous, compute the posterior distribution
