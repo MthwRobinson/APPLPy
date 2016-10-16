@@ -3424,6 +3424,16 @@ def Convolution(RVar1,RVar2):
             conv=simplify(conv_final)
             return RV([conv_final],[0,oo],['continuous','pdf'])
         # Otherwise, compute the convolution using the product method
+        elif RVar1.support==[0,1] and RVar2.support==[0,1]:
+            z = Symbol('z', positive = True)
+            xx = Symbol('xx', positive = True)
+            func1 = X1_dummy.func[0].subs(x,xx)
+            func2 = X2_dummy.func[0].subs(x,z-xx)
+            fz1 = integrate(func1*func2, (xx,0,z))
+            fz1 = fz1.subs(z,x)
+            fz2 = integrate(func1*func2, (xx,z-1,1))
+            fz2 = fz2.subs(z,x)
+            return RV([fz1,fz2],[0,1,2],['continuous','pdf'])
         else:
             gln=[[ln(x)],[0,oo]]
             ge=[[exp(x),exp(x)],[-oo,0,oo]]
