@@ -17,7 +17,7 @@ setup(
         "matplotlib",
         "seaborn",
         "numpy",
-        "pylab",
+        #"pylab",
         "mpmath",
         "pandas",
         "pickle"
