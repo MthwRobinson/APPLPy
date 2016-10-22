@@ -1,3 +1,14 @@
+v0.4.5, 22 October 2016
+New Capabilities:
+	1. Implemented shortcut for convolutions of two
+	random variables with [0,1] support
+
+Fixed Bug:
+	1. Removed pylab from the setup.py file. This is installed
+	with matplotlib
+	2. Fixed bug in posterior. Does integration directly instead
+	of through Truncate when the support of an RV has oo or -oo
+
 v0.4.4, 20 August 2016
 New Capabilities:
 	1. PlotLimits implemented to change the limits of a plot
