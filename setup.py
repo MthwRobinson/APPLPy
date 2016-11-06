@@ -18,6 +18,6 @@ setup(
         "seaborn",
         "numpy",
         "mpmath",
-        #"pandas"
+        "pandas"
         ]
     )
