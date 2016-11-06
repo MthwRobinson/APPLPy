@@ -103,7 +103,7 @@ class ArcTanRV(RV):
         if alpha <= 0:
             err_string='Alpha must be positive'
             raise RVError(err_string)
-        X_dummy=RV(alpha/(atan(alpha*phi)+pi/2)*(1+alpha**2*(x-phi)**2),
+        X_dummy=RV(alpha/((atan(alpha*phi)+pi/2)*(1+alpha**2*(x-phi)**2)),
                    [0,oo])
         self.func=X_dummy.func
         self.support=X_dummy.support

@@ -3414,7 +3414,7 @@ def Convolution(RVar1,RVar2):
         #   as a special case
         if RVar1.support==[0,oo] and RVar2.support==[0,oo]:
             #x=Symbol('x',positive=True)
-            #z=Symbol('z',positive=True)
+            z=Symbol('z',positive=True)
             func1=X1_dummy.func[0]
             func2=X2_dummy.func[0].subs(x,z-x)
             int_func=expand(func1*func2)

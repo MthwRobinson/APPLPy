@@ -1,3 +1,11 @@
+v0.4.7, 06 November 2016
+New Capabilities:
+
+Fixed Bugs:
+	1. Corrected Convolution function (accidentally broke it 
+		when [0,1] shortcut was implemented for convolution)
+	2. ArcTanRV was corrected
+
 v0.4.5, 22 October 2016
 New Capabilities:
 	1. Implemented shortcut for convolutions of two
