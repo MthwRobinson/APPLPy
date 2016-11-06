@@ -1,3 +1,9 @@
+v0.4.8, 06 November 2016
+New Capabilities:
+
+Fixed Bugs:
+	1. Minor change to setup.py
+
 v0.4.7, 06 November 2016
 New Capabilities:
 
