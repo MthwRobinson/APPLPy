@@ -1,3 +1,9 @@
+v0.4.9, 09 November 2016
+Fixed Bugs:
+        1. Fixed indexing problem in transform procedure
+	was previously ignoring some segments of the transform
+
+
 v0.4.8, 06 November 2016
 New Capabilities:
 

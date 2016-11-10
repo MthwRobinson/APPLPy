@@ -2965,7 +2965,7 @@ def Transform(RVar,gXt):
         # Find which segment of the transformation applies, and add it
         #   to the transformation list
         gXfunc=[]
-        for i in range(len(gXsupp)-1):
+        for i in range(1,len(gXsupp)):
             for j in range(len(gXold[0])):
                 if gXsupp[i]>=gXold[1][j]:
                     if gXsupp[i]<=gXold[1][j+1]:
@@ -2988,7 +2988,7 @@ def Transform(RVar,gXt):
         # Delete segments of the transformation that will not be used
         gX0_removal = []
         gX1_removal = []
-        for i in range(len(gX[0])):
+        for i in range(len(gX[0])-1):
             if gX[1][i]==gX[1][i+1]:
                 gX0_removal.append(i)
                 gX1_removal.append(i+1)
