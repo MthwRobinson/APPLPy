@@ -4470,13 +4470,13 @@ def PlotDist(RVar,suplist=None,opt=None,color='r',
                 support2=float(RVar.variate(s=.99)[0])
             else:
                 support2=float(RVar.support[len(RVar.support)-1])
-            suplist=[support1,support2]                
+            suplist=[support1,support2]
         for i in range(len(RVar.func)):
-            if suplist[0]>=RVar.support[i]:
-                if suplist[0]<=RVar.support[i+1]:
+            if suplist[0]>=float(RVar.support[i]):
+                if suplist[0]<=float(RVar.support[i+1]):
                     lwindx=i
-            if suplist[1]>=RVar.support[i]:
-                if suplist[1]<=RVar.support[i+1]:
+            if suplist[1]>=float(RVar.support[i]):
+                if suplist[1]<=float(RVar.support[i+1]):
                     upindx=i
         # Create a list of functions for the plot
         plotfunc=[]
@@ -4485,7 +4485,7 @@ def PlotDist(RVar,suplist=None,opt=None,color='r',
                 plotfunc.append(RVar.func[i])
         # Create a list of supports for the plot
         plotsupp=[suplist[0]]
-        upindx+=1
+	upindx+=1
         for i in range(len(RVar.support)):
             if i>lwindx and i<upindx:
                 plotsupp.append(RVar.support[i])

@@ -1,3 +1,9 @@
+v0.4.10, 10 November 2016
+Fixed Bugs:
+	1. Fixed issue in PlotDist that prevented plotting
+	RVs with numbers in the support that aren't standard
+	python types
+
 v0.4.9, 09 November 2016
 Fixed Bugs:
         1. Fixed indexing problem in transform procedure
