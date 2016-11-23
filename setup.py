@@ -2,7 +2,7 @@ from distutils.core import setup
 # To upload to PyPi run python setup.py sdist upload -r pypi
 setup(
     name='APPLPy',
-    version='0.4.10',
+    version='0.4.10'
     author='Matthew Robinson',
     author_email='mthw.wm.robinson@gmail.com',
     packages=['applpy','applpy.test'],
