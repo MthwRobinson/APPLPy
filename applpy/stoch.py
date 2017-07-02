@@ -4,7 +4,7 @@ Stocastic Processes Module
 1. The Markov Chain Class
 """
 
-from __future__ import division
+
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
@@ -93,7 +93,7 @@ class MarkovChain:
             state_space = [str(state_label) for state_label in states]
             self.state_space = state_space
         else:
-            state_space = range(P.shape[0])
+            state_space = list(range(P.shape[0]))
             self.state_space = state_space
         self.index_dict = {}
         for i, state in enumerate(self.state_space):
@@ -193,20 +193,20 @@ class MarkovChain:
                 err_string = ' time markov chain must be an integer value'
                 raise StochError(err_string)
             if n == 1:
-                print 'The transition probability matrix:'
-                print self.P_print
+                print('The transition probability matrix:')
+                print(self.P_print)
             else:
-                print 'The transition probability matrix after %s steps:'%(n)
-                print self.matrix_convert(self.trans_mat(n,method=method))
-            print '----------------------------------------'
-            print 'The initial system state:'
-            print self.init_print
+                print('The transition probability matrix after %s steps:'%(n))
+                print(self.matrix_convert(self.trans_mat(n,method=method)))
+            print('----------------------------------------')
+            print('The initial system state:')
+            print(self.init_print)
         if option == 'steady state':
-            print 'The steady state probabilities are:'
-            print self.vector_convert(self.steady_state(method=method))
+            print('The steady state probabilities are:')
+            print(self.vector_convert(self.steady_state(method=method)))
         if option == 'init':
-            print 'The initial conditions are:'
-            print self.vector_convert(self.init)
+            print('The initial conditions are:')
+            print(self.vector_convert(self.init))
         
 
     def matrix_convert(self,matrix):

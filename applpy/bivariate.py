@@ -12,7 +12,7 @@ The algorithms implemented in this module were developed by
 2012. J Yang, L Leemis and J Drew. 'Automating Bivariate Transformations'.
     INFORMS Journal on Computing Vol. 24, No. 1.
 """
-from __future__ import division
+
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
@@ -171,7 +171,7 @@ class BivariateRV:
                         indicating the function and the relevant support
         """
         if self.ftype[0] in ['continuous','Discrete']:
-            print ('%s %s'%(self.ftype[0],self.ftype[1]))
+            print(('%s %s'%(self.ftype[0],self.ftype[1])))
             for i in range(len(self.func)):
                 cons_list=['0<'+str(cons) for cons in self.constraints[i]]
                 cons_string=', '.join(cons_list)
@@ -184,15 +184,15 @@ class BivariateRV:
                     print(' ');print(' ')
             
         if self.ftype[0]=='discrete':
-            print '%s %s where {x->f(x)}:'%(self.ftype[0],
-                                            self.ftype[1])
+            print('%s %s where {x->f(x)}:'%(self.ftype[0],
+                                            self.ftype[1]))
             for i in range(len(self.support)):
                 if i!=(len(self.support)-1):
-                    print '{%s -> %s}, '%(self.support[i],
-                                          self.func[i]),
+                    print('{%s -> %s}, '%(self.support[i],
+                                          self.func[i]), end=' ')
                 else:
-                    print '{%s -> %s}'%(self.support[i],
-                                        self.func[i])
+                    print('{%s -> %s}'%(self.support[i],
+                                        self.func[i]))
 
     def init_cache(self):
         """
