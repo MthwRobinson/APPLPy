@@ -3,3 +3,4 @@
 /dist/*
 /docs/.ipynb_checkpoints
 MANIFEST
+APPLPy.egg-info/*
