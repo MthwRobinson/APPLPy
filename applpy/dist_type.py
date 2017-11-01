@@ -1376,7 +1376,7 @@ class WeibullRV(RV):
         self.support=X_dummy.support
         self.ftype=X_dummy.ftype
         self.parameter=[theta,kappa]
-        self.cdf = 1 - exp( - (x/theta)**kappa)
+        self.cdf = 1 - exp( - (x*theta)**kappa)
         self.cache={}
 
 
