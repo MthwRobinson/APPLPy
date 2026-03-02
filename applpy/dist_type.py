@@ -27,7 +27,7 @@ Discrete Distributions
 
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, Add, Mul, Integer, function,
+                   solve, nan, Add, Mul, Integer, Function,
                    binomial,gamma,cos,cot,Rational,atan,log)
 from random import random
 from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,

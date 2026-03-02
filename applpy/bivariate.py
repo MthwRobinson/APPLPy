@@ -15,7 +15,7 @@ The algorithms implemented in this module were developed by
 
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, Add, Mul, Integer, function,
+                   solve, nan, Add, Mul, Integer, Function,
                    binomial, pprint,log,expand,zoo,latex,Piecewise)
 from sympy.plotting.plot import plot
 from random import random

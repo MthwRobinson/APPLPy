@@ -17,7 +17,7 @@ Procedures:
 
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, Add, Mul, Integer, function,
+                   solve, nan, Add, Mul, Integer, Function,
                    binomial)
 from mpmath import (nsum,nprod)
 from random import random

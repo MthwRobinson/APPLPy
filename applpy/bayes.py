@@ -17,7 +17,7 @@ Procedures:
 
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, Add, Mul, Integer, function,
+                   solve, nan, Add, Mul, Integer, Function,
                    binomial, pprint, log)
 from .rv import (RV, RVError, CDF, PDF, BootstrapRV,
                  ExpectedValue,Mean, Variance, Truncate)

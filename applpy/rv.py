@@ -62,7 +62,7 @@ Plotting Procedures:
 
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, Add, Mul, Integer, function,
+                   solve, nan, Add, Mul, Integer, Function,
                    binomial, pprint,log,expand,zoo,latex,Piecewise,Rational,
                    Sum,S,Float,limit)
 from sympy.plotting.plot import plot
@@ -4648,3 +4648,7 @@ def QQPlot(RVar,Sample):
     # Plot the results
     plt.ion()
     plt.prob_plot(Sample,Fitted,'QQ Plot')
+
+
+# Backward-compatible re-export for direct imports from applpy.rv.
+from .dist_type import ExponentialRV

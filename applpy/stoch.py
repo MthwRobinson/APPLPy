@@ -7,7 +7,7 @@ Stocastic Processes Module
 
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, Add, Mul, Integer, function,
+                   solve, nan, Add, Mul, Integer, Function,
                    binomial, pprint,log,expand,zoo,latex,Piecewise,Rational,
                    Sum,S,Float)
 from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
