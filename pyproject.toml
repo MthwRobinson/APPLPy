@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "APPLPy"
+version = "0.4.12"
+description = "open source computational probability software"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE.txt" }
+authors = [
+  { name = "Matthew Robinson", email = "mthw.wm.robinson@gmail.com" }
+]
+dependencies = [
+  "sympy",
+  "scipy",
+  "matplotlib",
+  "seaborn",
+  "numpy",
+  "mpmath",
+  "pandas",
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ipython",
+  "jupyter",
+]
+
+[tool.setuptools]
+packages = ["applpy", "applpy.test"]

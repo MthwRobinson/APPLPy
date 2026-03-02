@@ -24,50 +24,42 @@ Although APPLPy can be used for a variety of purposes, it is best suited to fill
 
 # Installing APPLPy
 
-APPLPy is coded in Python 2 and requires Python 2.6 or later. The software has not yet been tested for forward compatibility with Python 3. Support for Python 3 will be added in future versions. In addition to Python, APPLPy requires the following software packages:
+APPLPy now targets Python 3 only.
 
-1. [sympy](https://pypi.python.org/pypi/sympy/)
-2. [numpy](https://pypi.python.org/pypi/numpy/)
-3. [scipy](https://pypi.python.org/pypi/scipy/)
-4. [mpmath](https://pypi.python.org/pypi/mpmath/)
-5. [matplotlib](https://pypi.python.org/pypi/matplotlib/)
-6. [seaborn](https://pypi.python.org/pypi/seaborn/)
-7. [pandas](https://pypi.python.org/pypi/pandas/)
+Runtime dependencies are declared in the package metadata and will be installed automatically:
 
-## Anaconda
+1. `sympy`
+2. `numpy`
+3. `scipy`
+4. `mpmath`
+5. `matplotlib`
+6. `seaborn`
+7. `pandas`
 
-[Anaconda](https://store.continuum.io/cshop/anaconda/) is a free Python distribution that includes the most commonly used scientific computing packages, including all of the dependencies for APPLPy. While not required, installing Anaconda is highly recommended. Useful packages that ship with the Anaconda distribution include [pandas](http://pandas.pydata.org/) (a data analysis package), [iPython](http://ipython.org/) (a convenient interactive shell) and iPython Notebook (a Mathematica-style notebook that allows for easy collaboration). Anaconda helps ensure that all of these packages are well integrated and up-to-date.
+## Install with uv
 
-## Installing APPLPy
+Clone the repository and install with `uv`:
 
-The latest version of APPLPy is 0.4.3, which was released on 20 July 2016. It is available for download from the [Python Package Index](https://pypi.python.org/pypi/APPLPy/0.4.3). APPLPy and its dependencies can be installed by issuing the following terminal commands. Note that an internet connection is required to install APPLPy through pip.
 ```shell
-$ pip install applpy
-```
-Once it is installed, APPLPy can be updated to the latest release with
-```shell
-$ pip install applpy --upgrade
-```
-pip can also be used to install APPLPy from inside of an Python session with the follow syntax:
-```python
-import pip
-pip.main(['install','applpy'])
-```
-or upgraded with
-```python
-import pip
-pip.main(['install','applpy','--upgrade'])
+git clone https://github.com/MthwRobinson/APPLPy.git
+cd APPLPy
+uv sync
 ```
 
-Users who want the latest development version of APPLPy can also download source code from the [APPLPy Github repo](https://github.com/MthwRobinson/APPLPy) with the following command
+If you prefer `pip`-style uv commands, use:
+
 ```shell
-$ git clone https://github.com/MthwRobinson/APPLPy.git
+uv pip install .
 ```
- To install APPLPy, navigate to the location of the downloaded files and type 
+
+To install development dependencies (`ipython` and `jupyter`) as well:
+
 ```shell
-$python setup.py install
-``` 
-into the terminal or the command prompt. After the installation is complete, users can run APPLPy from any Python interactive session by typing 
+uv sync --extra dev
+```
+
+After installation:
+
 ```python
 from applpy import *
 ```
