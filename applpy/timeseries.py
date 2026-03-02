@@ -11,7 +11,7 @@ Procedures:
     1. 
 """
 
-from __future__ import division
+
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,

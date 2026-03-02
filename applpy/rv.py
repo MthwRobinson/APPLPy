@@ -59,7 +59,7 @@ Plotting Procedures:
     6. QQPlot(RVar,Sample)
 """
 
-from __future__ import division
+
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
@@ -538,10 +538,10 @@ class RV:
                         indicating the function and the relevant support
         """
         if self.ftype[0] in ['continuous','Discrete']:
-            print ('%s %s'%(self.ftype[0],self.ftype[1]))
+            print(('%s %s'%(self.ftype[0],self.ftype[1])))
             for i in range(len(self.func)):
-                print('for %s <= x <= %s'%(self.support[i],
-                                           self.support[i+1]))
+                print(('for %s <= x <= %s'%(self.support[i],
+                                           self.support[i+1])))
                 print('---------------------------')
                 pprint(self.func[i])
                 print('---------------------------')
@@ -549,15 +549,15 @@ class RV:
                     print(' ');print(' ')
             
         if self.ftype[0]=='discrete':
-            print '%s %s where {x->f(x)}:'%(self.ftype[0],
-                                            self.ftype[1])
+            print('%s %s where {x->f(x)}:'%(self.ftype[0],
+                                            self.ftype[1]))
             for i in range(len(self.support)):
                 if i!=(len(self.support)-1):
-                    print '{%s -> %s}, '%(self.support[i],
-                                          self.func[i]),
+                    print('{%s -> %s}, '%(self.support[i],
+                                          self.func[i]), end=' ')
                 else:
-                    print '{%s -> %s}'%(self.support[i],
-                                        self.func[i])
+                    print('{%s -> %s}'%(self.support[i],
+                                        self.func[i]))
 
     def drop_assumptions(self):
         """
@@ -702,15 +702,15 @@ class RV:
             # Convert the random variable to PDF form
             X_dummy=PDF(self)
             # Check to ensure that the area under the PDF is 1
-            print 'Now checking for area...'
+            print('Now checking for area...')
             area=0
             for i in range(len(X_dummy.func)):
                 val=integrate(X_dummy.func[i],(x,X_dummy.support[i],
                                                X_dummy.support[i+1]))
                 area+=val
-            print 'The area under f(x) is: %s'%(area)
+            print('The area under f(x) is: %s'%(area))
             # Check absolute value
-            print 'Now checking for absolute value...'
+            print('Now checking for absolute value...')
             #
             # The following code should work in future versions of SymPy
             # Currently, Sympy is having difficulty consistently integrating
@@ -730,14 +730,14 @@ class RV:
             for i in range(len(val_list)):
                 if val_list[i]<0:
                     abs_flag=False
-            print 'The pdf of the random variable:'
-            print '%s'%(X_dummy.func)
-            print 'continuous pdf with support %s'%(X_dummy.support)
+            print('The pdf of the random variable:')
+            print('%s'%(X_dummy.func))
+            print('continuous pdf with support %s'%(X_dummy.support))
             if area>.9999 and area<1.00001 and abs_flag==True:
-                print 'is valid'
+                print('is valid')
                 return True
             else:
-                print 'is not valid'
+                print('is not valid')
                 return False
         # If the random variable is in a discrete functional form,
         #   verify the PDF
@@ -745,15 +745,15 @@ class RV:
             # Convert the random variable to PDF form
             X_dummy=PDF(self)
             # Check to ensure that the area under the PDF is 1
-            print 'Now checking for area...'
+            print('Now checking for area...')
             area=0
             for i in range(len(X_dummy.func)):
                 val=summation(X_dummy.func[i],(x,X_dummy.support[i],
                                                X_dummy.support[i+1]))
                 area+=val
-            print 'The area under f(x) is: %s'%(area)
+            print('The area under f(x) is: %s'%(area))
             # Check absolute value
-            print 'Now checking for absolute value...'
+            print('Now checking for absolute value...')
             abs_flag=True
             val_list=[]
             quant_list=[.1,.2,.3,.4,.5,.6,.7,.8,.9]
@@ -763,36 +763,36 @@ class RV:
             for i in range(len(val_list)):
                 if val_list[i]<0:
                     abs_flag=False
-            print 'The pdf of the random variable:'
-            print '%s'%(X_dummy.func)
-            print 'discrete pdf with support %s'%(X_dummy.support)
+            print('The pdf of the random variable:')
+            print('%s'%(X_dummy.func))
+            print('discrete pdf with support %s'%(X_dummy.support))
             if area>.9999 and area<1.00001 and abs_flag==True:
-                print 'is valid'
+                print('is valid')
                 return True
             else:
-                print 'is not valid'
+                print('is not valid')
                 return False
         # If the random variable is discrete, verify the PDF
         if self.ftype[0]=='discrete':
             # Convert the random variable to PDF form
             X_dummy=PDF(self)
             # Check to ensure that the area under the PDF is 1
-            print 'Now checking for area...'
+            print('Now checking for area...')
             area=sum(X_dummy.func)
             #for i in range(len(self.support)):
             #    area+=self.func[i]
-            print 'The area under f(x) is: %s'%(area)
+            print('The area under f(x) is: %s'%(area))
             # Check for absolute value
-            print 'Now checking for absolute value...'
+            print('Now checking for absolute value...')
             abs_flag=True
             for i in range(len(self.func)):
                 if self.func[i]<0:
                     abs_flag=False
-            print 'The pdf of the random variable'
+            print('The pdf of the random variable')
             if area>.9999 and area<1.0001 and abs_flag==True:
-                print 'is valid'
+                print('is valid')
             else:
-                print 'is not valid'
+                print('is not valid')
 
 
     def variate(self,n=1,s=None,sensitivity=None,method='newton-raphson'):
@@ -1111,7 +1111,7 @@ def CDF(RVar,value=x,cache=False):
         if RVar.ftype[1] in ['sf','chf','hf']:
             X_dummy=SF(RVar)
             newfunc=[]
-            for i in reversed(range(len(X_dummy.func))):
+            for i in reversed(list(range(len(X_dummy.func)))):
                 newfunc.append(X_dummy.func[i])
             Xsf=RV(newfunc,X_dummy.support,['discrete','cdf'])
             if value==x:
@@ -2480,7 +2480,7 @@ def NextCombination(Previous,N):
     #   possible value that can be incremented
     else:
         MoveLeft=True
-        for i in reversed(range(1,n)):
+        for i in reversed(list(range(1,n))):
             indx=i-1
             if Next[indx]<N+i-n:
                 Next[indx]+=1
@@ -2510,7 +2510,7 @@ def NextPermutation(Previous):
     flag=False
 
     # Find the largest index value i for which Next[i]<Next[i+1]
-    for i in reversed(range(1,n)):
+    for i in reversed(list(range(1,n))):
         while flag==False:
             indx=i-1
             if Next[indx]<Next[indx+1]:
@@ -2519,7 +2519,7 @@ def NextPermutation(Previous):
                 SwapIndex=indx+1
                 # Find the smallest value Next[j] for which Next[i]<Next[j]
                 #   and i<j
-                for j in reversed(range(SwapIndex,n)):
+                for j in reversed(list(range(SwapIndex,n))):
                     if Next[j]<Next[SwapIndex]:
                         if Next[j]>OrigVal:
                             SwapIndex=j
@@ -2677,7 +2677,7 @@ def OrderStat(RVar,n,r,replace='w'):
                 else:
                     # Create null ProbStorage array of size nXN
                     # Initialize to contain all zeroes
-                    print n,N
+                    print(n,N)
                     ProbStorage=[]
                     for i in range(n):
                         row_list=[]
@@ -2686,7 +2686,7 @@ def OrderStat(RVar,n,r,replace='w'):
                         ProbStorage.append(row_list)
                     # Create the first lexicographical combo of
                     #   n items
-                    combo=range(1,n+1)
+                    combo=list(range(1,n+1))
                     for i in range(1,(binomial(N,n)+1)):
                         # Assign perm as the current combo
                         perm=[]
@@ -2700,7 +2700,7 @@ def OrderStat(RVar,n,r,replace='w'):
                             for m in range(1,n):
                                 PermProb*=fx.func[perm[m]]/(1-cumsum)
                                 cumsum+=fx.func[perm[m]]
-                            print perm,PermProb,cumsum
+                            print(perm,PermProb,cumsum)
                             # Order each permutation and determine
                             #   which value sits in the rth
                             #   ordered position
@@ -2828,7 +2828,7 @@ def RangeStat(RVar,n,replace='w'):
                              sum(p[i+1:j])**n)
                     k+=1
             # Sort rs and rp together by rs
-            sortedr = zip(*sorted(zip(rs,rp)))
+            sortedr = list(zip(*sorted(zip(rs,rp))))
             sortrs = list(sortedr[0])
             sortrp = list(sortedr[1])
             # Combine redundant elements in the list
@@ -2877,7 +2877,7 @@ def RangeStat(RVar,n,replace='w'):
                         # Find the next lexicographical permutation
                         perm = NextPermutation(perm)
                     combo = NextCombination(combo,N)
-                print len(fXRange),len(fXSupport)
+                print(len(fXRange),len(fXSupport))
                 return RV(fXRange,fXSupport,fX.ftype)
                 
 
@@ -3122,7 +3122,7 @@ def Transform(RVar,gXt):
                     #   between two segments of the transformation will
                     #   be entered twice
         # Sort the function and support lists
-        sortlist=zip(trans_sup,X_dummy.func)
+        sortlist=list(zip(trans_sup,X_dummy.func))
         sortlist.sort()
         translist=[]
         funclist=[]
@@ -3478,7 +3478,7 @@ def Convolution(RVar1,RVar2):
                 convlist.append(X1_dummy.support[i]+X2_dummy.support[j])
                 funclist.append(X1_dummy.func[i]*X2_dummy.func[j])
         # Sort the function and support lists for the convolution
-        sortlist=zip(convlist,funclist)
+        sortlist=list(zip(convlist,funclist))
         sortlist.sort()
         convlist2=[]
         funclist2=[]
@@ -3635,7 +3635,7 @@ def MaximumRV(RVar1,RVar2):
                 indx=max_supp.index(max_list[i])
                 max_func[indx]+=prob_list[i]
         # Sort the elements of the rv
-        zip_list=zip(max_supp,max_func)
+        zip_list=list(zip(max_supp,max_func))
         zip_list.sort()
         max_supp=[]
         max_func=[]
@@ -3786,7 +3786,7 @@ def MinimumRV(RVar1,RVar2):
                 indx=min_supp.index(min_list[i])
                 min_func[indx]+=prob_list[i]
         # Sort the elements of the rv
-        zip_list=zip(min_supp,min_func)
+        zip_list=list(zip(min_supp,min_func))
         zip_list.sort()
         min_supp=[]
         min_func=[]
@@ -3894,7 +3894,7 @@ def Mixture(MixParameters,MixRVs):
                     val=Mixfx[i].func[j]*MixParameters[i]
                     fxnew[indx]+=val
         # Sort the values
-        zip_list=zip(MixSupp,fxnew)
+        zip_list=list(zip(MixSupp,fxnew))
         zip_list.sort()
         fxnew=[]
         MixSupp=[]
@@ -4257,7 +4257,7 @@ def Product(RVar1,RVar2):
                 prodlist.append(X1_dummy.support[i]*X2_dummy.support[j])
                 funclist.append(X1_dummy.func[i]*X2_dummy.func[j])
         # Sort the function and support lists for the convolution
-        sortlist=zip(prodlist,funclist)
+        sortlist=list(zip(prodlist,funclist))
         sortlist.sort()
         prodlist2=[]
         funclist2=[]
@@ -4312,7 +4312,7 @@ def ProductDiscrete(RVar1,RVar2):
     supportlist=prodsupport.tolist()[0]
     pdflist=prodpdf.tolist()[0]
     # Sort the function and support lists for the product
-    sortlist=zip(supportlist,pdflist)
+    sortlist=list(zip(supportlist,pdflist))
     sortlist.sort()
     prodlist2=[]
     funclist2=[]
@@ -4384,7 +4384,7 @@ def LoadRV(filename):
     fileObject = open(filename, 'r')
     RVar = pickle.load(fileObject)
     if 'RV' not in RVar.__class__.__name__:
-        print 'WARNING: Object loaded is not a random variable'
+        print('WARNING: Object loaded is not a random variable')
     return RVar
 
 
@@ -4485,7 +4485,7 @@ def PlotDist(RVar,suplist=None,opt=None,color='r',
                 plotfunc.append(RVar.func[i])
         # Create a list of supports for the plot
         plotsupp=[suplist[0]]
-	upindx+=1
+        upindx+=1
         for i in range(len(RVar.support)):
             if i>lwindx and i<upindx:
                 plotsupp.append(RVar.support[i])

@@ -14,7 +14,7 @@ Procedures:
     
 """
 
-from __future__ import division
+
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
@@ -43,24 +43,24 @@ x,y,z,t=symbols('x y z t')
 """
 
 def BayesMenu():
-    print 'ApplPy Procedures'
-    print ""
-    print 'Procedure Notation'
-    print ""
-    print 'X is a likelihood function'
-    print 'Y is a prior distribution'
-    print 'x is an observed data point'
-    print 'Data is an observed set of data'
-    print 'entered as a list --> ex. Data=[1,12.4,34,.52.45,64]'
-    print 'low and high are numeric'
-    print ""
-    print ""
+    print('ApplPy Procedures')
+    print("")
+    print('Procedure Notation')
+    print("")
+    print('X is a likelihood function')
+    print('Y is a prior distribution')
+    print('x is an observed data point')
+    print('Data is an observed set of data')
+    print('entered as a list --> ex. Data=[1,12.4,34,.52.45,64]')
+    print('low and high are numeric')
+    print("")
+    print("")
 
-    print 'Bayesian Statistics Procedures'
-    print 'Posterior(X,Y,x,param), BayesUpdate(X,Y,Data,param)'
-    print 'PosteriorPreidictive(X,Y,Data,param), TwoSample(X,Y,Data1,Data2)'
-    print 'CS(m,s,alpha,n,type),Jeffreys(X,low,high,param)'
-    print ""
+    print('Bayesian Statistics Procedures')
+    print('Posterior(X,Y,x,param), BayesUpdate(X,Y,Data,param)')
+    print('PosteriorPreidictive(X,Y,Data,param), TwoSample(X,Y,Data1,Data2)')
+    print('CS(m,s,alpha,n,type),Jeffreys(X,low,high,param)')
+    print("")
 
 def Posterior(LikeRV,PriorRV,data=[],param=Symbol('theta')):
     """

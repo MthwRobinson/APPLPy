@@ -14,7 +14,7 @@ Procedures:
     1. Queue(X,Y,n,k,s)
 """
 
-from __future__ import division
+
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
@@ -47,23 +47,23 @@ x,y,z,t,v=symbols('x y z t v')
 """
 
 def QueueMenu():
-    print 'ApplPy Procedures'
-    print ""
-    print 'Procedure Notation'
-    print ""
-    print 'X is the distribution of the time between arrivals.'
-    print 'Y is the service time distribution.'
-    print 'n is the total number of customers in the system.'
-    print 'k is the number of customers in the system as time 0'
-    print 's is the number of identical parallel servers'
-    print 'a is the first customer of interest'
-    print 'b is the second customer of interest (a<b)'
-    print ""
-    print ""
+    print('ApplPy Procedures')
+    print("")
+    print('Procedure Notation')
+    print("")
+    print('X is the distribution of the time between arrivals.')
+    print('Y is the service time distribution.')
+    print('n is the total number of customers in the system.')
+    print('k is the number of customers in the system as time 0')
+    print('s is the number of identical parallel servers')
+    print('a is the first customer of interest')
+    print('b is the second customer of interest (a<b)')
+    print("")
+    print("")
 
-    print 'Queue Procedures'
-    print 'Queue(X,Y,n,k,s), Cov(X,Y,a,b), kCov(X,Y,a,b,n,k)'
-    print ""
+    print('Queue Procedures')
+    print('Queue(X,Y,n,k,s), Cov(X,Y,a,b), kCov(X,Y,a,b,n,k)')
+    print("")
 
 
 def Queue(X,Y,n,k=0,s=1):

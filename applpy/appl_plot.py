@@ -1,4 +1,4 @@
-from __future__ import division
+
 
 from matplotlib.pylab import (plot, xlabel, ylabel, title, grid, arange,
                    ion, ioff)

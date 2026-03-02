@@ -24,7 +24,7 @@ Discrete Distributions
     BenfordRV(),BinomialRV(n,p),GeometricRV(p),PoissonRV(theta)
 """
 
-from __future__ import division
+
 from sympy import (Symbol, symbols, oo, integrate, summation, diff,
                    exp, pi, sqrt, factorial, ln, floor, simplify,
                    solve, nan, Add, Mul, Integer, function,
@@ -703,11 +703,11 @@ class KSRV(RV):
         #Phase 1
         N=n
         m=floor(3*N/2)+(N%2)-1
-        vv=range(m+1)
+        vv=list(range(m+1))
         vvalue=[]
         for i in range(len(vv)):
             vvalue.append(0)
-        vv=dict(zip(vv,vvalue))
+        vv=dict(list(zip(vv,vvalue)))
         vv[0]=0
         g=1/(2*N)
         mm=0
@@ -723,18 +723,18 @@ class KSRV(RV):
         for k in range(1,m+1):
             cidx.append(k)
             cval.append((vv[k-1]+vv[k])/2)
-        c=dict(zip(cidx,cval))
+        c=dict(list(zip(cidx,cval)))
         # Generate the x array
         xidx=[];xval=[]
         for k in range(1,N+1):
             xidx.append(k)
             xval.append((2*k-1)*g)
-        x=dict(zip(xidx,xval))
+        x=dict(list(zip(xidx,xval)))
         # Generate an NxN A array
-        aidx=range(1,N+1);aval=[]
+        aidx=list(range(1,N+1));aval=[]
         for i in aidx:
             aval.append(0)
-        arow=dict(zip(aidx,aval));A=dict(zip(aidx,aval))
+        arow=dict(list(zip(aidx,aval)));A=dict(list(zip(aidx,aval)))
         for i in aidx:
             A[i]=arow
         # Insert values into the A array
@@ -755,19 +755,19 @@ class KSRV(RV):
         for i in range(1,m+1):
             Pidx.append(i)
             Pval.append(0)
-        P=dict(zip(Pidx,Pval))
+        P=dict(list(zip(Pidx,Pval)))
         # Create an NxN F array
-        fidx=range(1,N+1);fval=[]
+        fidx=list(range(1,N+1));fval=[]
         for i in fidx:
             fval.append(0)
-        frow=dict(zip(fidx,fval));F=dict(zip(fidx,fval))
+        frow=dict(list(zip(fidx,fval)));F=dict(list(zip(fidx,fval)))
         for i in fidx:
             F[i]=frow
         # Create an NxN V array
-        vidx=range(1,N+1);vval=[]
+        vidx=list(range(1,N+1));vval=[]
         for i in vidx:
             vval.append(0)
-        vrow=dict(zip(vidx,vval));V=dict(zip(vidx,vval))
+        vrow=dict(list(zip(vidx,vval)));V=dict(list(zip(vidx,vval)))
         for i in vidx:
             V[i]=vrow
         # Create a list of indexed u variables
@@ -1192,7 +1192,7 @@ class NormalRV(RV):
         # Otherwise, use the Box-Muller method to compute variates
         mean=self.parameter[0];var=self.parameter[1]
         U=UniformRV(0,1)
-        Z1=lambda (val1,val2): sqrt(-2*ln(val1))*cos(2*pi*val2).evalf()
+        Z1=lambda val1_val2: sqrt(-2*ln(val1_val2[0]))*cos(2*pi*val1_val2[1]).evalf()
         gen_uniform=lambda x: U.variate(n=1)[0]
         val_pairs=[(gen_uniform(1),gen_uniform(1)) for i in range(1,n+1)]
         varlist=[Z1(pair) for pair in val_pairs]

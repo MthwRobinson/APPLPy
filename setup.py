@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 # To upload to PyPi run python setup.py sdist upload -r pypi
 setup(
     name='APPLPy',
@@ -11,6 +11,11 @@ setup(
     license='LICENSE.txt',
     description='open source computational probability software',
     long_description=open('README.txt').read(),
+    python_requires='>=3.8',
+    classifiers=[
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3 :: Only',
+    ],
     install_requires=[
         "sympy",
         "scipy",
