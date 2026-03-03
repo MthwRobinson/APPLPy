@@ -10,7 +10,8 @@ install-dev: ## Install project with development dependencies.
 	uv sync --extra dev
 
 lint: ## Run Ruff lint checks.
-	uv run ruff check .
+	uv run ruff check applpy
 
 tidy: ## Run Ruff autoformatter.
-	uv run ruff format .
+	uv run ruff check --fix --unsafe-fixes applpy
+	uv run ruff format applpy

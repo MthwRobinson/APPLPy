@@ -14,18 +14,23 @@ Procedures:
     1. Queue(X,Y,n,k,s)
 """
 
-
-from sympy import (Symbol, symbols, oo, integrate, summation, diff,
-                   exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, Add, Mul, Integer, Function,
-                   binomial)
-from mpmath import (nsum,nprod)
-from random import random
+from sympy import (
+    Symbol,
+    symbols,
+    factorial,
+    simplify,
+)
+from mpmath import nsum, nprod
 import numpy as np
-from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
-                 BootstrapRV, Convert, Mean, Convolution, Mixture)
-from .dist_type import (ErlangRV, ExponentialRV)
-x,y,z,t,v=symbols('x y z t v')
+from .rv import (
+    RVError,
+    Mean,
+    Convolution,
+    Mixture,
+)
+from .dist_type import ErlangRV
+
+x, y, z, t, v = symbols("x y z t v")
 
 """
     A Probability Progamming Language (APPL) -- Python Edition
@@ -46,27 +51,28 @@ x,y,z,t,v=symbols('x y z t v')
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
+
 def QueueMenu():
-    print('ApplPy Procedures')
+    print("ApplPy Procedures")
     print("")
-    print('Procedure Notation')
+    print("Procedure Notation")
     print("")
-    print('X is the distribution of the time between arrivals.')
-    print('Y is the service time distribution.')
-    print('n is the total number of customers in the system.')
-    print('k is the number of customers in the system as time 0')
-    print('s is the number of identical parallel servers')
-    print('a is the first customer of interest')
-    print('b is the second customer of interest (a<b)')
+    print("X is the distribution of the time between arrivals.")
+    print("Y is the service time distribution.")
+    print("n is the total number of customers in the system.")
+    print("k is the number of customers in the system as time 0")
+    print("s is the number of identical parallel servers")
+    print("a is the first customer of interest")
+    print("b is the second customer of interest (a<b)")
     print("")
-    print("")
-
-    print('Queue Procedures')
-    print('Queue(X,Y,n,k,s), Cov(X,Y,a,b), kCov(X,Y,a,b,n,k)')
     print("")
 
+    print("Queue Procedures")
+    print("Queue(X,Y,n,k,s), Cov(X,Y,a,b), kCov(X,Y,a,b,n,k)")
+    print("")
 
-def Queue(X,Y,n,k=0,s=1):
+
+def Queue(X, Y, n, k=0, s=1):
     """
     Procedure Name: Queue
     Purpose: Computes the sojourn time distribution for the nth
@@ -81,25 +87,25 @@ def Queue(X,Y,n,k=0,s=1):
                 5. s: the number of identical parallel servers
     Output:     1. Probability distribution for an M/M/s queue
     """
-    rho=Symbol('rho')
-    rho_subs=(1/Mean(X))/(s*(1/Mean(Y)))
-    lst=BuildDist(X,Y,n,k,s)
-    probs=MMSQprob(n,k,s)
+    rho = Symbol("rho")
+    rho_subs = (1 / Mean(X)) / (s * (1 / Mean(Y)))
+    lst = BuildDist(X, Y, n, k, s)
+    probs = MMSQprob(n, k, s)
     # Substitute the value of rho into the probability list
-    sub_probs=[]
+    sub_probs = []
     for element in probs:
-        sub_element=element.subs(rho,rho_subs)
+        sub_element = element.subs(rho, rho_subs)
         sub_probs.append(sub_element)
-    TIS=Mixture(sub_probs,lst)
+    TIS = Mixture(sub_probs, lst)
     return TIS
-    
 
-'''
+
+"""
 The following procedures are used to build the Queue, Cov and kCov
     procedures. They are not intended for end use for the user. _Q
     does not import into the APPLPy namespace to avoid conflict with
     the sympy.assumptions procedure Q.
-'''
+"""
 
 """
 Queue Sub-Procedures:
@@ -108,7 +114,8 @@ Queue Sub-Procedures:
     2. _Q(n,i,k,s)
 """
 
-def BuildDist(X,Y,n,k,s):
+
+def BuildDist(X, Y, n, k, s):
     """
     Procedure Name: BuildDist
     Purpose: Creates the appropriate conditional sojourn time
@@ -126,33 +133,34 @@ def BuildDist(X,Y,n,k,s):
     """
     # Raise an error if both either of the distributions are not
     #   exponential
-    if X.__class__.__name__!='ExponentialRV':
-        err_string='both distributions in the queue must be'
-        err_string+='exponential'
+    if X.__class__.__name__ != "ExponentialRV":
+        err_string = "both distributions in the queue must be"
+        err_string += "exponential"
         raise RVError(err_string)
 
-    if Y.__class__.__name__!='ExponentialRV':
-        err_string='both distributions in the queue must be'
-        err_string+='exponential'
+    if Y.__class__.__name__ != "ExponentialRV":
+        err_string = "both distributions in the queue must be"
+        err_string += "exponential"
         raise RVError(err_string)
 
     # Pre-compute the mean of y to avoid multiple integrations
-    meany=Mean(Y)
+    meany = Mean(Y)
     # Place positive assumptions on x to simplify output
-    x=Symbol('x',positive=True)
-    
-    lst=[]
-    for i in range(1,n+k+1):
-        if s==1:
-            lst.append(ErlangRV(1/meany,i))
+    Symbol("x", positive=True)
+
+    lst = []
+    for i in range(1, n + k + 1):
+        if s == 1:
+            lst.append(ErlangRV(1 / meany, i))
         else:
-            if i<=s or s>n+k:
+            if i <= s or s > n + k:
                 lst.append(Y)
             else:
-                lst.append(Convolution(ErlangRV(s*(1/meany),i-s),Y))
+                lst.append(Convolution(ErlangRV(s * (1 / meany), i - s), Y))
     return lst
 
-def MMSQprob(n,k,s):
+
+def MMSQprob(n, k, s):
     """
     Procedure Name: MMSQprob
     Purpose: Computes Pk(n,i) for an M/M/s queue, which is the
@@ -164,12 +172,13 @@ def MMSQprob(n,k,s):
                 3. s: The number of parallel servers
     Output:     1. Pk: A list of ordered probabilities
     """
-    lst=[]
-    for i in range(1,n+k+1):
-        lst.append(_Q(n,i,k,s))
+    lst = []
+    for i in range(1, n + k + 1):
+        lst.append(_Q(n, i, k, s))
     return lst
 
-def _Q(n,i,k,s):
+
+def _Q(n, i, k, s):
     """
     Procedure Name: _Q
     Purpose: Computes the single probability Pk(n,i) for an M/M/s
@@ -180,46 +189,68 @@ def _Q(n,i,k,s):
                 4. s: The number of parallel servers
     Output:     1. Pk: A single probability for an M/M/s queue
     """
-    rho=Symbol('rho')
-    if k>=1 and i==k+n:
-        if k>=s:
-            p=(rho/(rho+1))**n
-        elif k+n<=s:
-            p=(rho**n)/(nprod(lambda j: rho+(k+j-1)/s,[1,n]))
-        elif k<s and s<k+n:
-            p=(rho**n)/((rho+1)**(n-s+k)*
-                        (nprod(lambda j: rho+(k+j-1)/s,[1,s-k])))
-    if k==0 and i==n:
-        if n<=s:
-            p=(rho**n)/nprod(lambda j: rho+(j-1)/s,[1,n])
-        elif n>s:
-            p=(rho**n)/((rho+1)**(n-s)*
-                        nprod(lambda j: rho+(j-1)/s,[1,s]))
-    if i==1:
-        p=1-nsum(lambda j: _Q(n,j,k,s),[2,n+k])
-    if k>=1 and i>=2 and i<=k and n==1:
-        if k<=s:
-            p=rho/(rho+(i-1)/s)*nprod(lambda j:
-                                      1-rho/(rho+(k-j+1)/s),[1,k-i+1])
-        elif k>s and i>s:
-            p=rho/(rho+1)**(k-i+2)
-        elif i<=s and s<k:
-            p=rho/((rho+1)**(k-s+1)*(rho+(i-1/s))*
-                   nprod(lambda j: 1-rho/(rho(s-j)/s),[1,s-i]))
-    if n>=2 and i>=2 and i<=k+n-1:
-        if i>s:
-            p=rho/(rho+1)*nsum(lambda j:
-                               (1/(rho+1)**(j-i+1)*_Q(n-1,j,k,s)),
-                               [i-1,k+n-1])
-        elif i<=s:
-            p=rho/(rho+(i-1)/s)*(
-                nsum(lambda j:
-                     nprod(lambda h: 1-rho/(rho+(j-h+1)/s),[1,j-i+1])*
-                           _Q(n-1,j,k,s),[i-1,s-1]) +
-                nprod(lambda h: 1-rho/(rho+(s-h)/s),[1,s-i]) *
-                nsum(lambda j: (1/(rho+1))**(j-s+1)*_Q(n-1,j,k,s),[s,k+n-1]))
+    rho = Symbol("rho")
+    if k >= 1 and i == k + n:
+        if k >= s:
+            p = (rho / (rho + 1)) ** n
+        elif k + n <= s:
+            p = (rho**n) / (nprod(lambda j: rho + (k + j - 1) / s, [1, n]))
+        elif k < s and s < k + n:
+            p = (rho**n) / (
+                (rho + 1) ** (n - s + k) * (nprod(lambda j: rho + (k + j - 1) / s, [1, s - k]))
+            )
+    if k == 0 and i == n:
+        if n <= s:
+            p = (rho**n) / nprod(lambda j: rho + (j - 1) / s, [1, n])
+        elif n > s:
+            p = (rho**n) / ((rho + 1) ** (n - s) * nprod(lambda j: rho + (j - 1) / s, [1, s]))
+    if i == 1:
+        p = 1 - nsum(lambda j: _Q(n, j, k, s), [2, n + k])
+    if k >= 1 and i >= 2 and i <= k and n == 1:
+        if k <= s:
+            p = (
+                rho
+                / (rho + (i - 1) / s)
+                * nprod(lambda j: 1 - rho / (rho + (k - j + 1) / s), [1, k - i + 1])
+            )
+        elif k > s and i > s:
+            p = rho / (rho + 1) ** (k - i + 2)
+        elif i <= s and s < k:
+            p = rho / (
+                (rho + 1) ** (k - s + 1)
+                * (rho + (i - 1 / s))
+                * nprod(lambda j: 1 - rho / (rho(s - j) / s), [1, s - i])
+            )
+    if n >= 2 and i >= 2 and i <= k + n - 1:
+        if i > s:
+            p = (
+                rho
+                / (rho + 1)
+                * nsum(
+                    lambda j: 1 / (rho + 1) ** (j - i + 1) * _Q(n - 1, j, k, s), [i - 1, k + n - 1]
+                )
+            )
+        elif i <= s:
+            p = (
+                rho
+                / (rho + (i - 1) / s)
+                * (
+                    nsum(
+                        lambda j: (
+                            nprod(lambda h: 1 - rho / (rho + (j - h + 1) / s), [1, j - i + 1])
+                            * _Q(n - 1, j, k, s)
+                        ),
+                        [i - 1, s - 1],
+                    )
+                    + nprod(lambda h: 1 - rho / (rho + (s - h) / s), [1, s - i])
+                    * nsum(
+                        lambda j: (1 / (rho + 1)) ** (j - s + 1) * _Q(n - 1, j, k, s),
+                        [s, k + n - 1],
+                    )
+                )
+            )
     return simplify(p)
-                
+
 
 """
 Cov/kCov Sub-Procedures:
@@ -238,13 +269,14 @@ Cov/kCov Sub-Procedures:
     13. swapb(n,B)
 """
 
-'''
+"""
 Re-look code for cases,kcases,ini,swapa,swapb and okay for errors
     probvec does not sum to 1, error is most likely in one of those
     procedures
-'''
+"""
 
-def cases(n):         
+
+def cases(n):
     """
     Procedure Name: cases
     Purpose: Generates all possible arrival/departure sequences for
@@ -256,22 +288,23 @@ def cases(n):
                         represent a departure
     """
     # Compute the nth Catalan number
-    c=factorial(2*n)/factorial(n)/factorial(n+1)
-    C=np.zeros((c,2*n))
+    c = factorial(2 * n) / factorial(n) / factorial(n + 1)
+    C = np.zeros((c, 2 * n))
     for i in range(c):
         # Initialize the matrix C
-        if i==0:
-            C[i]=ini(n)
+        if i == 0:
+            C[i] = ini(n)
         # Produce the successor the C[i]
         else:
-            C[i]=swapa(n,C[i-1])
+            C[i] = swapa(n, C[i - 1])
         # Check to see if the successor is legal
         #   If not, call swapb
-        if okay(n,C[i])==False:
-            C[i]=swapb(n,C[i-1])
+        if not okay(n, C[i]):
+            C[i] = swapb(n, C[i - 1])
     return C
 
-def caseprob(n,P,meanX,meanY):
+
+def caseprob(n, P, meanX, meanY):
     """
     Procedure Name: caseprob
     Purpose: Computes the probability associated with a given row of
@@ -283,24 +316,25 @@ def caseprob(n,P,meanX,meanY):
             4. meanY: the mean of the service time distribution
     Output:  1. p: the probability of the case passed to the procedure
     """
-    
-    p=1
-    row=n
-    col=1
-    for j in range(2*n-1):
-        if P[row-1][col]==1 and col<n:
-            row-=1
-            p=p*1/meanY/(1/meanX+1/meanY)
-        elif P[row-1][col]==1 and col==n:
-            row-=1
-        elif P[row][col+1]==1 and row+col>n+1:
-            col+=1
-            p=p*1/meanX/(1/meanX+1/meanY)
+
+    p = 1
+    row = n
+    col = 1
+    for j in range(2 * n - 1):
+        if P[row - 1][col] == 1 and col < n:
+            row -= 1
+            p = p * 1 / meanY / (1 / meanX + 1 / meanY)
+        elif P[row - 1][col] == 1 and col == n:
+            row -= 1
+        elif P[row][col + 1] == 1 and row + col > n + 1:
+            col += 1
+            p = p * 1 / meanX / (1 / meanX + 1 / meanY)
         else:
-            col+=1
+            col += 1
     return p
 
-def Cprime(n,C):
+
+def Cprime(n, C):
     """
     Procedure Name: Cprime
     Purpose: Produces a matrix C' that is the distribution segment
@@ -319,28 +353,28 @@ def Cprime(n,C):
                             2n-1 columns
     """
 
-    prime=np.zeros((np.size(C,1),2*n-1))
-    for i in range(np.size(C,1)):
-        row=n
-        col=1
-        pat=path(n,C[i])
-        dist=np.zeros((1,2*n-1))
-        for j in range(2*n-1):
-            if pat[row-1][col]==1 and col<n:
-                row-=1
-                dist[0][j]=1
-            elif pat[row-1][col]==1 and col==n:
-                row-=1
-                dist[0][j]=2
-            elif pat[row-1][col]==1 and row+col>n+1:
-                col+=1
-                dist[0][j]=1
+    prime = np.zeros((np.size(C, 1), 2 * n - 1))
+    for i in range(np.size(C, 1)):
+        row = n
+        col = 1
+        pat = path(n, C[i])
+        dist = np.zeros((1, 2 * n - 1))
+        for j in range(2 * n - 1):
+            if pat[row - 1][col] == 1 and col < n:
+                row -= 1
+                dist[0][j] = 1
+            elif pat[row - 1][col] == 1 and col == n:
+                row -= 1
+                dist[0][j] = 2
+            elif pat[row - 1][col] == 1 and row + col > n + 1:
+                col += 1
+                dist[0][j] = 1
             else:
-                col+=1
-                dist[0][j]=0
-        prime[i]=dist
+                col += 1
+                dist[0][j] = 0
+        prime[i] = dist
     return prime
-    
+
 
 def ini(n):
     """
@@ -351,15 +385,16 @@ def ini(n):
     Arguments:  1. n: the total number of customers in the system
     Output:     1. L: a row vector, the first row of C
     """
-    L=-np.ones(2*n)
-    L[0]=1
-    for i in range(2,n+1):
-        L[i]=1
-    for i in range(n+1,2*n):
-        L[i]=-1
+    L = -np.ones(2 * n)
+    L[0] = 1
+    for i in range(2, n + 1):
+        L[i] = 1
+    for i in range(n + 1, 2 * n):
+        L[i] = -1
     return L
 
-def kcases(n,k):
+
+def kcases(n, k):
     """
     Procedure Name: kcases
     Purpose: Generates all possible arrival/departure sequences for n
@@ -372,21 +407,21 @@ def kcases(n,k):
                         1 represents an arrival and -1 represents a
                         departure.
     """
-    C=cases(n+k)
-    j=0
-    while j<np.size(C,1):
+    C = cases(n + k)
+    j = 0
+    while j < np.size(C, 1):
         # if the sum of row j of C from column 1 to k != k
-        if np.sum(C[j,0:k])!=k:
+        if np.sum(C[j, 0:k]) != k:
             # delete the jth row of C
-            C=np.delete(C,j,0)
+            C = np.delete(C, j, 0)
         else:
-            j+=1
+            j += 1
     # delete column 1st through kth column of C
-    C=np.delete(C,np.s_[0:k],1)
+    C = np.delete(C, np.s_[0:k], 1)
     return C
 
 
-def kcaseprob(n,k,P,meanX,meanY):
+def kcaseprob(n, k, P, meanX, meanY):
     """
     Procedure Name: caseprob
     Purpose: Computes the probability associated with a given row of
@@ -400,25 +435,25 @@ def kcaseprob(n,k,P,meanX,meanY):
             5. meanY: the mean of the service time distribution
     Output:  1. p: the probability of the case passed to the procedure
     """
-    
-    p=1
-    row=n+k
-    col=0
-    for j in range(2*n+k):
-        if P[row-1][col]==1 and col<n:
-            row-=1
-            p=p*1/meanY/(1/meanX+1/meanY)
-        elif P[row-1][col]==1 and col==n:
-            row-=1
-        elif P[row][col+1]==1 and row+col>n+1:
-            col+=1
-            p=p*1/meanX/(1/meanX+1/meanY)
-        else:
-            col+=1
-    return p
-    
 
-def kCprime(n,k,C):
+    p = 1
+    row = n + k
+    col = 0
+    for j in range(2 * n + k):
+        if P[row - 1][col] == 1 and col < n:
+            row -= 1
+            p = p * 1 / meanY / (1 / meanX + 1 / meanY)
+        elif P[row - 1][col] == 1 and col == n:
+            row -= 1
+        elif P[row][col + 1] == 1 and row + col > n + 1:
+            col += 1
+            p = p * 1 / meanX / (1 / meanX + 1 / meanY)
+        else:
+            col += 1
+    return p
+
+
+def kCprime(n, k, C):
     """
     Procedure Name: Cprime
     Purpose: Produces a matrix C' that is the distribution segment
@@ -438,30 +473,30 @@ def kCprime(n,k,C):
                             2*(n+1)+k columns
     """
 
-    prime=np.zeros((np.size(C,1),2*n+k))
-    for i in range(np.size(C,1)):
-        row=n+k
-        col=0
-        pat=kpath(n,k,C[i])
-        dist=np.zeros((1,2*n+k))
-        for j in range(2*n+k):
-            if pat[row-1][col]==1 and col<n:
-                row-=1
-                dist[0][j]=1
-            elif pat[row-1][col]==1 and col==n:
-                row-=1
-                dist[0][j]=2
-            elif pat[row-1][col+1]==1 and row+col>n+1:
-                col+=1
-                dist[0][j]=1
+    prime = np.zeros((np.size(C, 1), 2 * n + k))
+    for i in range(np.size(C, 1)):
+        row = n + k
+        col = 0
+        pat = kpath(n, k, C[i])
+        dist = np.zeros((1, 2 * n + k))
+        for j in range(2 * n + k):
+            if pat[row - 1][col] == 1 and col < n:
+                row -= 1
+                dist[0][j] = 1
+            elif pat[row - 1][col] == 1 and col == n:
+                row -= 1
+                dist[0][j] = 2
+            elif pat[row - 1][col + 1] == 1 and row + col > n + 1:
+                col += 1
+                dist[0][j] = 1
             else:
-                col+=1
-                dist[0][j]=0
-        prime[i]=dist
+                col += 1
+                dist[0][j] = 0
+        prime[i] = dist
     return prime
-    
 
-def kpath(n,k,A):
+
+def kpath(n, k, A):
     """
     Procedures Name: kpath
     Purpose: Creates a path that starts at the lower left corner
@@ -477,21 +512,21 @@ def kpath(n,k,A):
     Output:     1. pat: A path matrix of size (n+k+1)x(n+1)
     """
 
-    row=n+k
-    col=0
-    pat=np.zeros((n+k+1,n+1))
-    pat[n+k][0]=1
-    for j in range(2*n+k):
-        if A[j]==1:
-            col+=1
-            pat[row][col]=1
+    row = n + k
+    col = 0
+    pat = np.zeros((n + k + 1, n + 1))
+    pat[n + k][0] = 1
+    for j in range(2 * n + k):
+        if A[j] == 1:
+            col += 1
+            pat[row][col] = 1
         else:
-            row-=1
-            pat[row][col]=1
+            row -= 1
+            pat[row][col] = 1
     return pat
 
 
-def kprobvec(n,k,meanX,meanY):
+def kprobvec(n, k, meanX, meanY):
     """
     Procedure Name: probvec
     Purpose: Uses the caseprob procedure to successivly build a vector
@@ -501,14 +536,14 @@ def kprobvec(n,k,meanX,meanY):
             3. meanY: the mean of the service time distribution
     Output: 1. p: a probability vector of length 2n!/n!/(n+1)!
     """
-    C=kcases(n,k)
-    p=np.zeros(np.size(C,1))
-    for i in range(np.size(C,1)):
-        p[i]=kcaseprob(n,k,kpath(n,k,C[i]),meanX,meanY)
+    C = kcases(n, k)
+    p = np.zeros(np.size(C, 1))
+    for i in range(np.size(C, 1)):
+        p[i] = kcaseprob(n, k, kpath(n, k, C[i]), meanX, meanY)
     return p
-    
 
-def okay(n,E):
+
+def okay(n, E):
     """
     Procedure Name: okay
     Purpose: Checks the output of swapa for an illegal prefix shift,
@@ -520,16 +555,17 @@ def okay(n,E):
                     successor is legal and False signifies that the
                     successor is illegal
     """
-    test=True
-    s=0
-    for i in range(2*n-1):
-        s+=E[i]
-        if s<0:
-            test=False
+    test = True
+    s = 0
+    for i in range(2 * n - 1):
+        s += E[i]
+        if s < 0:
+            test = False
             break
     return test
 
-def path(n,A):
+
+def path(n, A):
     """
     Procedure Name: path
     Purpose: Creates a path that starts at the lower left corner
@@ -543,22 +579,22 @@ def path(n,A):
     Output:     1. pat: A path matrix of size (n+1)x(n+1)
     """
 
-    row=n
-    col=1
-    pat=np.zeros((n+1,n+1))
-    pat[n,0]=1
-    pat[n,1]=1
-    for j in range(1,2*n):
-        if A[j]==1:
-            col+=1
-            pat[row,col]=1
+    row = n
+    col = 1
+    pat = np.zeros((n + 1, n + 1))
+    pat[n, 0] = 1
+    pat[n, 1] = 1
+    for j in range(1, 2 * n):
+        if A[j] == 1:
+            col += 1
+            pat[row, col] = 1
         else:
-            row-=1
-            pat[row,col]=1
-    return pat   
+            row -= 1
+            pat[row, col] = 1
+    return pat
 
 
-def probvec(n,meanX,meanY):
+def probvec(n, meanX, meanY):
     """
     Procedure Name: probvec
     Purpose: Uses the caseprob procedure to successivly build a vector
@@ -569,14 +605,14 @@ def probvec(n,meanX,meanY):
     Output: 1. p: a probability vector of length 2n!/n!/(n+1)!
     """
 
-    c=factorial(2*n)/factorial(n)/factorial(n+1)
-    p=np.zeros(c)
+    c = factorial(2 * n) / factorial(n) / factorial(n + 1)
+    p = np.zeros(c)
     for i in range(c):
-        p[i]=caseprob(n,path(n,cases(n)[i]),meanX,meanY)
+        p[i] = caseprob(n, path(n, cases(n)[i]), meanX, meanY)
     return p
 
 
-def swapa(n,A):
+def swapa(n, A):
     """
     Procedure Name: swapa
     Purpose: Conducts the (k+1)st prefix shift in creating all
@@ -586,19 +622,20 @@ def swapa(n,A):
                 2. A: row i of matrix C
     Output:     1. R: the successor of C
     """
-    R=A
-    check=1
-    for i in range(1,2*n-1):
-        if R[i]==-1 and R[i+1]==1:
-            temp1=R[i+2]
-            R[2:(i+2)]=R[1:(i+1)]
-            check=0
-            R[1]=temp1
-        if check==0:
+    R = A
+    check = 1
+    for i in range(1, 2 * n - 1):
+        if R[i] == -1 and R[i + 1] == 1:
+            temp1 = R[i + 2]
+            R[2 : (i + 2)] = R[1 : (i + 1)]
+            check = 0
+            R[1] = temp1
+        if check == 0:
             break
     return R
 
-def swapb(n,B):
+
+def swapb(n, B):
     """
     Procedure Name: swapb
     Purpose: Conducts the kth prefix shift in creating all
@@ -608,15 +645,14 @@ def swapb(n,B):
                 2. B: row i of matrix C
     Output:     1. R: the successor of C
     """
-    R=B
-    check=1
-    for i in range(1,2*n-2):
-        if R[i]==-1 and R[i+1]==1:
-            temp=R[i+1]
-            R[2:(i+1)]=R[1:i]
-            check=0
-            R[1]=temp
-        if check==0:
+    R = B
+    check = 1
+    for i in range(1, 2 * n - 2):
+        if R[i] == -1 and R[i + 1] == 1:
+            temp = R[i + 1]
+            R[2 : (i + 1)] = R[1:i]
+            check = 0
+            R[1] = temp
+        if check == 0:
             break
     return R
-

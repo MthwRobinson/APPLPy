@@ -11,17 +11,21 @@ Procedures:
     3. JeffreysPrior(LikeRV,low,high,param)
     4. Posterior(LikeRV,PriorRV,data,param)
     5. PosteriorPredictive(LikeRV,PriorRV,data,param)
-    
+
 """
 
+from sympy import (
+    Symbol,
+    symbols,
+    integrate,
+    diff,
+    sqrt,
+    ln,
+    simplify,
+)
+from .rv import RV, RVError, Truncate
 
-from sympy import (Symbol, symbols, oo, integrate, summation, diff,
-                   exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, Add, Mul, Integer, Function,
-                   binomial, pprint, log)
-from .rv import (RV, RVError, CDF, PDF, BootstrapRV,
-                 ExpectedValue,Mean, Variance, Truncate)
-x,y,z,t=symbols('x y z t')
+x, y, z, t = symbols("x y z t")
 
 """
     A Probability Progamming Language (APPL) -- Python Edition
@@ -42,27 +46,29 @@ x,y,z,t=symbols('x y z t')
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
+
 def BayesMenu():
-    print('ApplPy Procedures')
+    print("ApplPy Procedures")
     print("")
-    print('Procedure Notation')
+    print("Procedure Notation")
     print("")
-    print('X is a likelihood function')
-    print('Y is a prior distribution')
-    print('x is an observed data point')
-    print('Data is an observed set of data')
-    print('entered as a list --> ex. Data=[1,12.4,34,.52.45,64]')
-    print('low and high are numeric')
+    print("X is a likelihood function")
+    print("Y is a prior distribution")
+    print("x is an observed data point")
+    print("Data is an observed set of data")
+    print("entered as a list --> ex. Data=[1,12.4,34,.52.45,64]")
+    print("low and high are numeric")
     print("")
-    print("")
-
-    print('Bayesian Statistics Procedures')
-    print('Posterior(X,Y,x,param), BayesUpdate(X,Y,Data,param)')
-    print('PosteriorPreidictive(X,Y,Data,param), TwoSample(X,Y,Data1,Data2)')
-    print('CS(m,s,alpha,n,type),Jeffreys(X,low,high,param)')
     print("")
 
-def Posterior(LikeRV,PriorRV,data=[],param=Symbol('theta')):
+    print("Bayesian Statistics Procedures")
+    print("Posterior(X,Y,x,param), BayesUpdate(X,Y,Data,param)")
+    print("PosteriorPreidictive(X,Y,Data,param), TwoSample(X,Y,Data1,Data2)")
+    print("CS(m,s,alpha,n,type),Jeffreys(X,low,high,param)")
+    print("")
+
+
+def Posterior(LikeRV, PriorRV, data=[], param=Symbol("theta")):
     """
     Procedure Name: BayesUpdate
     Purpose: Derive a posterior distribution for a parameter
@@ -76,90 +82,88 @@ def Posterior(LikeRV,PriorRV,data=[],param=Symbol('theta')):
     Output:     1. PostRV: A posterior distribution
     """
     # If the unknown parameter is not a symbol, return an error
-    if type(param)!=Symbol:
-        raise RVError('the unknown parameter must be a symbol')
-    if PriorRV.ftype[0]=='continuous':
+    if not isinstance(param, Symbol):
+        raise RVError("the unknown parameter must be a symbol")
+    if PriorRV.ftype[0] == "continuous":
         # Extract the likelihood function from the likelhood random
         #   variable
-        likelihood=LikeRV.func[0].subs(x,data[0])
-        for i in range(1,len(data)):    
-            likelihood*=LikeRV.func[0].subs(x,data[i])
-        likelihood=simplify(likelihood)
-        likelihood=likelihood.subs(param,x)
+        likelihood = LikeRV.func[0].subs(x, data[0])
+        for i in range(1, len(data)):
+            likelihood *= LikeRV.func[0].subs(x, data[i])
+        likelihood = simplify(likelihood)
+        likelihood = likelihood.subs(param, x)
         # Create a list of proportional posterior distributions
-        FunctionList=[]
+        FunctionList = []
         for i in range(len(PriorRV.func)):
             # extract the prior distribution
-            prior=PriorRV.func[i]
+            prior = PriorRV.func[i]
             # multiply by the likelihood function
-            proppost=likelihood*prior
+            proppost = likelihood * prior
             # substitute the data observation
-            proppost=simplify(proppost)
+            proppost = simplify(proppost)
             # add to the function list
             FunctionList.append(proppost)
         if len(FunctionList) == 1:
-            c = integrate(FunctionList[0],
-                (x,PriorRV.support[0],PriorRV.support[1]))
-            func = (1/c)*FunctionList[0]
-            PostRV = RV(func, 
-                PriorRV.support,['continuous','pdf'])
+            c = integrate(FunctionList[0], (x, PriorRV.support[0], PriorRV.support[1]))
+            func = (1 / c) * FunctionList[0]
+            PostRV = RV(func, PriorRV.support, ["continuous", "pdf"])
         else:
-            PropPost=RV(FunctionList,
-                PriorRV.support,['continuous','pdf'])
+            PropPost = RV(FunctionList, PriorRV.support, ["continuous", "pdf"])
             # Normalize the posterior distribution
-            PostRV=Truncate(PropPost,
-                [PriorRV.support[0],PriorRV.support[-1]])
+            PostRV = Truncate(PropPost, [PriorRV.support[0], PriorRV.support[-1]])
         return PostRV
     # If the prior distribution is discrete and the likelihood function
     #   is continuous, compute the posterior distribution
-    if PriorRV.ftype[0]=='discrete' and LikeRV.fype[0]=='continuous':
+    if PriorRV.ftype[0] == "discrete" and LikeRV.fype[0] == "continuous":
         # Compute a distribution that is proportional to the posterior
         #   distribution
-        List1=[]
+        List1 = []
         for i in range(len(PriorRV.support)):
-            likelihood=LikeRV.func[0]
-            likelihood=likelihood.subs(x,data)
+            likelihood = LikeRV.func[0]
+            likelihood = likelihood.subs(x, data)
             # Substitute each point that appears in the support of
             #   the prior distribution into the likelihood distribution
-            subslike=likelihood.subs(param,PriorRV.support[i])
-            prior=PriorRV.func[i]
+            likelihood = likelihood.subs(param, PriorRV.support[i])
+            prior = PriorRV.func[i]
             # Multiply the prior distribution by the likelihood function
-            priorXlike=simplify(priorXsubslike)
+            priorXsubslike = prior * likelihood
+            priorXlike = simplify(priorXsubslike)
             List1.append(priorXlike)
         # Find the marginal distribution
-        marginal=sum(List1)
+        marginal = sum(List1)
         # Find the posterior distribution by dividing each value
         #   in PriorXLike by the marginal distribution
-        List2=[]
+        List2 = []
         for i in range(len(List1)):
-            List2.append(List1[i]/marginal)
-        PostRV=RV(List2,PriorRV.support,PriorRV.ftype)
+            List2.append(List1[i] / marginal)
+        PostRV = RV(List2, PriorRV.support, PriorRV.ftype)
         return PostRV
     # If the prior distribution and the likelihood function are both
     #   discrete, compute the posterior distribution
-    if PriorRV.ftype[0]=='discrete' and LikeRV.ftype[0]=='discrete':
+    if PriorRV.ftype[0] == "discrete" and LikeRV.ftype[0] == "discrete":
         # If the prior distribution and the likelihood function do not
         #   have the same sizes, return and error
-        if len(PriorRV.func)!=len(LikeRV.func):
-            string='the number of values in the prior distribution and'
-            string+='likelihood function must be the same'
+        if len(PriorRV.func) != len(LikeRV.func):
+            string = "the number of values in the prior distribution and"
+            string += "likelihood function must be the same"
             raise RVError(string)
         # Multiply the prior distribution by the likelihood function
-        priorXlike=[]
+        priorXlike = []
         for i in range(len(PriorRV.func)):
-            val=PriorRV.func[i]*LikeRV.func[i]
+            val = PriorRV.func[i] * LikeRV.func[i]
             priorXlike.append(val)
         # Compute the marginal distribution to normalize the posterior
-        k=sum(priorXlike)
+        k = sum(priorXlike)
         # Compute the posterior distribution
-        posteriorlist=[]
+        posteriorlist = []
         for i in range(len(priorXlike)):
-            val=priorXlike/k
+            val = priorXlike / k
             posteriorlist.append(val)
-        PostRV=RV(posteriorlist,PriorRV.support,PriorRV.ftype)
+        PostRV = RV(posteriorlist, PriorRV.support, PriorRV.ftype)
         return PostRV
 
-def CredibleSet(PostRV,alpha):
+
+def CredibleSet(PostRV, alpha):
     """
     Procedure Name: CredibleSet
     Purpose: Produce a credible set given a likelihood function
@@ -169,16 +173,17 @@ def CredibleSet(PostRV,alpha):
     Output:     1. CredSet: a credible set in the form of a list
     """
     # If alpha is not between 0 and 1, return an error
-    if alpha<0 or alpha>1:
-        raise RVError('alpha must be between 0 and 1')
+    if alpha < 0 or alpha > 1:
+        raise RVError("alpha must be between 0 and 1")
     # Computer the upper bound of the credible set
-    lower=PostRV.variate(n=1,s=alpha/2)[0]
+    lower = PostRV.variate(n=1, s=alpha / 2)[0]
     # Compute the lower bound of the credible set
-    upper=PostRV.variate(n=1,s=1-(alpha/2))[0]
-    CredSet=[lower,upper]
+    upper = PostRV.variate(n=1, s=1 - (alpha / 2))[0]
+    CredSet = [lower, upper]
     return CredSet
 
-def JeffreysPrior(LikeRV,low,high,param):
+
+def JeffreysPrior(LikeRV, low, high, param):
     """
     Procedure Name: JeffreysPrior
     Purpose: Derive a Jeffreys Prior for a likelihood function
@@ -190,22 +195,23 @@ def JeffreysPrior(LikeRV,low,high,param):
     """
     # If the likelihood function is continuous, compute the Jeffreys
     #   Prior
-    if LikeRV.ftype[0]=='continuous':
-        likelihood=LikeRV.func[0]
-        loglike=ln(likelihood)
-        logdiff=diff(loglike,param)
-        jefffunc=sqrt(integrate(likelihood*logdiff**2,
-                                (x,LikeRV.support[0],
-                                 LikeRV.support[1])))
-        jefffunc=simplify(jefffunc)
-        jefffunc=jefffunc.subs(param,x)
-        JeffRV=RV([jefffunc],[low,high],LikeRV.ftype)
+    if LikeRV.ftype[0] == "continuous":
+        likelihood = LikeRV.func[0]
+        loglike = ln(likelihood)
+        logdiff = diff(loglike, param)
+        jefffunc = sqrt(
+            integrate(likelihood * logdiff**2, (x, LikeRV.support[0], LikeRV.support[1]))
+        )
+        jefffunc = simplify(jefffunc)
+        jefffunc = jefffunc.subs(param, x)
+        JeffRV = RV([jefffunc], [low, high], LikeRV.ftype)
         return JeffRV
+
 
 # Old BayesUpdate code ... the Posterior procedure now computes
 # the posterior distribution with only one integration. New
 # code runs much faster
-def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
+def BayesUpdate(LikeRV, PriorRV, data=[], param=Symbol("theta")):
     """
     Procedure Name: Posterior
     Purpose: Derive a posterior distribution for a parameter
@@ -219,20 +225,21 @@ def BayesUpdate(LikeRV,PriorRV,data=[],param=Symbol('theta')):
     Output:     1. PostRV: A posterior distribution
     """
     # Find the posterior distribution for the first observation
-    PostRV=BayesUpdate(LikeRV,PriorRV,[data[0]],param)
+    PostRV = BayesUpdate(LikeRV, PriorRV, [data[0]], param)
     # If there are multiple observations, continue bayesian updating
     #   for each observation in the data set
-    if len(data)>1:
-        for i in range(1,len(data)):
+    if len(data) > 1:
+        for i in range(1, len(data)):
             # Set the previous posterior distribution as the new
             #   prior distribution
-            NewPrior=PostRV
+            NewPrior = PostRV
             # Compute the new posterior distribution for the next
             #   observation in the data set
-            PostRV=BayesUpdate(LikeRV,NewPrior,[data[i]],param)
+            PostRV = BayesUpdate(LikeRV, NewPrior, [data[i]], param)
     return PostRV
 
-def PosteriorPredictive(LikeRV,PriorRV,data=[],param=Symbol('theta')):
+
+def PosteriorPredictive(LikeRV, PriorRV, data=[], param=Symbol("theta")):
     """
     Procedure Name: PosteriorPredictive
     Purpose: Derive a posterior predictive distribution to predict the next
@@ -247,15 +254,13 @@ def PosteriorPredictive(LikeRV,PriorRV,data=[],param=Symbol('theta')):
     """
     # If the prior distribution is continuous, compute the posterior
     #   predictive distribution
-    if PriorRV.ftype[0]=='continuous':
+    if PriorRV.ftype[0] == "continuous":
         # Compute the posterior distribution
-        PostRV=Posterior(LikeRV,PriorRV,data,param)
-        posteriorfunc=PostRV.func[0].subs(x,param)
-        likelihoodfunc=LikeRV.func[0]
-        postXlike=posteriorfunc*likelihoodfunc
-        postpredict=integrate(postXlike,
-                              (param,PriorRV.support[0],
-                               PriorRV.support[1]))
-        postpredict=simplify(postpredict)
-        PostPredRV=RV([postpredict],LikeRV.support,LikeRV.ftype)
+        PostRV = Posterior(LikeRV, PriorRV, data, param)
+        posteriorfunc = PostRV.func[0].subs(x, param)
+        likelihoodfunc = LikeRV.func[0]
+        postXlike = posteriorfunc * likelihoodfunc
+        postpredict = integrate(postXlike, (param, PriorRV.support[0], PriorRV.support[1]))
+        postpredict = simplify(postpredict)
+        PostPredRV = RV([postpredict], LikeRV.support, LikeRV.ftype)
         return PostPredRV

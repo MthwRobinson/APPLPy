@@ -8,21 +8,14 @@ The algorithms implemented in this module were developed by
    Keith Webb and originally implemented in Maple
 
 Procedures:
-    1. 
+    1.
 """
 
+from sympy import (
+    symbols,
+)
 
-from sympy import (Symbol, symbols, oo, integrate, summation, diff,
-                   exp, pi, sqrt, factorial, ln, floor, simplify,
-                   solve, nan, Add, Mul, Integer, Function,
-                   binomial)
-from mpmath import (nsum,nprod)
-from random import random
-import numpy as np
-from .rv import (RV, RVError, CDF, CHF, HF, IDF, IDF, PDF, SF,
-                 BootstrapRV, Convert, Mean, Convolution, Mixture)
-from .dist_type import (ErlangRV, ExponentialRV)
-x,y,z,t,v=symbols('x y z t v')
+x, y, z, t, v = symbols("x y z t v")
 
 """
     A Probability Progamming Language (APPL) -- Python Edition
@@ -42,4 +35,3 @@ x,y,z,t,v=symbols('x y z t v')
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
-
