@@ -2421,10 +2421,9 @@ def MeanDiscrete(RVar):
             raise RVError(err_string)
     # Convert the random variable to PDF form
     X_dummy = PDF(RVar)
-    # Convert the value and the support of the pdf to numpy
-    #   matrices
-    support = np.matrix(X_dummy.support)
-    pdf = np.matrix(X_dummy.func)
+    # Convert support and pdf values to numpy arrays
+    support = np.asarray(X_dummy.support, dtype=object)
+    pdf = np.asarray(X_dummy.func, dtype=object)
     # Use the numpy element wise multiplication function to
     #   determine a vector of the values of f(x)*x
     vals = np.multiply(support, pdf)
@@ -3395,8 +3394,8 @@ def VarDiscrete(RVar):
     EX = MeanDiscrete(RVar)
     # Convert the values and support of the random variable
     #   to vector form
-    support = np.matrix(RVar.support)
-    pdf = np.matrix(RVar.func)
+    support = np.asarray(RVar.support, dtype=object)
+    pdf = np.asarray(RVar.func, dtype=object)
     # Find E(X^2) by creating a vector containing the values
     #   of f(x)*x**2 and summing the result
     supportsqr = np.multiply(support, support)
@@ -4336,25 +4335,23 @@ def ProductDiscrete(RVar1, RVar2):
     X_dummy1 = PDF(RVar1)
     X_dummy2 = PDF(RVar2)
     # Convert the support and the value of each random variable
-    #   into a numpy matrix
-    support1 = np.matrix(X_dummy1.support)
-    support2 = np.matrix(X_dummy2.support)
-    pdf1 = np.matrix(X_dummy1.func)
-    pdf2 = np.matrix(X_dummy2.func)
+    #   into numpy arrays
+    support1 = np.asarray(X_dummy1.support, dtype=object)
+    support2 = np.asarray(X_dummy2.support, dtype=object)
+    pdf1 = np.asarray(X_dummy1.func, dtype=object)
+    pdf2 = np.asarray(X_dummy2.func, dtype=object)
     # Find all possible values of support1*support2 and val1*val2
-    #   by computing (X1)'*X2, flatten into a row vector
-    prodsupport = support1.T * support2
-    prodsupport = prodsupport.flatten()
-    prodpdf = pdf1.T * pdf2
-    prodpdf = prodpdf.flatten()
+    #   via the pairwise outer product, flatten into vectors
+    prodsupport = np.outer(support1, support2).flatten()
+    prodpdf = np.outer(pdf1, pdf2).flatten()
     #
     # Stack the support vector and the value vector into a matrix
     # prodmatrix=np.vstack([prodsupport,prodpdf]).T
     #
     #
     # Convert the resulting vectors into lists
-    supportlist = prodsupport.tolist()[0]
-    pdflist = prodpdf.tolist()[0]
+    supportlist = prodsupport.tolist()
+    pdflist = prodpdf.tolist()
     # Sort the function and support lists for the product
     sortlist = list(zip(supportlist, pdflist))
     sortlist.sort()
