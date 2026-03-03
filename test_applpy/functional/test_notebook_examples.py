@@ -2,19 +2,28 @@ import pytest
 from sympy import Rational, exp
 
 from applpy import (
+    BetaRV,
     BootstrapRV,
     CDF,
+    Convolution,
     ConvolutionIID,
+    ExpectedValue,
     ExponentialRV,
     HF,
+    Kurtosis,
     Maximum,
     MaximumIID,
     Mean,
+    Mixture,
     Minimum,
     PDF,
+    Skewness,
+    Transform,
     TriangularRV,
+    Truncate,
     UniformRV,
     Variance,
+    x,
 )
 
 
@@ -101,3 +110,30 @@ def test_triangular_distribution_examples_from_notebook():
     assert Variance(inv_1) == Rational(19, 18)
     assert Mean(portfolio) == 5
     assert float(CDF(portfolio, 0).evalf()) == pytest.approx(0.226068376068376)
+
+
+def test_examples_py_expected_value_and_moment_cases():
+    assert float(ExpectedValue(UniformRV(1, 2), x**2).evalf()) == pytest.approx(7 / 3)
+    assert float(ExpectedValue(BetaRV(2, 2), x**2).evalf()) == pytest.approx(3 / 10)
+    assert Kurtosis(BetaRV(2, 2)) == Rational(15, 7)
+    assert Skewness(BetaRV(2, 3)) == Rational(2, 7)
+
+
+def test_examples_py_mixture_and_algebra_cases():
+    mixture_rv = Mixture(
+        [Rational(1, 4), Rational(1, 4), Rational(1, 2)],
+        [TriangularRV(2, 4, 6), TriangularRV(3, 5, 7), TriangularRV(1, 5, 9)],
+    )
+    assert Mean(mixture_rv) == Rational(19, 4)
+    assert float(CDF(mixture_rv, 4).evalf()) == pytest.approx(0.296875)
+
+    assert float(Mean(Convolution(UniformRV(1, 2), UniformRV(3, 4))).evalf()) == pytest.approx(5.0)
+    assert float(Mean(ConvolutionIID(UniformRV(1, 2), 3)).evalf()) == pytest.approx(4.5)
+
+
+def test_examples_py_transform_and_truncate_cases():
+    transformed = Transform(TriangularRV(2, 4, 5), [[x**2, x**2], [-float("inf"), 0, float("inf")]])
+    truncated = Truncate(BetaRV(2, 2), [Rational(1, 4), Rational(3, 4)])
+
+    assert Mean(transformed) == Rational(83, 6)
+    assert Mean(truncated) == Rational(1, 2)
