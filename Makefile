@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-test install-all check tidy
+.PHONY: help install install-dev install-test install-all test check tidy
 
 help: ## Show available make targets and descriptions.
 	@awk 'BEGIN {FS = ":.*## "}; /^[a-zA-Z0-9_.-]+:.*## / {printf "  %-12s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -14,6 +14,9 @@ install-test: ## Install project with test dependencies.
 
 install-all: ## Install project with all optional dependencies.
 	uv sync --all-extras
+
+test: ## Run test suites with coverage for applpy.
+	uv run pytest --cov=applpy --cov-report=term-missing test_applpy
 
 check: ## Run Ruff lint checks.
 	uv run ruff check applpy

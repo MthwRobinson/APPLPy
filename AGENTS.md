@@ -13,3 +13,11 @@ This section should contain instructions for how to validate the changes in the 
 ```
 
 Each pull request should have a title that uses conventional commit format.
+
+
+## Update Code to Use Python Best Practices
+
+This library was originally written in Python 2 and was also written with a
+Mathematica or Maple usage pattern in mind. When you notice anti-patterns such
+as `from applpy import *` or other aspects of the code, update them to use best practices.
+Only make these updates incrementally in files we are updating to avoid unexpected changes.
