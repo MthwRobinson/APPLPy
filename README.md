@@ -1,4 +1,6 @@
 # APPLPy
+[![Tests](https://github.com/MthwRobinson/APPLPy/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MthwRobinson/APPLPy/actions/workflows/ci.yml?query=branch%3Amain)
+[![Coverage](https://img.shields.io/badge/coverage-29%25-brightgreen)](https://github.com/MthwRobinson/APPLPy/actions/workflows/ci.yml?query=branch%3Amain)
 ### A Probability Programming Language -- Python Edition
 
 ## What is APPLPy?
@@ -77,6 +79,27 @@ Use the `Makefile` targets for linting and formatting:
 ```shell
 make check   # Run Ruff lint checks in applpy/
 make tidy    # Apply Ruff fixes and format code in applpy/
+```
+
+## Running Tests Locally
+
+Install test dependencies and run the full functional test suite with coverage:
+
+```shell
+make install-test
+make test
+```
+
+Run lint checks locally:
+
+```shell
+make check
+```
+
+Run a specific functional module directly with `pytest`:
+
+```shell
+uv run pytest -q test_applpy/functional/test_notebook_examples.py
 ```
 
 After installation, prefer explicit module-level imports:
