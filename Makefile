@@ -18,12 +18,7 @@ install-all: ## Install project with all optional dependencies.
 	uv sync --all-extras
 
 test: ## Run all tests, or one test when TEST=/path/to/test is provided.
-ifeq ($(strip $(TEST)),)
-	$(MAKE) test-functional
-	$(MAKE) test-unit
-else
-	uv run pytest --cov=applpy --cov-report=term-missing $(TEST)
-endif
+	uv run pytest --cov=applpy --cov-report=term-missing $(if $(strip $(TEST)),$(TEST),test_applpy)
 
 test-functional: ## Run functional tests, or TEST=/path/to/test to target one test.
 	uv run pytest --cov=applpy --cov-report=term-missing $(if $(strip $(TEST)),$(TEST),test_applpy/functional)
