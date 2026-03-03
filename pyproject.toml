@@ -38,7 +38,7 @@ test = [
 ]
 
 [tool.setuptools]
-packages = ["applpy", "applpy.test"]
+packages = ["applpy"]
 
 [tool.ruff]
 line-length = 100
