@@ -4540,8 +4540,10 @@ def PlotDist(RVar, suplist=None, opt=None, color="r", display=True):
 
         # print plotfunc, plotsupp
         for i, function in enumerate(plotfunc):
+
             def f(y):
                 return function.subs(x, y).evalf()
+
             x_range = np.arange(
                 plotsupp[i], plotsupp[i + 1], abs(plotsupp[i + 1] - plotsupp[i]) / 1000
             )

@@ -1297,10 +1297,13 @@ class NormalRV(RV):
         mean = self.parameter[0]
         var = self.parameter[1]
         U = UniformRV(0, 1)
+
         def Z1(val1_val2):
             return sqrt(-2 * ln(val1_val2[0])) * cos(2 * pi * val1_val2[1]).evalf()
+
         def gen_uniform(x):
             return U.variate(n=1)[0]
+
         val_pairs = [(gen_uniform(1), gen_uniform(1)) for i in range(1, n + 1)]
         varlist = [Z1(pair) for pair in val_pairs]
         normlist = [(mean + sqrt(var) * val).evalf() for val in varlist]

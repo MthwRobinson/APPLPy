@@ -369,7 +369,8 @@ class BivariateRV:
                 if ylower == -oo:
                     lowerB = -oo
                 totalPDF += integrate(
-                    integrate(self.func[i], (y, lowerB, upperB)), (x, xinters[ind], xinters[ind + 1])
+                    integrate(self.func[i], (y, lowerB, upperB)),
+                    (x, xinters[ind], xinters[ind + 1]),
                 )
                 # Not yet supported by sympy
                 # absPDF+=integrate(integrate(abs(XY.func[i]),

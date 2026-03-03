@@ -19,8 +19,8 @@ test: ## Run test suites with coverage for applpy.
 	uv run pytest --cov=applpy --cov-report=term-missing test_applpy
 
 check: ## Run Ruff lint checks.
-	uv run ruff check applpy
+	uv run ruff check applpy test_applpy
 
 tidy: ## Run Ruff autoformatter.
-	uv run ruff check --fix applpy
-	uv run ruff format applpy
+	uv run ruff check --fix applpy test_applpy
+	uv run ruff format applpy test_applpy
