@@ -46,16 +46,37 @@ cd APPLPy
 uv sync
 ```
 
+Or use the project `Makefile`:
+
+```shell
+make install
+```
+
 If you prefer `pip`-style uv commands, use:
 
 ```shell
 uv pip install .
 ```
 
-To install development dependencies (`ipython` and `jupyter`) as well:
+To install development dependencies (`ipython`, `jupyter`, and `ruff`) as well:
 
 ```shell
 uv sync --extra dev
+```
+
+Or with `make`:
+
+```shell
+make install-dev
+```
+
+## Development Commands
+
+Use the `Makefile` targets for linting and formatting:
+
+```shell
+make check   # Run Ruff lint checks in applpy/
+make tidy    # Apply Ruff fixes and format code in applpy/
 ```
 
 After installation, prefer explicit module-level imports:
