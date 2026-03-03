@@ -30,7 +30,11 @@ classifiers = [
 dev = [
   "ipython",
   "jupyter",
+  "ruff",
 ]
 
 [tool.setuptools]
 packages = ["applpy", "applpy.test"]
+
+[tool.ruff]
+line-length = 100
