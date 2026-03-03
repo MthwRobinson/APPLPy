@@ -32,6 +32,10 @@ dev = [
   "jupyter",
   "ruff",
 ]
+test = [
+  "pytest",
+  "pytest-cov",
+]
 
 [tool.setuptools]
 packages = ["applpy", "applpy.test"]
