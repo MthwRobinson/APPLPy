@@ -3073,17 +3073,29 @@ def Transform(RVar, gXt):
             # Create a list of possible inverses
             invlist = solve(gX[0][i] - t, x)
             # Use the test point to determine the correct inverse
+            selected_inverse = False
             for j in range(len(invlist)):
                 # If g-1(g(c))=c, then the inverse is correct
                 test = invlist[j].subs(t, gX[0][i].subs(x, c))
-                # if test.__class__.__name__ != 'Mul':
+                if simplify(test - c) == 0:
+                    ginv.append(invlist[j])
+                    selected_inverse = True
+                    break
                 try:
                     if test <= Float(float(c), 10) + 0.0000001:
                         if test >= Float(float(c), 10) - 0.0000001:
                             ginv.append(invlist[j])
+                            selected_inverse = True
+                            break
                 except Exception:
                     if j == len(invlist) - 1 and len(ginv) < i + 1:
                         ginv.append(None)
+                        selected_inverse = True
+            # Some symbolic comparisons do not trigger either branch above.
+            # Fall back to the only available inverse when the mapping is
+            # unambiguous.
+            if not selected_inverse and len(invlist) == 1:
+                ginv.append(invlist[0])
         # Find the transformation function for each segment'
         seg_func = []
         for i in range(len(X_dummy.func)):
@@ -3091,6 +3103,8 @@ def Transform(RVar, gXt):
             for j in range(len(gX[0])):
                 if gX[1][j] >= X_dummy.support[i]:
                     if gX[1][j + 1] <= X_dummy.support[i + 1]:
+                        if j >= len(ginv) or ginv[j] is None:
+                            continue
                         # print X_dummy.func[i], ginv[j]
                         if not isinstance(X_dummy.func[i], (float, int)):
                             tran = X_dummy.func[i].subs(x, ginv[j])

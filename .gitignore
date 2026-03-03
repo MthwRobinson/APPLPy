@@ -4,3 +4,4 @@
 /docs/.ipynb_checkpoints
 MANIFEST
 APPLPy.egg-info/
+.coverage
