@@ -83,11 +83,31 @@ make tidy    # Apply Ruff fixes and format code in applpy/
 
 ## Running Tests Locally
 
-Install test dependencies and run the full functional test suite with coverage:
+Install test dependencies and run all tests with coverage:
 
 ```shell
 make install-test
 make test
+```
+
+Run just functional tests:
+
+```shell
+make test-functional
+```
+
+Run just unit tests:
+
+```shell
+make test-unit
+```
+
+Run a specific test file (or test path) instead of the full suite:
+
+```shell
+make test TEST=test_applpy/unit/test_rv.py
+make test-functional TEST=test_applpy/functional/test_notebook_examples.py
+make test-unit TEST=test_applpy/unit/test_rv.py
 ```
 
 Run lint checks locally:
@@ -96,7 +116,7 @@ Run lint checks locally:
 make check
 ```
 
-Run a specific functional module directly with `pytest`:
+Run a specific module directly with `pytest`:
 
 ```shell
 uv run pytest -q test_applpy/functional/test_notebook_examples.py

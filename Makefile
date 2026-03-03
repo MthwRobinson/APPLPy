@@ -1,4 +1,6 @@
-.PHONY: help install install-dev install-test install-all test check tidy
+.PHONY: help install install-dev install-test install-all test test-functional test-unit check tidy
+
+TEST ?=
 
 help: ## Show available make targets and descriptions.
 	@awk 'BEGIN {FS = ":.*## "}; /^[a-zA-Z0-9_.-]+:.*## / {printf "  %-12s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -15,8 +17,19 @@ install-test: ## Install project with test dependencies.
 install-all: ## Install project with all optional dependencies.
 	uv sync --all-extras
 
-test: ## Run test suites with coverage for applpy.
-	uv run pytest --cov=applpy --cov-report=term-missing test_applpy
+test: ## Run all tests, or one test when TEST=/path/to/test is provided.
+ifeq ($(strip $(TEST)),)
+	$(MAKE) test-functional
+	$(MAKE) test-unit
+else
+	uv run pytest --cov=applpy --cov-report=term-missing $(TEST)
+endif
+
+test-functional: ## Run functional tests, or TEST=/path/to/test to target one test.
+	uv run pytest --cov=applpy --cov-report=term-missing $(if $(strip $(TEST)),$(TEST),test_applpy/functional)
+
+test-unit: ## Run unit tests, or TEST=/path/to/test to target one test.
+	uv run pytest --cov=applpy --cov-report=term-missing $(if $(strip $(TEST)),$(TEST),test_applpy/unit)
 
 check: ## Run Ruff lint checks.
 	uv run ruff check applpy test_applpy
