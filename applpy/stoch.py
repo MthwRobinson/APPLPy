@@ -563,7 +563,7 @@ class MarkovChain:
                 total_states = given + states
                 for i, element in enumerate(total_states):
                     total_states[i] = (element[0] - shift, element[1])
-                init_prob = self.init_print["Prob"][given[0][0]]
+                init_prob = self.init_print["Prob"][given[0][1]]
                 total_prob = self.probability(states=total_states, method=method) / init_prob
             else:
                 total_states = given + states

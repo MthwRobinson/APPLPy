@@ -34,6 +34,7 @@ def test_discrete_time_markov_chain_path_probabilities_from_dtmc_notebook():
 
     assert discrete_time_markov_chain.probability([(2, "blue"), (1, "red"), (0, "red")]) == 0.020369999999999996
     assert discrete_time_markov_chain.probability([(1, "blue")]) == 0.309
+    assert discrete_time_markov_chain.probability([(2, "blue")], given=[(1, "blue")]) == 0.96
 
 
 def test_discrete_time_markov_chain_state_classification_from_dtmc2_notebook():
