@@ -19,7 +19,13 @@ def _discrete_time_markov_chain_from_dtmc_notebook():
 def test_discrete_time_markov_chain_long_run_probabilities_from_dtmc_notebook():
     discrete_time_markov_chain = _discrete_time_markov_chain_from_dtmc_notebook()
     long_run_probabilities = discrete_time_markov_chain.long_run_probs(method="rational").tolist()
-    expected_row = [Rational(147, 1070), Rational(21, 107), Rational(37, 107), Rational(39, 214), Rational(74, 535)]
+    expected_row = [
+        Rational(147, 1070),
+        Rational(21, 107),
+        Rational(37, 107),
+        Rational(39, 214),
+        Rational(74, 535),
+    ]
 
     assert len(long_run_probabilities) == 5
     assert all(row == expected_row for row in long_run_probabilities)
@@ -32,7 +38,10 @@ def test_discrete_time_markov_chain_path_probabilities_from_dtmc_notebook():
         states=["red", "blue"],
     )
 
-    assert discrete_time_markov_chain.probability([(2, "blue"), (1, "red"), (0, "red")]) == 0.020369999999999996
+    assert (
+        discrete_time_markov_chain.probability([(2, "blue"), (1, "red"), (0, "red")])
+        == 0.020369999999999996
+    )
     assert discrete_time_markov_chain.probability([(1, "blue")]) == 0.309
     assert discrete_time_markov_chain.probability([(2, "blue")], given=[(1, "blue")]) == 0.96
 
@@ -91,10 +100,22 @@ def test_discrete_time_markov_chain_absorption_from_dtmc3_notebook():
         [0, 0, 1, 0],
         [Rational(2, 10), Rational(3, 10), Rational(4, 10), Rational(1, 10)],
     ]
-    discrete_time_markov_chain = MarkovChain(transition_matrix, states=["red", "blue", "black", "green"])
+    discrete_time_markov_chain = MarkovChain(
+        transition_matrix, states=["red", "blue", "black", "green"]
+    )
 
-    assert discrete_time_markov_chain.absorption_prob("red") == [1, Rational(31, 48), 0, Rational(7, 16)]
-    assert discrete_time_markov_chain.absorption_steps() == [0, Rational(55, 24), 0, Rational(15, 8)]
+    assert discrete_time_markov_chain.absorption_prob("red") == [
+        1,
+        Rational(31, 48),
+        0,
+        Rational(7, 16),
+    ]
+    assert discrete_time_markov_chain.absorption_steps() == [
+        0,
+        Rational(55, 24),
+        0,
+        Rational(15, 8),
+    ]
 
 
 def test_discrete_time_markov_chain_long_run_probabilities_from_dtmc3_notebook():
@@ -104,7 +125,9 @@ def test_discrete_time_markov_chain_long_run_probabilities_from_dtmc3_notebook()
         [Rational(1, 10), Rational(4, 10), Rational(2, 10), Rational(3, 10)],
         [Rational(7, 10), 0, 0, Rational(3, 10)],
     ]
-    discrete_time_markov_chain = MarkovChain(transition_matrix, states=["red", "blue", "black", "green"])
+    discrete_time_markov_chain = MarkovChain(
+        transition_matrix, states=["red", "blue", "black", "green"]
+    )
 
     assert discrete_time_markov_chain.long_run_probs(method="rational").tolist() == [
         [Rational(7, 15), 0, 0, Rational(8, 15)],

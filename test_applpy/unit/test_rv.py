@@ -212,7 +212,7 @@ def test_operator_overloads_for_scalars_and_rvs():
         discrete / discrete
 
     with pytest.raises(RVError, match="integer value"):
-        discrete**Rational(3, 2)
+        discrete ** Rational(3, 2)
 
 
 def test_assumptions_cache_and_simplify_helpers():
@@ -561,3 +561,64 @@ def test_product_discrete_symbolic_support_error_path():
     regular = _functional_discrete_pdf()
     with pytest.raises(RVError, match="symbolic or infinite support"):
         Product(symbolic_support, regular)
+
+
+def test_sqrt_and_transform_additional_error_paths():
+    negative_support = RV(Integer(1), [-1, 0], ["continuous", "pdf"])
+    with pytest.raises(RVError, match="negative value appears in the support"):
+        Sqrt(negative_support)
+
+    with pytest.raises(RVError, match="not in ascending order"):
+        Transform(_uniform_continuous_pdf(), [[x], [1, 0]])
+
+
+def test_plot_display_requires_multiple_plots():
+    with pytest.raises(RVError, match="requires a list with multiple plots"):
+        from applpy.rv import PlotDisplay
+
+        PlotDisplay([object()])
+
+
+def test_functional_discrete_conversion_branches():
+    functional_pdf = RV([x], [1, 3], ["Discrete", "pdf"])
+    functional_cdf = RV([x / 3], [1, 3], ["Discrete", "cdf"])
+    functional_sf = RV([1 - x / 3], [1, 3], ["Discrete", "sf"])
+    functional_hf = RV([x / (4 - x)], [1, 3], ["Discrete", "hf"])
+    functional_chf = RV([-x], [1, 3], ["Discrete", "chf"])
+
+    assert CDF(functional_cdf, 2) == Rational(2, 3)
+    assert CDF(functional_pdf).ftype == ["discrete", "cdf"]
+    assert SF(functional_pdf).ftype == ["discrete", "sf"]
+    assert HF(functional_pdf).ftype == ["discrete", "hf"]
+    assert CHF(functional_pdf).ftype == ["discrete", "chf"]
+    assert PDF(functional_cdf).ftype == ["discrete", "pdf"]
+    assert CHF(functional_chf, 2) == -2
+    assert HF(functional_hf, 2) == 1
+    assert SF(functional_sf).ftype == ["discrete", "sf"]
+
+
+def test_discrete_idf_sf_hf_cross_conversions_and_known_idf_bug():
+    discrete = _discrete_pdf()
+    assert IDF(HF(discrete)).ftype == ["discrete", "idf"]
+    assert IDF(CHF(discrete)).ftype == ["discrete", "idf"]
+    assert SF(HF(discrete)).ftype == ["discrete", "sf"]
+    assert SF(CHF(discrete)).ftype == ["discrete", "sf"]
+
+    functional_idf = RV([2 * x], [0, 1], ["Discrete", "idf"])
+    with pytest.raises(UnboundLocalError):
+        IDF(functional_idf, Rational(1, 2))
+
+
+def test_discrete_stat_and_convolution_edge_paths():
+    assert Variance([1, 2, 3]) == Rational(2, 3)
+
+    with pytest.raises(RVError, match="Only one item sampled"):
+        RangeStat(_discrete_pdf(), 1, "w")
+    with pytest.raises(RVError, match="current not implemented without"):
+        RangeStat(_discrete_pdf(), 2, "wo")
+
+    singleton = RV([1], [5], ["discrete", "pdf"])
+    assert OrderStat(singleton, 1, 1, "w").ftype == ["discrete", "pdf"]
+
+    with pytest.raises(RVError, match="symbolic or infinite support"):
+        Convolution(RV([x], [x, 3], ["Discrete", "pdf"]), _discrete_pdf())

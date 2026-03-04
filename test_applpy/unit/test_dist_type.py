@@ -3,12 +3,43 @@ from sympy import Rational, exp, ln, oo
 
 from applpy.dist_type import (
     ArcSinRV,
+    ArcTanRV,
     BernoulliRV,
+    BetaRV,
     BinomialRV,
     BivariateNormalRV,
+    CauchyRV,
+    ChiRV,
+    ChiSquareRV,
+    ErlangRV,
+    ErrorIIRV,
+    ErrorRV,
     ExponentialRV,
+    ExponentialPowerRV,
+    ExtremeValueRV,
+    FRV,
+    GammaRV,
+    GeneralizedParetoRV,
     GeometricRV,
+    GompertzRV,
+    IDBRV,
+    InverseGammaRV,
+    InverseGaussianRV,
+    KSRV,
+    LaPlaceRV,
+    LogGammaRV,
+    LogLogisticRV,
+    LogisticRV,
+    LogNormalRV,
+    LomaxRV,
+    MakehamRV,
+    MuthRV,
+    NormalRV,
+    ParetoRV,
     PoissonRV,
+    RayleighRV,
+    TRV,
+    TriangularRV,
     UniformDiscreteRV,
     UniformRV,
     WeibullRV,
@@ -164,3 +195,79 @@ def test_weibull_cdf_shortcut_and_binomial_mean_are_consistent():
     assert CDF(rv, Rational(1, 2)) == 1 - exp(-1)
 
     assert Mean(BinomialRV(4, Rational(1, 2))) == 2
+
+
+@pytest.mark.parametrize(
+    "builder",
+    [
+        lambda: ArcTanRV(2, 0),
+        lambda: BetaRV(2, 3),
+        lambda: CauchyRV(0, 2),
+        lambda: ChiRV(3),
+        lambda: ChiSquareRV(3),
+        lambda: ErlangRV(2, 3),
+        lambda: ErrorRV(2, 2, 0),
+        lambda: ErrorIIRV(1, 2, 3),
+        lambda: ExponentialPowerRV(2, 3),
+        lambda: ExtremeValueRV(2, 3),
+        lambda: FRV(2, 3),
+        lambda: GammaRV(2, 3),
+        lambda: GeneralizedParetoRV(2, 3, 4),
+        lambda: GompertzRV(2, 3),
+        lambda: IDBRV(1, 2, 3),
+        lambda: InverseGaussianRV(2, 3),
+        lambda: InverseGammaRV(2, 3),
+        lambda: KSRV(1),
+        lambda: LaPlaceRV(2, 1),
+        lambda: LogGammaRV(2, 3),
+        lambda: LogisticRV(2, 3),
+        lambda: LogLogisticRV(2, 3),
+        lambda: LogNormalRV(0, 2),
+        lambda: LomaxRV(2, 3),
+        lambda: MakehamRV(2, 3, 4),
+        lambda: MuthRV(2),
+        lambda: NormalRV(0, 1),
+        lambda: ParetoRV(2, 3),
+        lambda: RayleighRV(2),
+        lambda: TriangularRV(0, 1, 2),
+        lambda: TRV(3),
+    ],
+)
+def test_additional_distribution_constructors_return_rv_shapes(builder):
+    rv = builder()
+    assert rv.ftype[1] in {"pdf", "cdf"}
+    assert len(rv.support) >= 2
+
+
+@pytest.mark.parametrize(
+    ("builder", "message"),
+    [
+        (lambda: ArcTanRV(0, 0), "Alpha must be positive"),
+        (lambda: ChiRV(0), "N must be a positive integer"),
+        (lambda: ErlangRV(-1, 2), "theta must be positive"),
+        (lambda: ErrorRV(0, 2, 0), "mu must be positive"),
+        (lambda: ExponentialPowerRV(-1, 3), "both parameters must be positive"),
+        (lambda: FRV(-1, 3), "both parameters must be positive"),
+        (lambda: GammaRV(-1, 3), "both parameters must be positive"),
+        (lambda: TriangularRV(2, 1, 3), "ascending order"),
+        (lambda: NormalRV(0, 0), "sigma must be positive"),
+    ],
+)
+def test_additional_distribution_parameter_validation_errors(builder, message):
+    with pytest.raises(RVError, match=message):
+        builder()
+
+
+def test_additional_variate_paths_for_supported_distributions():
+    assert len(CauchyRV(0, 1).variate(n=2, s=Rational(1, 2), method="special")) == 2
+    assert len(ExponentialPowerRV(2, 3).variate(n=2, s=Rational(1, 5), method="special")) == 2
+    assert len(ExtremeValueRV(2, 3).variate(n=2, s=Rational(1, 5), method="special")) == 2
+    assert len(GompertzRV(2, 3).variate(n=2, s=Rational(1, 5), method="special")) == 2
+    assert len(LogisticRV(2, 3).variate(n=2, s=Rational(1, 5), method="special")) == 2
+    assert len(LogLogisticRV(2, 3).variate(n=2, s=Rational(1, 5), method="special")) == 2
+    assert len(NormalRV(0, 1).variate(n=2, s=Rational(1, 5), method="special")) == 2
+
+
+def test_lomax_variate_currently_exposes_parameter_attribute_bug():
+    with pytest.raises(AttributeError, match="parameter"):
+        LomaxRV(2, 3).variate(n=1, s=Rational(1, 2), method="special")

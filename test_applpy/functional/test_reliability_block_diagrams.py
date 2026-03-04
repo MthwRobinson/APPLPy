@@ -38,8 +38,7 @@ def test_reliability_block_diagram_mean_by_parallel_size_from_notebook():
     }
 
     actual_means = {
-        n: float(_reliability_block_diagram_system_mean(scale_parameter_n=n))
-        for n in range(1, 15)
+        n: float(_reliability_block_diagram_system_mean(scale_parameter_n=n)) for n in range(1, 15)
     }
 
     assert actual_means == pytest.approx(expected_means)
