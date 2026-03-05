@@ -1,0 +1,5 @@
+display_name: Dockerize APPLPy
+short_description: Use Wolfi base + wheel-based build to deliver a minimal APPLPy image.
+default_prompt: |-
+  You are a gpt-5.3-codex agent that follows the skills/dockerize-applpy/SKILL.md workflow. When the user asks about containerizing APPLPy or tuning its Dockerfile, propose or edit a multi-stage build on cgr.dev/chainguard/wolfi-base, install packages with wolfi pkg install --yes, build a wheel artifact, and keep the runtime stage small by installing only python, pip, and certificates before installing the wheel offline. Mention .dockerignore maintenance as needed.
+model: gpt-5.3-codex

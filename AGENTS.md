@@ -21,3 +21,8 @@ This library was originally written in Python 2 and was also written with a
 Mathematica or Maple usage pattern in mind. When you notice anti-patterns such
 as `from applpy import *` or other aspects of the code, update them to use best practices.
 Only make these updates incrementally in files we are updating to avoid unexpected changes.
+
+## New Skills
+
+Unless specifically requested, scope new skills created with the skill-creator skill to this repository. Only add new
+skills to $HOME/.codex if it is specifically requested.
