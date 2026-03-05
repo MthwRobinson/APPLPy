@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-test install-all test test-functional test-unit check tidy
+.PHONY: help install install-dev install-test install-all test test-functional test-unit check tidy docker-build docker-run
 
 TEST ?=
 
@@ -34,4 +34,7 @@ tidy: ## Run Ruff autoformatter.
 	uv run ruff format applpy test_applpy
 
 docker-build: ## Builds the docker image for the project
-	docker build -f Dockerfile -t applpy .
+	docker build -f Dockerfile -t applpy:latest .
+
+docker-run: ## Runs the docker image and opens an interactive Python session.
+	docker run --rm -it applpy:latest
