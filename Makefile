@@ -32,3 +32,6 @@ check: ## Run Ruff lint checks.
 tidy: ## Run Ruff autoformatter.
 	uv run ruff check --fix applpy test_applpy
 	uv run ruff format applpy test_applpy
+
+docker-build: ## Builds the docker image for the project
+	docker build -f Dockerfile -t applpy .
