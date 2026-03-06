@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-test install-all test test-functional test-unit check tidy docker-build docker-run
+.PHONY: help install install-dev install-test install-all test test-functional test-unit check tidy docker-build docker-run docker-run-jupter
 
 TEST ?=
 
@@ -36,5 +36,18 @@ tidy: ## Run Ruff autoformatter.
 docker-build: ## Builds the docker image for the project
 	docker build -f Dockerfile -t applpy:latest .
 
-docker-run: ## Runs the docker image and opens an interactive Python session.
+docker-run: ## Runs the docker image and runs an interactive python session
 	docker run --rm -it applpy:latest
+
+docker-run-sh: ## Runs the docker image and runs an interactive shell session
+	docker run --rm -it --entrypoint /bin/sh applpy:latest
+
+docker-run-cmd: ## Runs the docker image and runs the specified command
+	docker run --rm -it --entrypoint /usr/bin/uv applpy:latest run $(CMD)
+
+docker-run-jupyter: ## Runs the docker container and lauches a jupyter notebook
+	docker run --rm -it \
+		--entrypoint /usr/bin/uv \
+		-p 8888:8888 \
+		applpy:latest \
+		run jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --ServerApp.token=''
