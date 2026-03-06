@@ -4,6 +4,7 @@ from sympy import Rational, exp, ln, oo
 from applpy.dist_type import (
     ArcSinRV,
     ArcTanRV,
+    BenfordRV,
     BernoulliRV,
     BetaRV,
     BinomialRV,
@@ -12,6 +13,7 @@ from applpy.dist_type import (
     ChiRV,
     ChiSquareRV,
     ErlangRV,
+    ExampleRV,
     ErrorIIRV,
     ErrorRV,
     ExponentialRV,
@@ -75,11 +77,15 @@ def test_continuous_distribution_constructors_have_expected_structure():
 
 
 def test_discrete_distribution_constructors_have_expected_structure():
+    benford = BenfordRV()
     binomial = BinomialRV(4, Rational(1, 2))
     bernoulli = BernoulliRV(Rational(1, 3))
     geometric = GeometricRV(Rational(1, 4))
     poisson = PoissonRV(3)
     uniform_discrete = UniformDiscreteRV(1, 5, 2)
+
+    assert benford.ftype == ["Discrete", "pdf"]
+    assert benford.support == [1, 9]
 
     assert binomial.ftype == ["Discrete", "pdf"]
     assert binomial.support == [0, 4]
@@ -188,6 +194,23 @@ def test_bivariate_normal_parameter_validation_and_shape():
 
     with pytest.raises(RVError, match="sigma2 must be positive"):
         BivariateNormalRV(0, 1, 0, 0)
+
+
+def test_example_bivariate_distribution_shape():
+    rv = ExampleRV()
+    assert rv.ftype == ["continuous", "pdf"]
+    assert len(rv.func) == 1
+    assert len(rv.constraints) == 1
+
+
+def test_distribution_import_paths_are_supported():
+    from applpy import ExponentialRV as top_level_exponential
+    from applpy.distributions.continuous import ExponentialRV as continuous_exponential
+    from applpy.distributions.discrete import PoissonRV as discrete_poisson
+
+    assert top_level_exponential is ExponentialRV
+    assert continuous_exponential is ExponentialRV
+    assert discrete_poisson is PoissonRV
 
 
 def test_weibull_cdf_shortcut_and_binomial_mean_are_consistent():
