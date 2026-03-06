@@ -40,7 +40,6 @@ from applpy.distributions.continuous import (
     WeibullRV,
     param_check,
 )
-from applpy.dist_type import ExampleRV
 from applpy.rv import CDF, RVError, x
 
 
@@ -143,13 +142,6 @@ def test_bivariate_normal_parameter_validation_and_shape():
 
     with pytest.raises(RVError, match="sigma2 must be positive"):
         BivariateNormalRV(0, 1, 0, 0)
-
-
-def test_example_bivariate_distribution_shape():
-    rv = ExampleRV()
-    assert rv.ftype == ["continuous", "pdf"]
-    assert len(rv.func) == 1
-    assert len(rv.constraints) == 1
 
 
 def test_weibull_cdf_shortcut_is_consistent():

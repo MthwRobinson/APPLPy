@@ -1,7 +1,8 @@
 import pytest
 from sympy import Rational, exp, oo, symbols
 
-from applpy.dist_type import ExponentialRV, NormalRV, PoissonRV
+from applpy.distributions.continuous import ExponentialRV, NormalRV
+from applpy.distributions.discrete import PoissonRV
 from applpy.rv import RV, RVError, x
 from applpy.stats import (
     KSTest,

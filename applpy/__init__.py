@@ -21,7 +21,8 @@ from sympy import *
 from .rv import *
 from .stoch import *
 from .appl_plot import *
-from .dist_type import *
+from .distributions.continuous import *
+from .distributions.discrete import *
 from .stats import *
 from .bayes import *
 from .queue_dist import *

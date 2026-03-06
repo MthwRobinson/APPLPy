@@ -28,7 +28,7 @@ from .rv import (
     Convolution,
     Mixture,
 )
-from .dist_type import ErlangRV
+from .distributions.continuous import ErlangRV
 
 x, y, z, t, v = symbols("x y z t v")
 

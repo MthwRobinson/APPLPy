@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from sympy import Symbol, oo
 
-from applpy.dist_type import ExponentialRV, UniformRV
+from applpy.distributions.continuous import ExponentialRV, UniformRV
 from applpy.queue_dist import (
     BuildDist,
     Cprime,
