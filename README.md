@@ -180,3 +180,10 @@ print(Mean(mix))                  # 19/4
 print(float(CDF(mix, 4).evalf())) # 0.296875
 print(float(Mean(ConvolutionIID(UniformRV(1, 2), 3)).evalf())) # 4.5
 ```
+
+## Distribution References
+
+See the following documentation for a list of distributions that are available in the package.
+
+- [Continuous Distributions](applpy/distributions/continuous/README.md)
+- [Discrete Distributions](applpy/distributions/discrete/README.md)
