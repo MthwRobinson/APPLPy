@@ -3,22 +3,8 @@
 from random import random
 
 from sympy import (
-    Rational,
     Symbol,
-    atan,
-    cos,
-    cot,
-    exp,
-    factorial,
-    floor,
-    gamma,
-    integrate,
-    ln,
-    log,
     oo,
-    pi,
-    simplify,
-    sqrt,
     symbols,
 )
 

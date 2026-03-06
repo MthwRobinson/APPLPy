@@ -1,6 +1,6 @@
 """GeometricRV distribution."""
 
-from sympy import Rational, Symbol, exp, factorial, ln, oo, symbols
+from sympy import Symbol, oo, symbols
 
 from ...rv import RV, RVError
 

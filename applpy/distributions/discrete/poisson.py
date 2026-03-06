@@ -1,6 +1,6 @@
 """PoissonRV distribution."""
 
-from sympy import Rational, Symbol, exp, factorial, ln, oo, symbols
+from sympy import Symbol, exp, factorial, oo, symbols
 
 from ...rv import RV, RVError
 

@@ -3,32 +3,21 @@
 from random import random
 
 from sympy import (
-    Rational,
     Symbol,
-    atan,
     cos,
-    cot,
     exp,
-    factorial,
-    floor,
-    gamma,
-    integrate,
     ln,
-    log,
     oo,
     pi,
-    simplify,
     sqrt,
     symbols,
 )
 
 from ...rv import IDF, RV, RVError
 from .param_check import param_check
+from .uniform import UniformRV
 
 x, y, z, t, v = symbols("x y z t v")
-
-
-from .uniform import UniformRV
 
 
 class NormalRV(RV):

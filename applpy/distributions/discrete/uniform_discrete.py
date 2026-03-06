@@ -1,6 +1,6 @@
 """UniformDiscreteRV distribution."""
 
-from sympy import Rational, Symbol, exp, factorial, ln, oo, symbols
+from sympy import Rational, Symbol, symbols
 
 from ...rv import RV, RVError
 

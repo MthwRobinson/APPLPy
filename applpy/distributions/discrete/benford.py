@@ -1,8 +1,8 @@
 """BenfordRV distribution."""
 
-from sympy import Rational, Symbol, exp, factorial, ln, oo, symbols
+from sympy import ln, symbols
 
-from ...rv import RV, RVError
+from ...rv import RV
 
 x, y, z, t, v = symbols("x y z t v")
 
