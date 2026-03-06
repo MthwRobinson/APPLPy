@@ -80,6 +80,26 @@ make check   # Run Ruff lint checks in applpy/
 make tidy    # Apply Ruff fixes and format code in applpy/
 ```
 
+## Running with Docker
+
+Build the Docker image:
+
+```shell
+make docker-build
+```
+
+Run an interactive Python session in the container:
+
+```shell
+make docker-run
+```
+
+Run Jupyter Lab in Docker and expose it on `http://127.0.0.1:8888`:
+
+```shell
+make docker-run-jupter
+```
+
 ## Running Tests Locally
 
 Install test dependencies and run all tests with coverage:
@@ -126,17 +146,4 @@ After installation, prefer explicit module-level imports:
 ```python
 from applpy.dist_type import ExponentialRV
 from applpy.rv import CDF
-```
-
-## Options for Running APPLPy
-
-APPLPy can be run from any python interactive session. For fast performance, users can run APPLPy from the Python command line interface. Another option is the iPython Notebook, which executes procedures more slowly, but provides a notebook interface that is similar to Maple or Mathematica. iPython Notebook is the most convenient option for collaborating and sharing code.
-
-SymPy includes a convenient command for initializing variables and setting up optimal plotting and printing environments. To leverage this initialization procedure, the recommended series of commands to begin an APPLPy session are as follows:
-```python
-from sympy import Rational, Symbol, init_session
-from applpy.dist_type import ExponentialRV, NormalRV
-from applpy.rv import CDF, Mean
-
-init_session()
 ```
