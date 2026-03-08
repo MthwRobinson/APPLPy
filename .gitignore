@@ -5,3 +5,4 @@
 MANIFEST
 APPLPy.egg-info/
 .coverage
+rust/target

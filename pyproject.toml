@@ -32,6 +32,9 @@ dev = [
   "jupyter",
   "ruff",
 ]
+rust = [
+  "maturin>=1.7,<2",
+]
 test = [
   "pytest",
   "pytest-cov",

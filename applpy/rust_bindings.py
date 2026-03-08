@@ -1,0 +1,21 @@
+"""Helpers for APPLPy Rust extension bindings."""
+
+from functools import lru_cache
+from importlib import import_module
+
+
+@lru_cache(maxsize=1)
+def _extension_module():
+    try:
+        return import_module("applpy_rust")
+    except ImportError as exc:
+        raise ImportError(
+            "applpy_rust extension is not built. "
+            "Run `uv sync --extra rust` then "
+            "`uv run --no-sync maturin develop -m rust/Cargo.toml`."
+        ) from exc
+
+
+def dummy_ping():
+    """Return a constant string from the Rust extension."""
+    return _extension_module().dummy_ping()

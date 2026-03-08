@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-test install-all test test-functional test-unit check tidy docker-build docker-run docker-run-jupter
+.PHONY: help install install-dev install-test install-rust install-all rust-develop rust-check-import test test-functional test-unit check tidy docker-build docker-run docker-run-jupter
 
 TEST ?=
 
@@ -14,8 +14,17 @@ install-dev: ## Install project with development dependencies.
 install-test: ## Install project with test dependencies.
 	uv sync --extra test
 
+install-rust: ## Install Rust build tooling for Python extension development.
+	uv sync --extra rust
+
 install-all: ## Install project with all optional dependencies.
 	uv sync --all-extras
+
+rust-develop: ## Build and install the Rust extension into the active uv environment.
+	uv run --no-sync maturin develop -m rust/Cargo.toml
+
+rust-check-import: ## Verify APPLPy can call the Rust dummy function.
+	uv run --no-sync python -c "from applpy.rust_bindings import dummy_ping; print(dummy_ping())"
 
 test: ## Run all tests, or one test when TEST=/path/to/test is provided.
 	uv run pytest --cov=applpy --cov-report=term-missing $(if $(strip $(TEST)),$(TEST),test_applpy)

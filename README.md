@@ -71,6 +71,28 @@ Or with `make`:
 make install-dev
 ```
 
+## Rust Extension Development (`pyo3` + `maturin`)
+
+Install Rust extension tooling:
+
+```shell
+make install-rust
+```
+
+Build and install the Rust extension into the project environment:
+
+```shell
+make rust-develop
+```
+
+Validate import and call a dummy Rust function:
+
+```shell
+make rust-check-import
+```
+
+`--no-sync` is used for these commands so `uv run` does not prune the `maturin develop` install.
+
 ## Development Commands
 
 Use the `Makefile` targets for linting and formatting:
