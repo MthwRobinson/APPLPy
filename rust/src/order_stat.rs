@@ -37,11 +37,11 @@ pub fn next_combination(previous: &[usize], upper_bound: usize) -> Vec<usize> {
 
 #[allow(clippy::useless_conversion)]
 #[pyfunction(name = "next_combination", signature = (previous, n))]
-pub fn next_combination_py(previous: Vec<usize>, n: usize) -> PyResult<Vec<usize>> {
+pub fn next_combination_py(previous: &[usize], n: usize) -> PyResult<Vec<usize>> {
     if previous.is_empty() {
         return Err(PyValueError::new_err("Previous must not be empty"));
     }
-    Ok(next_combination(&previous, n))
+    Ok(next_combination(previous, n))
 }
 
 #[cfg(test)]
