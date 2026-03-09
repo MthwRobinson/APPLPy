@@ -2488,30 +2488,35 @@ def NextCombination(Previous, N):
                 2. N: A positive integer
     Output:     1. The next combination
     """
-    # Initialize the Next list
-    Next = []
-    for i in range(len(Previous)):
-        Next.append(Previous[i])
-    n = len(Next)
-    # If the value in the final position of the combination is not the
-    #   maximum value it can attain, N, then increment it by 1
-    if Next[n - 1] != N:
-        Next[n - 1] += 1
-    # If the final position in the combination is already at its maximum
-    #   value, then move left through the combination and find the next
-    #   possible value that can be incremented
-    else:
-        MoveLeft = True
-        for i in reversed(list(range(1, n))):
-            indx = i - 1
-            if Next[indx] < N + i - n:
-                Next[indx] += 1
-                for j in range(1, (n - i + 1)):
-                    Next[indx + j] = Next[(indx + j) - 1] + 1
-                MoveLeft = False
-            if not MoveLeft:
-                break
-    return Next
+    try:
+        from applpy import rust_bindings
+
+        return rust_bindings.next_combination(Previous, N)
+    except ImportError:
+        # Initialize the Next list
+        Next = []
+        for i in range(len(Previous)):
+            Next.append(Previous[i])
+        n = len(Next)
+        # If the value in the final position of the combination is not the
+        #   maximum value it can attain, N, then increment it by 1
+        if Next[n - 1] != N:
+            Next[n - 1] += 1
+        # If the final position in the combination is already at its maximum
+        #   value, then move left through the combination and find the next
+        #   possible value that can be incremented
+        else:
+            MoveLeft = True
+            for i in reversed(list(range(1, n))):
+                indx = i - 1
+                if Next[indx] < N + i - n:
+                    Next[indx] += 1
+                    for j in range(1, (n - i + 1)):
+                        Next[indx + j] = Next[(indx + j) - 1] + 1
+                    MoveLeft = False
+                if not MoveLeft:
+                    break
+        return Next
 
 
 def NextPermutation(Previous):

@@ -19,3 +19,8 @@ def _extension_module():
 def dummy_ping():
     """Return a constant string from the Rust extension."""
     return _extension_module().dummy_ping()
+
+
+def next_combination(previous, n):
+    """Return the next lexicographical combination."""
+    return _extension_module().next_combination(previous, n)

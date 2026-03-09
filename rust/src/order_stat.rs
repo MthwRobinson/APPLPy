@@ -1,22 +1,25 @@
-// Given the previous combination, finds the next lexicographical combination
-pub fn next_combination(previous: &[usize], n: usize) -> Vec<usize> {
-    let num_elements: usize = previous.len();
+use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
 
-    let mut next = Vec::with_capacity(num_elements);
-    next.extend_from_slice(previous);
+// Given the previous combination, finds the next lexicographical combination.
+pub fn next_combination(previous: &[usize], upper_bound: usize) -> Vec<usize> {
+    let mut next = previous.to_vec();
+    let num_elements = next.len();
 
-    // If the value in the final position is not the maximum value it
-    // can attain, increment it by 1
-    if next[n-1] != n {
-        next[n-1] += 1;
+    // If the value in the final position is not the maximum value it can
+    // attain, increment it by 1.
+    if next[num_elements - 1] != upper_bound {
+        next[num_elements - 1] += 1;
     } else {
-        let mut move_left: bool = true;
-        for i in 1..n {
+        // Otherwise, move left through the combination and increment the
+        // first value that can advance, then rewrite the suffix.
+        let mut move_left = true;
+        for i in (1..num_elements).rev() {
             let index = i - 1;
-            let upper_limit = n + i - n;
-            if next[index] < upper_limit {
-                for j in 1..upper_limit {
-                    next[index + j] = next[(index + j) - 1] + 1
+            if next[index] < upper_bound + i - num_elements {
+                next[index] += 1;
+                for j in 1..(num_elements - i + 1) {
+                    next[index + j] = next[index + j - 1] + 1;
                 }
                 move_left = false;
             }
@@ -29,43 +32,43 @@ pub fn next_combination(previous: &[usize], n: usize) -> Vec<usize> {
     next
 }
 
+#[allow(dead_code)]
+#[pyfunction(name = "next_combination", signature = (previous, n))]
+pub fn next_combination_py<T>(previous: Vec<usize>, n: usize) -> PyResult<T> {
+    if previous.is_empty() {
+        return Err(PyValueError::new_err("Previous must not be empty"));
+    }
+    Ok(next_combination(&previous, n))
+}
+
 #[cfg(test)]
 mod tests {
     use super::next_combination;
 
     #[test]
-    fn increments_nth_value_when_below_limit() {
-        let previous = [1, 1];
+    fn increments_last_value_when_below_upper_bound() {
+        let previous = [1, 2, 4];
 
-        let next = next_combination(&previous, 2);
+        let next = next_combination(&previous, 5);
 
-        assert_eq!(next, vec![1, 2]);
+        assert_eq!(next, vec![1, 2, 5]);
     }
 
     #[test]
-    fn keeps_vector_unchanged_when_nth_value_is_at_limit() {
-        let previous = [1, 2, 3];
+    fn updates_suffix_when_rightmost_value_reaches_upper_bound() {
+        let previous = [1, 4, 5];
 
-        let next = next_combination(&previous, 3);
+        let next = next_combination(&previous, 5);
 
-        assert_eq!(next, vec![1, 2, 3]);
+        assert_eq!(next, vec![2, 3, 4]);
     }
 
     #[test]
-    fn updates_suffix_when_left_shift_condition_is_met() {
-        let previous = [1, 1, 3];
+    fn keeps_vector_when_no_increment_is_possible() {
+        let previous = [3, 4, 5];
 
-        let next = next_combination(&previous, 3);
+        let next = next_combination(&previous, 5);
 
-        assert_eq!(next, vec![1, 1, 2]);
-    }
-
-    #[test]
-    fn only_changes_the_target_window_for_shorter_n() {
-        let previous = [1, 1, 5, 8];
-
-        let next = next_combination(&previous, 2);
-
-        assert_eq!(next, vec![1, 2, 5, 8]);
+        assert_eq!(next, vec![3, 4, 5]);
     }
 }
