@@ -9,13 +9,10 @@ install: ## Install base project dependencies.
 	uv sync
 
 install-dev: ## Install project with development dependencies.
-	uv sync --extra dev
+	uv sync --extra dev --extra rust
 
 install-test: ## Install project with test dependencies.
-	uv sync --extra test
-
-install-rust: ## Install Rust build tooling for Python extension development.
-	uv sync --extra rust
+	uv sync --extra test --extra dev --extra rust
 
 install-all: ## Install project with all optional dependencies.
 	uv sync --all-extras

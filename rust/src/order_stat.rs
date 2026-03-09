@@ -1,5 +1,4 @@
-// Given the previous combination, finds the next lexicographical
-// combination
+// Given the previous combination, finds the next lexicographical combination
 pub fn next_combination(previous: &[usize], n: usize) -> Vec<usize> {
     let num_elements: usize = previous.len();
 
@@ -28,4 +27,45 @@ pub fn next_combination(previous: &[usize], n: usize) -> Vec<usize> {
     }
 
     next
+}
+
+#[cfg(test)]
+mod tests {
+    use super::next_combination;
+
+    #[test]
+    fn increments_nth_value_when_below_limit() {
+        let previous = [1, 1];
+
+        let next = next_combination(&previous, 2);
+
+        assert_eq!(next, vec![1, 2]);
+    }
+
+    #[test]
+    fn keeps_vector_unchanged_when_nth_value_is_at_limit() {
+        let previous = [1, 2, 3];
+
+        let next = next_combination(&previous, 3);
+
+        assert_eq!(next, vec![1, 2, 3]);
+    }
+
+    #[test]
+    fn updates_suffix_when_left_shift_condition_is_met() {
+        let previous = [1, 1, 3];
+
+        let next = next_combination(&previous, 3);
+
+        assert_eq!(next, vec![1, 1, 2]);
+    }
+
+    #[test]
+    fn only_changes_the_target_window_for_shorter_n() {
+        let previous = [1, 1, 5, 8];
+
+        let next = next_combination(&previous, 2);
+
+        assert_eq!(next, vec![1, 2, 5, 8]);
+    }
 }
