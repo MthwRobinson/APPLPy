@@ -1,3 +1,6 @@
+#![allow(clippy::useless_conversion)]
+#![allow(dead_code)]
+
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
@@ -32,9 +35,9 @@ pub fn next_combination(previous: &[usize], upper_bound: usize) -> Vec<usize> {
     next
 }
 
-#[allow(dead_code)]
+#[allow(clippy::useless_conversion)]
 #[pyfunction(name = "next_combination", signature = (previous, n))]
-pub fn next_combination_py<T>(previous: Vec<usize>, n: usize) -> PyResult<T> {
+pub fn next_combination_py(previous: Vec<usize>, n: usize) -> PyResult<Vec<usize>> {
     if previous.is_empty() {
         return Err(PyValueError::new_err("Previous must not be empty"));
     }
