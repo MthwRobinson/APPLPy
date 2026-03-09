@@ -66,8 +66,14 @@ jobs:
         with:
           python-version: "3.14"
 
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Install test dependencies
         run: make install-test
+
+      - name: Setup rust development
+        run: make rust-develop
 
       - name: Run test suite
         run: make test

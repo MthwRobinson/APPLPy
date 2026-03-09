@@ -13,3 +13,17 @@ pub fn next_combination_py(previous: Vec<usize>, n: usize) -> PyResult<Vec<usize
     }
     Ok(order_stat::next_combination(&previous, n))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pyo3::Python;
+
+    #[test]
+    fn test_python_binding() {
+        Python::with_gil(|_| {
+            let result = next_combination_py(vec![1, 2, 3], 5).unwrap();
+            assert_eq!(result, vec![1, 2, 4]);
+        });
+    }
+}
