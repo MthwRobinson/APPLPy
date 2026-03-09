@@ -7,6 +7,7 @@ name = "applpy_rust"
 version = "0.1.0"
 dependencies = [
  "num-rational",
+ "num-traits",
  "pyo3",
 ]
 
