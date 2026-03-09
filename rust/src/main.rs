@@ -1,4 +1,6 @@
-mod order_stat;
+mod algorithms;
+
+use algorithms::order_stat;
 
 fn main() {
     let previous = [1, 2, 3, 4];
