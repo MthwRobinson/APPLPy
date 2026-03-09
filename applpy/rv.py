@@ -2498,7 +2498,7 @@ def NextCombination(Previous, N):
     if Next[n - 1] != N:
         Next[n - 1] += 1
     # If the final position in the combination is already at its maximum
-    #   value, then move left trhough the combination and find the next
+    #   value, then move left through the combination and find the next
     #   possible value that can be incremented
     else:
         MoveLeft = True
