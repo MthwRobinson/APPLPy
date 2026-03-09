@@ -66,3 +66,67 @@ impl RandomVariable {
         Ok((area > 1.0 - tolerance) && (area < 1.0 + tolerance))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn verify_pdf_returns_err_for_non_pdf_functional_form() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(1.0)],
+            support: vec![Number::Float(1.0)],
+            ftype: (FunctionalForm::Cdf, DomainType::Continuous),
+        };
+
+        let result = rv.verify_pdf(None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn verify_pdf_accepts_exact_unit_area() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.5), Number::Float(0.5)],
+            support: vec![Number::Float(1.0), Number::Float(1.0)],
+            ftype: (FunctionalForm::Pdf, DomainType::Continuous),
+        };
+
+        assert_eq!(rv.verify_pdf(None).unwrap(), true);
+    }
+
+    #[test]
+    fn verify_pdf_rejects_area_outside_default_tolerance() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.5), Number::Float(0.49)],
+            support: vec![Number::Float(1.0), Number::Float(1.0)],
+            ftype: (FunctionalForm::Pdf, DomainType::Continuous),
+        };
+
+        assert_eq!(rv.verify_pdf(None).unwrap(), false);
+    }
+
+    #[test]
+    fn verify_pdf_uses_custom_tolerance() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.5), Number::Float(0.49)],
+            support: vec![Number::Float(1.0), Number::Float(1.0)],
+            ftype: (FunctionalForm::Pdf, DomainType::Continuous),
+        };
+
+        assert_eq!(rv.verify_pdf(Some(0.02)).unwrap(), true);
+    }
+
+    #[test]
+    fn verify_pdf_supports_rational_values() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(1)],
+            ftype: (FunctionalForm::Pdf, DomainType::Continuous),
+        };
+
+        assert_eq!(rv.verify_pdf(None).unwrap(), true);
+    }
+}
