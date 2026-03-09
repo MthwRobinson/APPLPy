@@ -1,9 +1,3 @@
-#![allow(clippy::useless_conversion)]
-#![allow(dead_code)]
-
-use pyo3::exceptions::PyValueError;
-use pyo3::prelude::*;
-
 // Given the previous combination, finds the next lexicographical combination.
 pub fn next_combination(previous: &[usize], upper_bound: usize) -> Vec<usize> {
     let mut next = previous.to_vec();
@@ -33,15 +27,6 @@ pub fn next_combination(previous: &[usize], upper_bound: usize) -> Vec<usize> {
     }
 
     next
-}
-
-#[allow(clippy::useless_conversion)]
-#[pyfunction(name = "next_combination", signature = (previous, n))]
-pub fn next_combination_py(previous: &[usize], n: usize) -> PyResult<Vec<usize>> {
-    if previous.is_empty() {
-        return Err(PyValueError::new_err("Previous must not be empty"));
-    }
-    Ok(next_combination(previous, n))
 }
 
 #[cfg(test)]
