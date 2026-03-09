@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  lint:
+  lint-python:
     name: Ruff Check
     runs-on: ubuntu-latest
 
@@ -27,9 +27,31 @@ jobs:
       - name: Run lint checks
         run: make check
 
-  test:
-    name: Test Suite
+  lint-rust:
+    name: Rust Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Run rustfmt check
+        run: cargo fmt --check
+        working-directory: rust
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+        working-directory: rust
+
+  test-python:
+    name: Python Test Suite
     if: github.event_name == 'push'
+    needs: [lint-python, lint-rust]
     runs-on: ubuntu-latest
 
     steps:
@@ -49,3 +71,20 @@ jobs:
 
       - name: Run test suite
         run: make test
+
+  test-rust:
+    name: Rust Test Suite
+    if: github.event_name == 'push'
+    needs: [lint-python, lint-rust]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run rust tests
+        run: cargo test
+        working-directory: rust
