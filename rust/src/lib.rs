@@ -12,8 +12,18 @@ fn dummy_ping() -> &'static str {
 
 #[pymodule]
 fn applpy_rust(_py: Python<'_>, module: &Bound<'_, PyModule>) -> PyResult<()> {
-    module.add_function(wrap_pyfunction!(dummy_ping, module)?)?;
+    // order stat functions
     module.add_function(wrap_pyfunction!(python::api::next_combination_py, module)?)?;
     module.add_function(wrap_pyfunction!(python::api::next_permutation_py, module)?)?;
+
+    // random variable class functions
+    module.add_function(wrap_pyfunction!(
+        python::api::verify_discrete_pdf_py,
+        module
+    )?)?;
+
+    // dummy function to validate imports
+    module.add_function(wrap_pyfunction!(dummy_ping, module)?)?;
+
     Ok(())
 }
