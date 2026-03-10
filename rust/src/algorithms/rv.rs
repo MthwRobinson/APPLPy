@@ -86,7 +86,7 @@ mod tests {
             ftype: (FunctionalForm::Pdf, DomainType::Continuous),
         };
 
-        assert_eq!(rv.verify_pdf(None).unwrap(), true);
+        assert!(rv.verify_pdf(None).unwrap());
     }
 
     #[test]
@@ -97,7 +97,7 @@ mod tests {
             ftype: (FunctionalForm::Pdf, DomainType::Continuous),
         };
 
-        assert_eq!(rv.verify_pdf(None).unwrap(), false);
+        assert!(!rv.verify_pdf(None).unwrap());
     }
 
     #[test]
@@ -108,7 +108,7 @@ mod tests {
             ftype: (FunctionalForm::Pdf, DomainType::Continuous),
         };
 
-        assert_eq!(rv.verify_pdf(Some(0.02)).unwrap(), true);
+        assert!(rv.verify_pdf(Some(0.02)).unwrap());
     }
 
     #[test]
@@ -122,6 +122,6 @@ mod tests {
             ftype: (FunctionalForm::Pdf, DomainType::Continuous),
         };
 
-        assert_eq!(rv.verify_pdf(None).unwrap(), true);
+        assert!(rv.verify_pdf(None).unwrap());
     }
 }
