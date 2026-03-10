@@ -9,7 +9,7 @@ Main Random Variable Module
 
 Class Procedures:
     1. display()
-    1. verifyPDF()
+    1. verify_pdf()
     2. variate(n)
 
 Functional Form Conversion:
@@ -498,7 +498,7 @@ class RV:
         6. latex(self)
         7. save(self,filename)
         8. simplify(self,assumption)
-        9. verifyPDF(self)
+        9. verify_pdf(self)
         10. variate(self,n)
     """
 
@@ -698,9 +698,9 @@ class RV:
         self.support = new_support
         self.display()
 
-    def verifyPDF(self):
+    def verify_pdf(self):
         """
-        Procedure Name: verifyPDF
+        Procedure Name: verify_pdf
         Purpose: Verifies whether or not the random variable is valid. It first
                     checks to make sure the pdf of the random variable
                     integrates to one. It then checks to make sure the random
@@ -3316,12 +3316,12 @@ def VarDiscrete(RVar):
 def VerifyPDF(RVar):
     """
     Procedure Name: VerifyPDF
-    Purpose: Calls self.verifyPDF(). For compatibility with
+    Purpose: Calls self.verify_pdf(). For compatibility with
                 original APPL syntax
     Arguments:  1. RVar: a discrete random variable
-    Output:     1. A function call to self.verifyPDF()
+    Output:     1. A function call to self.verify_pdf()
     """
-    return RVar.verifyPDF()
+    return RVar.verify_pdf()
 
 
 """
