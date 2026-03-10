@@ -28,3 +28,8 @@ def next_combination(previous, n):
 def next_permutation(previous):
     """Return the next lexicographical permutation."""
     return _extension_module().next_permutation(previous)
+
+
+def verify_discrete_pdf(function, support, tolerance=1e-6):
+    """Verify that the area under a discrete PDF sums to 1"""
+    return _extension_module().verify_discrete_pdf(function, support, tolerance)

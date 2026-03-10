@@ -793,22 +793,9 @@ class RV:
                 return False
         # If the random variable is discrete, verify the PDF
         if self.ftype[0] == "discrete":
-            # Convert the random variable to PDF form
             X_dummy = PDF(self)
-            # Check to ensure that the area under the PDF is 1
-            print("Now checking for area...")
-            area = sum(X_dummy.func)
-            # for i in range(len(self.support)):
-            #    area+=self.func[i]
-            print("The area under f(x) is: %s" % (area))
-            # Check for absolute value
-            print("Now checking for absolute value...")
-            abs_flag = True
-            for i in range(len(self.func)):
-                if self.func[i] < 0:
-                    abs_flag = False
-            print("The pdf of the random variable")
-            if area > 0.9999 and area < 1.0001 and abs_flag:
+            is_valid = rust_bindings.verify_discrete_pdf(X_dummy.func, X_dummy.support)
+            if is_valid:
                 print("is valid")
             else:
                 print("is not valid")

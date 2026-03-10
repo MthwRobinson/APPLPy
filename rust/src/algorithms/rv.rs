@@ -40,7 +40,7 @@ impl RandomVariable {
     }
 }
 
-/// Verifies that the PDF of random variable sums to 1
+/// Verifies that the area under the PDF of random variable sums to 1
 ///
 /// # Arguments
 /// * `function` - the probability mass functon of the RV
@@ -58,8 +58,10 @@ pub fn verify_pdf(
     let default_tolerance: f64 = 0.000001;
     let tolerance = tolerance.unwrap_or(default_tolerance);
 
+    println!("Now checking for the area ...");
     let mut area: f64 = 0.0;
     let support_len: usize = function.len();
+    let mut all_positive: bool = true;
 
     for i in 0..support_len {
         let function_value: f64 = match &function[i] {
@@ -67,6 +69,10 @@ pub fn verify_pdf(
             Number::Integer(x) => *x as f64,
             Number::Rational(x) => x.to_f64().unwrap(),
         };
+
+        if function_value < 0.0 {
+            all_positive = false;
+        }
 
         let support_value: f64 = match &support[i] {
             Number::Float(x) => *x,
@@ -76,6 +82,12 @@ pub fn verify_pdf(
 
         let probability = function_value * support_value;
         area += probability;
+        println!("The area under f(x) is: {}", area);
+    }
+
+    println!("Now checking for absolute value ...");
+    if !all_positive {
+        return Ok(false);
     }
 
     Ok((area > 1.0 - tolerance) && (area < 1.0 + tolerance))
@@ -142,5 +154,15 @@ mod tests {
         };
 
         assert!(rv.verify_pdf(None).unwrap());
+    }
+
+    #[test]
+    fn verify_pdf_returns_false_with_negative_function_values() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(-0.5), Number::Float(1.5)],
+            support: vec![Number::Float(1.0), Number::Float(1.0)],
+            ftype: (FunctionalForm::Pdf, DomainType::Continuous),
+        };
+        assert!(!rv.verify_pdf(None).unwrap());
     }
 }
