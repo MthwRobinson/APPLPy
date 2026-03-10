@@ -1,8 +1,28 @@
-// Given the previous combination, finds the next lexicographical combination.
+/// Given the previous combination, finds the next lexicographical combination.
+///
+/// # Arguments
+/// * `previous` - the previous combination
+/// * `upper_bound` - the maximum allowed value in the combination
+///
+/// # Returns
+/// * `next` - the next combination
+///
+/// # Examples
+///
+/// ```
+/// let c = vec![0, 1, 2];
+/// assert_eq!(next_combination(&c, 4), Some(vec![0, 1, 3]));
+///
+/// let c = vec![0, 1, 4];
+/// assert_eq!(next_combination(&c, 4), Some(vec![0, 2, 3]));
+///
+/// let c = vec![2, 3, 4];
+/// assert_eq!(next_combination(&c, 4), None);
+/// ```
 pub fn next_combination(previous: &[usize], upper_bound: usize) -> Option<Vec<usize>> {
-    let k = previous.len();
+    let vector_length = previous.len();
 
-    if k == 0 || k > upper_bound + 1 {
+    if vector_length == 0 || vector_length > upper_bound + 1 {
         return None;
     }
 
@@ -12,8 +32,8 @@ pub fn next_combination(previous: &[usize], upper_bound: usize) -> Option<Vec<us
 
     let mut next = previous.to_vec();
 
-    for i in (0..k).rev() {
-        if next[i] < upper_bound + i + 1 - k {
+    for i in (0..vector_length).rev() {
+        if next[i] < upper_bound + i + 1 - vector_length {
             next[i] += 1;
 
             let mut val = next[i];
@@ -27,6 +47,51 @@ pub fn next_combination(previous: &[usize], upper_bound: usize) -> Option<Vec<us
     }
 
     None
+}
+
+/// Given the previous permutation, finds the next lexicographical permutation.
+///
+/// # Arguments
+/// * `previous` - the previous permutation
+///
+/// # Returns
+/// * `next` - the next combination
+#[allow(dead_code)]
+pub fn next_permutation(previous: &[usize]) -> Option<Vec<usize>> {
+    let vector_length = previous.len();
+
+    if vector_length == 0 {
+        return None;
+    }
+
+    let mut next = previous.to_vec();
+
+    for i in (1..vector_length).rev() {
+        let index = i - 1;
+        if next[index] < next[index + 1] {
+            let original_value = next[index];
+            let mut swap_index = index + 1;
+
+            for j in (swap_index..vector_length).rev() {
+                if next[j] > original_value {
+                    swap_index = j;
+                }
+            }
+
+            let next_index_value = next[swap_index];
+            let next_swap_index_value = next[index];
+
+            next[index] = next_index_value;
+            next[swap_index] = next_swap_index_value;
+
+            for j in (index + 1)..vector_length {
+                let reverse_order_value = next[vector_length + index - j];
+                next[vector_length] = reverse_order_value;
+            }
+        }
+    }
+
+    Some(next)
 }
 
 #[cfg(test)]
