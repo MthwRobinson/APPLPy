@@ -75,6 +75,7 @@ pub fn next_permutation(previous: &[usize]) -> Option<Vec<usize>> {
             for j in (swap_index..vector_length).rev() {
                 if next[j] > original_value {
                     swap_index = j;
+                    break;
                 }
             }
 
@@ -91,7 +92,7 @@ pub fn next_permutation(previous: &[usize]) -> Option<Vec<usize>> {
 
 #[cfg(test)]
 mod tests {
-    use super::next_combination;
+    use super::{next_combination, next_permutation};
 
     #[test]
     fn increments_last_value_when_below_upper_bound() {
@@ -191,5 +192,52 @@ mod tests {
     fn test_single_element_combination() {
         assert_eq!(next_combination(&[2], 4), Some(vec![3]));
         assert_eq!(next_combination(&[4], 4), None);
+    }
+
+    #[test]
+    fn test_next_permutation_increments_last_two_values() {
+        assert_eq!(next_permutation(&[1, 2, 3]), Some(vec![1, 3, 2]));
+    }
+
+    #[test]
+    fn test_next_permutation_updates_suffix_after_swap() {
+        assert_eq!(next_permutation(&[1, 3, 2]), Some(vec![2, 1, 3]));
+    }
+
+    #[test]
+    fn test_next_permutation_returns_none_for_last_ordering() {
+        assert_eq!(next_permutation(&[3, 2, 1]), None);
+    }
+
+    #[test]
+    fn test_next_permutation_empty_input() {
+        assert_eq!(next_permutation(&[]), None);
+    }
+
+    #[test]
+    fn test_next_permutation_single_element() {
+        assert_eq!(next_permutation(&[7]), None);
+    }
+
+    #[test]
+    fn test_next_permutation_full_sequence_progression() {
+        let mut p = vec![0, 1, 2];
+        let mut results = Vec::new();
+
+        while let Some(next) = next_permutation(&p) {
+            results.push(next.clone());
+            p = next;
+        }
+
+        assert_eq!(
+            results,
+            vec![
+                vec![0, 2, 1],
+                vec![1, 0, 2],
+                vec![1, 2, 0],
+                vec![2, 0, 1],
+                vec![2, 1, 0],
+            ]
+        );
     }
 }
