@@ -1,6 +1,7 @@
 import pytest
 from sympy import Integer, Rational, Symbol, exp, oo, zoo
 
+from applpy import rust_bindings
 from applpy.rv import (
     CHF,
     RV,
@@ -28,8 +29,6 @@ from applpy.rv import (
     MinimumIID,
     MinimumRV,
     Mixture,
-    NextCombination,
-    NextPermutation,
     OrderStat,
     PDF,
     PPPlot,
@@ -178,12 +177,12 @@ def test_convert_validation_errors():
 
 
 def test_next_combination_advances_lexicographically():
-    assert NextCombination([1, 2, 4], 5) == [1, 2, 5]
-    assert NextCombination([1, 4, 5], 5) == [2, 3, 4]
+    assert rust_bindings.next_combination([1, 2, 4], 5) == [1, 2, 5]
+    assert rust_bindings.next_combination([1, 4, 5], 5) == [2, 3, 4]
 
 
 def test_next_permutation_advances_lexicographically_for_increasing_input():
-    assert NextPermutation([1, 2, 3]) == [1, 3, 2]
+    assert rust_bindings.next_permutation([1, 2, 3]) == [1, 3, 2]
 
 
 def test_operator_overloads_for_scalars_and_rvs():

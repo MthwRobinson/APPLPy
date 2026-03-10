@@ -2479,64 +2479,6 @@ def MinimumIID(RVar, n):
         return PDF(X_final)
 
 
-def NextCombination(Previous, N):
-    """
-    Procedure Name: NextCombination
-    Purpose: Generates the next lexicographical combination of
-                size n. Designed for use in the OrderStat
-                procedure.
-    Arguments:  1. Previous: A list
-                2. N: A positive integer
-    Output:     1. The next combination
-    """
-    return rust_bindings.next_combination(Previous, N)
-
-
-def NextPermutation(Previous):
-    """
-    Procedure Name: NextPermutation
-    Purpose: Generate the next lexicographical permutation of
-                the given list. Designed for use in the OrderStat
-                procedure.
-    Arguments:  1. Previous: A list
-    Output:     1. The next permutation
-    """
-    # Initialize the Next list
-    Next = []
-    Temp2 = []
-    for i in range(len(Previous)):
-        Next.append(Previous[i])
-        Temp2.append(None)
-    n = len(Previous)
-    flag = False
-
-    # Find the largest index value i for which Next[i]<Next[i+1]
-    for i in reversed(list(range(1, n))):
-        while not flag:
-            indx = i - 1
-            if Next[indx] < Next[indx + 1]:
-                flag = True
-                OrigVal = Next[indx]
-                SwapIndex = indx + 1
-                # Find the smallest value Next[j] for which Next[i]<Next[j]
-                #   and i<j
-                for j in reversed(list(range(SwapIndex, n))):
-                    if Next[j] < Next[SwapIndex]:
-                        if Next[j] > OrigVal:
-                            SwapIndex = j
-                Temp1 = Next[SwapIndex]
-                Swap = Next[indx]
-                Next[SwapIndex] = Swap
-                Next[indx] = Temp1
-                # Reverse the order of the values to the right of the leftmost
-                #   swapped value
-                for k in range(indx + 1, n):
-                    Temp2[k] = Next[k]
-                for m in range(indx + 1, n):
-                    Next[m] = Temp2[n + indx - m]
-    return Next
-
-
 def OrderStat(RVar, n, r, replace="w"):
     """
     Procedure Name: OrderStat
@@ -2711,9 +2653,9 @@ def OrderStat(RVar, n, r, replace="w"):
                                     if orderedperm[m] == k + 1:
                                         ProbStorage[m][k] = PermProb + ProbStorage[m][k]
                             # Find the next lexicographical permutation
-                            perm = NextPermutation(perm)
+                            perm = rust_bindings.next_permutation(perm)
                         # Find the next lexicographical combination
-                        combo = NextCombination(combo, N)
+                        combo = rust_bindings.next_combination(combo, N)
 
 
 def Pow(RVar, n):
@@ -2879,8 +2821,8 @@ def RangeStat(RVar, n, replace="w"):
                             if Range == k + 1:
                                 fXRange[k] += PermProb
                         # Find the next lexicographical permutation
-                        perm = NextPermutation(perm)
-                    combo = NextCombination(combo, N)
+                        perm = rust_bindings.next_permutation(perm)
+                    combo = rust_bindings.next_combination(combo, N)
                 print(len(fXRange), len(fXSupport))
                 return RV(fXRange, fXSupport, fX.ftype)
 
