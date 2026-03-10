@@ -78,20 +78,15 @@ pub fn next_permutation(previous: &[usize]) -> Option<Vec<usize>> {
                 }
             }
 
-            let next_index_value = next[swap_index];
-            let next_swap_index_value = next[index];
+            next.swap(index, swap_index);
+            next[index + 1..].reverse();
 
-            next[index] = next_index_value;
-            next[swap_index] = next_swap_index_value;
-
-            for j in (index + 1)..vector_length {
-                let reverse_order_value = next[vector_length + index - j];
-                next[vector_length] = reverse_order_value;
-            }
+            return Some(next)
         }
     }
 
-    Some(next)
+    None
+
 }
 
 #[cfg(test)]
