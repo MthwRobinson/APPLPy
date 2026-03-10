@@ -24,13 +24,9 @@ pub fn next_permutation_py(previous: Vec<usize>) -> PyResult<Option<Vec<usize>>>
     Ok(order_stat::next_permutation(&previous))
 }
 
-#[pyfunction(name = "verify_discrete_pdf", signature = (function, support, tolerance=1e-6))]
-pub fn verify_discrete_pdf_py(
-    function: Vec<Number>,
-    support: Vec<Number>,
-    tolerance: Option<f64>,
-) -> PyResult<bool> {
-    if let Ok(result) = rv::verify_pdf(&function, &support, tolerance) {
+#[pyfunction(name = "verify_discrete_pdf", signature = (function, tolerance=1e-6))]
+pub fn verify_discrete_pdf_py(function: Vec<Number>, tolerance: Option<f64>) -> PyResult<bool> {
+    if let Ok(result) = rv::verify_pdf(&function, tolerance) {
         return Ok(result);
     }
 

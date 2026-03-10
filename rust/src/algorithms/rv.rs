@@ -36,7 +36,7 @@ impl RandomVariable {
             return Err("verify_pdf only works for PDFs".to_string());
         }
 
-        verify_pdf(&self.function, &self.support, tolerance)
+        verify_pdf(&self.function, tolerance)
     }
 }
 
@@ -50,40 +50,28 @@ impl RandomVariable {
 ///
 /// # Returns
 /// * `valid` - a boolean indicatin if the PDF is valid
-pub fn verify_pdf(
-    function: &[Number],
-    support: &[Number],
-    tolerance: Option<f64>,
-) -> Result<bool, String> {
+pub fn verify_pdf(function: &[Number], tolerance: Option<f64>) -> Result<bool, String> {
     let default_tolerance: f64 = 0.000001;
     let tolerance = tolerance.unwrap_or(default_tolerance);
 
     println!("Now checking for the area ...");
     let mut area: f64 = 0.0;
-    let support_len: usize = function.len();
     let mut all_positive: bool = true;
 
-    for i in 0..support_len {
-        let function_value: f64 = match &function[i] {
+    for function_value in function {
+        let probability: f64 = match &function_value {
             Number::Float(x) => *x,
             Number::Integer(x) => *x as f64,
             Number::Rational(x) => x.to_f64().unwrap(),
         };
 
-        if function_value < 0.0 {
+        if probability < 0.0 {
             all_positive = false;
         }
 
-        let support_value: f64 = match &support[i] {
-            Number::Float(x) => *x,
-            Number::Integer(x) => *x as f64,
-            Number::Rational(x) => x.to_f64().unwrap(),
-        };
-
-        let probability = function_value * support_value;
         area += probability;
-        println!("The area under f(x) is: {}", area);
     }
+    println!("The area under f(x) is: {}", area);
 
     println!("Now checking for absolute value ...");
     if !all_positive {

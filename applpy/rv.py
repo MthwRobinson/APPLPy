@@ -794,7 +794,7 @@ class RV:
         # If the random variable is discrete, verify the PDF
         if self.ftype[0] == "discrete":
             X_dummy = PDF(self)
-            is_valid = rust_bindings.verify_discrete_pdf(X_dummy.func, X_dummy.support)
+            is_valid = rust_bindings.verify_discrete_pdf(X_dummy.func)
             if is_valid:
                 print("is valid")
             else:
