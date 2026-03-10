@@ -3,6 +3,8 @@ use pyo3::prelude::*;
 pub mod algorithms;
 pub mod python;
 
+pub use algorithms::rv::Number;
+
 #[pyfunction]
 fn dummy_ping() -> &'static str {
     "applpy_rust_ok"
