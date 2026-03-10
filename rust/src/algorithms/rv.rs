@@ -32,34 +32,53 @@ pub struct RandomVariable {
 
 impl RandomVariable {
     fn verify_pdf(&self, tolerance: Option<f64>) -> Result<bool, String> {
-        let tolerance = tolerance.unwrap_or(0.00001);
-
         if self.ftype.0 != FunctionalForm::Pdf {
             return Err("verify_pdf only works for PDFs".to_string());
         }
 
-        let mut area: f64 = 0.0;
-        let support_len: usize = self.function.len();
-
-        for i in 0..support_len {
-            let function: f64 = match &self.function[i] {
-                Number::Float(x) => *x,
-                Number::Integer(x) => *x as f64,
-                Number::Rational(x) => x.to_f64().unwrap(),
-            };
-
-            let support: f64 = match &self.support[i] {
-                Number::Float(x) => *x,
-                Number::Integer(x) => *x as f64,
-                Number::Rational(x) => x.to_f64().unwrap(),
-            };
-
-            let probability = function * support;
-            area += probability
-        }
-
-        Ok((area > 1.0 - tolerance) && (area < 1.0 + tolerance))
+        verify_pdf(&self.function, &self.support, tolerance)
     }
+}
+
+/// Verifies that the PDF of random variable sums to 1
+///
+/// # Arguments
+/// * `function` - the probability mass functon of the RV
+/// * `support` - the support of the RV
+/// * `tolerance` - sets the tolerance for how far the result
+///   can deviate from 1
+///
+/// # Returns
+/// * `valid` - a boolean indicatin if the PDF is valid
+pub fn verify_pdf(
+    function: &[Number],
+    support: &[Number],
+    tolerance: Option<f64>,
+) -> Result<bool, String> {
+    let default_tolerance: f64 = 0.000001;
+    let tolerance = tolerance.unwrap_or(default_tolerance);
+
+    let mut area: f64 = 0.0;
+    let support_len: usize = function.len();
+
+    for i in 0..support_len {
+        let function_value: f64 = match &function[i] {
+            Number::Float(x) => *x,
+            Number::Integer(x) => *x as f64,
+            Number::Rational(x) => x.to_f64().unwrap(),
+        };
+
+        let support_value: f64 = match &support[i] {
+            Number::Float(x) => *x,
+            Number::Integer(x) => *x as f64,
+            Number::Rational(x) => x.to_f64().unwrap(),
+        };
+
+        let probability = function_value * support_value;
+        area += probability;
+    }
+
+    Ok((area > 1.0 - tolerance) && (area < 1.0 + tolerance))
 }
 
 #[cfg(test)]

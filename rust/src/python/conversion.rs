@@ -1,10 +1,9 @@
+use pyo3::conversion::FromPyObject;
 use pyo3::prelude::*;
 use pyo3::types::PyAny;
-use pyo3::conversion::FromPyObject;
 
-use num_rational::Rational64;
 use crate::algorithms::rv::Number;
-
+use num_rational::Rational64;
 
 /// Ensures Python lists that could contain floats, integers
 /// or rational numbers are correctly cast into the Number enum
