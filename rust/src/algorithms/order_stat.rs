@@ -82,12 +82,11 @@ pub fn next_permutation(previous: &[usize]) -> Option<Vec<usize>> {
             next.swap(index, swap_index);
             next[index + 1..].reverse();
 
-            return Some(next)
+            return Some(next);
         }
     }
 
     None
-
 }
 
 #[cfg(test)]
