@@ -13,3 +13,11 @@ pub fn next_combination_py(previous: Vec<usize>, n: usize) -> PyResult<Option<Ve
     }
     Ok(order_stat::next_combination(&previous, n))
 }
+
+#[pyfunction(name = "next_permutation", signature = (previous))]
+pub fn next_permutation_py(previous: Vec<usize>) -> PyResult<Option<Vec<usize>>> {
+    if previous.is_empty() {
+        return Err(PyValueError::new_err("Previous must not be empty"));
+    }
+    Ok(order_stat::next_permutation(&previous))
+}
