@@ -2,7 +2,8 @@ use pyo3::conversion::FromPyObject;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyModule};
 
-use crate::algorithms::rv::{DomainType, FunctionalForm, Number};
+use crate::algorithms::number::Number;
+use crate::algorithms::rv::{DomainType, FunctionalForm};
 use num_rational::Rational64;
 
 impl<'py> FromPyObject<'py> for Number {

@@ -4,9 +4,10 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
+use crate::algorithms::number::Number;
 use crate::algorithms::order_stat;
 use crate::algorithms::rv;
-use crate::algorithms::rv::{DomainType, FunctionalForm, Number};
+use crate::algorithms::rv::{DomainType, FunctionalForm};
 
 #[pyfunction(name = "next_combination", signature = (previous, n))]
 pub fn next_combination_py(previous: Vec<usize>, n: usize) -> PyResult<Option<Vec<usize>>> {

@@ -1,11 +1,10 @@
 #![allow(dead_code)]
 
-use crate::algorithms::rv::{DomainType, FunctionalForm, Number, RandomVariable};
+use crate::algorithms::number::Number;
+use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 
 /// Converts a discrete PDF to a discrete PDF. Modifiers the random variable in place.
-pub fn discrete_pdf_to_cdf(
-    random_variable: &mut RandomVariable,
-) -> Result<RandomVariable, String> {
+pub fn discrete_pdf_to_cdf(random_variable: &mut RandomVariable) -> Result<RandomVariable, String> {
     let function = &random_variable.function;
     let function_length = function.len();
 

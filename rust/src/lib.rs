@@ -3,7 +3,7 @@ use pyo3::prelude::*;
 pub mod algorithms;
 pub mod python;
 
-pub use algorithms::rv::Number;
+pub use algorithms::number::Number;
 pub use python::api::FastRV;
 
 #[pyfunction]
