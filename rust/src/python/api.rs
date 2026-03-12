@@ -86,4 +86,28 @@ impl FastRV {
             .verify_pdf(tolerance)
             .expect("veriy_pdf method failed")
     }
+
+    pub fn to_pdf(&self) -> PyResult<FastRV> {
+        if let Ok(random_variable) = self.inner.to_pdf() {
+            return Ok(FastRV {
+                inner: random_variable,
+            });
+        }
+
+        Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "converstion to pdf failed",
+        ))
+    }
+
+    pub fn to_cdf(&self) -> PyResult<FastRV> {
+        if let Ok(random_variable) = self.inner.to_cdf() {
+            return Ok(FastRV {
+                inner: random_variable,
+            });
+        }
+
+        Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "converstion to cdf failed",
+        ))
+    }
 }
