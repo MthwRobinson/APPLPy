@@ -30,7 +30,11 @@ class ExtremeValueRV(RV):
             if beta in [-oo, oo]:
                 err_string = "both parameters must be finite"
                 raise RVError(err_string)
-        X_dummy = RV((beta * exp((x * beta) - ((exp(x * beta)) / alpha))) / alpha, [-oo, oo])
+        X_dummy = RV(
+            (beta * exp((x * beta) - ((exp(x * beta)) / alpha))) / alpha,
+            [-oo, oo],
+            ["continuous", "pdf"],
+        )
         self.func = X_dummy.func
         self.support = X_dummy.support
         self.ftype = X_dummy.ftype

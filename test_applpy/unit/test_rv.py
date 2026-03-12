@@ -72,7 +72,7 @@ def _discrete_pdf_bernoulli():
 
 
 def _functional_discrete_pdf():
-    return RV([x], [1, 3], ["Discrete", "pdf"])
+    return RV([x], [1, 3], ["discrete_functional", "pdf"])
 
 
 def test_rv_init_wraps_scalar_function_and_sets_defaults():
@@ -80,8 +80,21 @@ def test_rv_init_wraps_scalar_function_and_sets_defaults():
 
     assert rv.func == [1]
     assert rv.support == [0, 1]
-    assert rv.ftype == ["continuous", "pdf"]
+    assert rv.domain_type == "continuous"
+    assert rv.functional_form == "pdf"
     assert rv.cache is None
+
+
+def test_rv_init_requires_exactly_one_parameter_set():
+    with pytest.raises(
+        ValueError, match="Pass either ftype or both functional_form and domain_type"
+    ):
+        RV(1, [0, 1], ["continuous", "pdf"], functional_form="pdf", domain_type="continuous")
+
+    with pytest.raises(
+        ValueError, match="Pass either ftype or both functional_form and domain_type"
+    ):
+        RV(1, [0, 1], functional_form="pdf")
 
 
 @pytest.mark.parametrize(
@@ -159,7 +172,7 @@ def test_bootstrap_rv_creates_discrete_pdf_with_frequencies():
 
 
 def test_convert_discrete_functional_to_explicit_form():
-    functional_rv = RV([x], [1, 3], ["Discrete", "pdf"])
+    functional_rv = RV([x], [1, 3], ["discrete_functional", "pdf"])
 
     explicit_rv = Convert(functional_rv)
 
@@ -169,11 +182,11 @@ def test_convert_discrete_functional_to_explicit_form():
 
 
 def test_convert_validation_errors():
-    with pytest.raises(RVError, match="must be Discrete"):
+    with pytest.raises(RVError, match="must be discrete_functional"):
         Convert(RV(1, [0, 1], ["continuous", "pdf"]))
 
     with pytest.raises(RVError, match="infinite support"):
-        Convert(RV([x], [0, oo], ["Discrete", "pdf"]))
+        Convert(RV([x], [0, oo], ["discrete_functional", "pdf"]))
 
 
 def test_next_combination_advances_lexicographically():
@@ -556,7 +569,7 @@ def test_product_continuous_quadrant_case_coverage():
 
 
 def test_product_discrete_symbolic_support_error_path():
-    symbolic_support = RV([x], [x, 3], ["Discrete", "pdf"])
+    symbolic_support = RV([x], [x, 3], ["discrete_functional", "pdf"])
     regular = _functional_discrete_pdf()
     with pytest.raises(RVError, match="symbolic or infinite support"):
         Product(symbolic_support, regular)
@@ -579,11 +592,11 @@ def test_plot_display_requires_multiple_plots():
 
 
 def test_functional_discrete_conversion_branches():
-    functional_pdf = RV([x], [1, 3], ["Discrete", "pdf"])
-    functional_cdf = RV([x / 3], [1, 3], ["Discrete", "cdf"])
-    functional_sf = RV([1 - x / 3], [1, 3], ["Discrete", "sf"])
-    functional_hf = RV([x / (4 - x)], [1, 3], ["Discrete", "hf"])
-    functional_chf = RV([-x], [1, 3], ["Discrete", "chf"])
+    functional_pdf = RV([x], [1, 3], ["discrete_functional", "pdf"])
+    functional_cdf = RV([x / 3], [1, 3], ["discrete_functional", "cdf"])
+    functional_sf = RV([1 - x / 3], [1, 3], ["discrete_functional", "sf"])
+    functional_hf = RV([x / (4 - x)], [1, 3], ["discrete_functional", "hf"])
+    functional_chf = RV([-x], [1, 3], ["discrete_functional", "chf"])
 
     assert CDF(functional_cdf, 2) == Rational(2, 3)
     assert CDF(functional_pdf).ftype == ["discrete", "cdf"]
@@ -603,7 +616,7 @@ def test_discrete_idf_sf_hf_cross_conversions_and_known_idf_bug():
     assert SF(HF(discrete)).ftype == ["discrete", "sf"]
     assert SF(CHF(discrete)).ftype == ["discrete", "sf"]
 
-    functional_idf = RV([2 * x], [0, 1], ["Discrete", "idf"])
+    functional_idf = RV([2 * x], [0, 1], ["discrete_functional", "idf"])
     with pytest.raises(UnboundLocalError):
         IDF(functional_idf, Rational(1, 2))
 
@@ -620,4 +633,4 @@ def test_discrete_stat_and_convolution_edge_paths():
     assert OrderStat(singleton, 1, 1, "w").ftype == ["discrete", "pdf"]
 
     with pytest.raises(RVError, match="symbolic or infinite support"):
-        Convolution(RV([x], [x, 3], ["Discrete", "pdf"]), _discrete_pdf())
+        Convolution(RV([x], [x, 3], ["discrete_functional", "pdf"]), _discrete_pdf())

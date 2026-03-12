@@ -1,6 +1,5 @@
 """ErrorIIRV distribution."""
 
-
 from sympy import (
     Symbol,
     exp,

@@ -1,6 +1,5 @@
 """RayleighRV distribution."""
 
-
 from sympy import (
     Symbol,
     exp,
@@ -29,7 +28,9 @@ class RayleighRV(RV):
                 raise RVError(err_string)
         if theta in [-oo, oo]:
             err_string = "both parameters must be finite"
-        X_dummy = RV([2 * theta ** (2) * x * exp(-(theta ** (2)) * x**2)], [0, oo])
+        X_dummy = RV(
+            [2 * theta ** (2) * x * exp(-(theta ** (2)) * x**2)], [0, oo], ["continuous", "pdf"]
+        )
         self.func = X_dummy.func
         self.support = X_dummy.support
         self.ftype = X_dummy.ftype

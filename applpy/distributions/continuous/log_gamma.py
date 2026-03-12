@@ -1,6 +1,5 @@
 """LogGammaRV distribution."""
 
-
 from sympy import (
     Symbol,
     exp,

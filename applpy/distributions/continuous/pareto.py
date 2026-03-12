@@ -1,6 +1,5 @@
 """ParetoRV distribution."""
 
-
 from sympy import (
     Symbol,
     oo,

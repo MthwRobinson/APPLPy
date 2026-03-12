@@ -1,6 +1,5 @@
 """LaPlaceRV distribution."""
 
-
 from sympy import (
     Symbol,
     exp,
@@ -29,7 +28,7 @@ class LaPlaceRV(RV):
         if omega in [-oo, oo] or theta in [-oo, oo]:
             err_string = "both parameters must be finite"
             raise RVError(err_string)
-        X_dummy = RV(exp(-abs(x - theta) / omega) / (2 * omega), [-oo, oo])
+        X_dummy = RV(exp(-abs(x - theta) / omega) / (2 * omega), [-oo, oo], ["continuous", "pdf"])
         self.func = X_dummy.func
         self.support = X_dummy.support
         self.ftype = X_dummy.ftype

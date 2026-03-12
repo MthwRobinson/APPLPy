@@ -20,19 +20,19 @@ def test_discrete_distribution_constructors_have_expected_structure():
     poisson = PoissonRV(3)
     uniform_discrete = UniformDiscreteRV(1, 5, 2)
 
-    assert benford.ftype == ["Discrete", "pdf"]
+    assert benford.ftype == ["discrete_functional", "pdf"]
     assert benford.support == [1, 9]
 
-    assert binomial.ftype == ["Discrete", "pdf"]
+    assert binomial.ftype == ["discrete_functional", "pdf"]
     assert binomial.support == [0, 4]
 
-    assert bernoulli.ftype == ["Discrete", "pdf"]
+    assert bernoulli.ftype == ["discrete_functional", "pdf"]
     assert bernoulli.support == [0, 1]
 
-    assert geometric.ftype == ["Discrete", "pdf"]
+    assert geometric.ftype == ["discrete_functional", "pdf"]
     assert geometric.support == [1, oo]
 
-    assert poisson.ftype == ["Discrete", "pdf"]
+    assert poisson.ftype == ["discrete_functional", "pdf"]
     assert poisson.support == [0, oo]
 
     assert uniform_discrete.ftype == ["discrete", "pdf"]

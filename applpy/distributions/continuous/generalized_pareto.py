@@ -1,6 +1,5 @@
 """GeneralizedParetoRV distribution."""
 
-
 from sympy import (
     Symbol,
     exp,

@@ -1,6 +1,5 @@
 """ArcSinRV distribution."""
 
-
 from sympy import (
     pi,
     sqrt,
@@ -22,7 +21,7 @@ class ArcSinRV(RV):
 
     def __init__(self):
         # x = Symbol('x', postive=True)
-        X_dummy = RV(1 / (pi * sqrt(x * (1 - x))), [0, 1])
+        X_dummy = RV(1 / (pi * sqrt(x * (1 - x))), [0, 1], ["continuous", "pdf"])
         self.func = X_dummy.func
         self.support = X_dummy.support
         self.ftype = X_dummy.ftype

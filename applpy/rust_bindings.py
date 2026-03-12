@@ -25,6 +25,7 @@ def next_combination(previous, n):
     """Return the next lexicographical combination."""
     return _extension_module().next_combination(previous, n)
 
+
 def next_permutation(previous):
     """Return the next lexicographical permutation."""
     return _extension_module().next_permutation(previous)

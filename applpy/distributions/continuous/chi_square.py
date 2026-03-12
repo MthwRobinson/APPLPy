@@ -1,6 +1,5 @@
 """ChiSquareRV distribution."""
 
-
 from sympy import (
     Symbol,
     exp,
@@ -28,7 +27,11 @@ class ChiSquareRV(RV):
             if N <= 0 or not isinstance(N, int):
                 err_string = "N must be a positive integer"
                 raise RVError(err_string)
-        X_dummy = RV((x ** ((N / 2) - 1) * exp(-x / 2)) / (2 ** (N / 2) * gamma(N / 2)), [0, oo])
+        X_dummy = RV(
+            (x ** ((N / 2) - 1) * exp(-x / 2)) / (2 ** (N / 2) * gamma(N / 2)),
+            [0, oo],
+            ["continuous", "pdf"],
+        )
         self.func = X_dummy.func
         self.support = X_dummy.support
         self.ftype = X_dummy.ftype

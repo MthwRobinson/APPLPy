@@ -1,6 +1,5 @@
 """TRV distribution."""
 
-
 from sympy import (
     Symbol,
     gamma,

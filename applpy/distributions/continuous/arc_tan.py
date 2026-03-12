@@ -1,6 +1,5 @@
 """ArcTanRV distribution."""
 
-
 from sympy import (
     Symbol,
     atan,

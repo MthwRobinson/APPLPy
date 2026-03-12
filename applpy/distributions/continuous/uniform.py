@@ -34,7 +34,7 @@ class UniformRV(RV):
         if a in [-oo, oo] or b in [-oo, oo]:
             err_string = "all parameters must be finite"
             raise RVError(err_string)
-        X_dummy = RV(simplify((b - a) ** (-1)), [a, b])
+        X_dummy = RV(simplify((b - a) ** (-1)), [a, b], ["continuous", "pdf"])
         self.func = X_dummy.func
         self.support = X_dummy.support
         self.ftype = X_dummy.ftype

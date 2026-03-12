@@ -34,7 +34,9 @@ class CauchyRV(RV):
             if alpha <= 0:
                 err_string = "alpha must be positive"
                 raise RVError(err_string)
-        X_dummy = RV((1) / (alpha * pi * (1 + ((x - a) ** 2 / alpha**2))), [-oo, oo])
+        X_dummy = RV(
+            (1) / (alpha * pi * (1 + ((x - a) ** 2 / alpha**2))), [-oo, oo], ["continuous", "pdf"]
+        )
         self.func = X_dummy.func
         self.support = X_dummy.support
         self.ftype = X_dummy.ftype

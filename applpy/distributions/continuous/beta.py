@@ -1,6 +1,5 @@
 """BetaRV distribution."""
 
-
 from sympy import (
     Symbol,
     gamma,

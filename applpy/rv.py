@@ -58,6 +58,7 @@ Plotting Procedures:
     5. PPPlot(RVar,Sample)
     6. QQPlot(RVar,Sample)
 """
+
 from applpy import rust_bindings
 
 from sympy import (
@@ -88,6 +89,7 @@ from sympy import (
 from random import random
 import numpy as np
 import pickle
+from enum import Enum
 
 import matplotlib.pylab as plt
 
@@ -126,6 +128,21 @@ class RVError(Exception):
         return repr(self.value)
 
 
+class FunctionalForm(str, Enum):
+    CDF = "cdf"
+    CHF = "chf"
+    HF = "hf"
+    IDF = "idf"
+    PDF = "pdf"
+    SF = "sf"
+
+
+class DomainType(str, Enum):
+    CONTINUOUS = "continuous"
+    DISCRETE = "discrete"
+    DISCRETE_FUNCTIONAL = "discrete_functional"
+
+
 class RV:
     """
     RV Class
@@ -133,15 +150,60 @@ class RV:
     Defines procedures relating to ApplPy random variables
     """
 
-    def __init__(self, func, support, ftype=["continuous", "pdf"]):
+    @staticmethod
+    def _normalize_functional_form(functional_form):
+        if isinstance(functional_form, FunctionalForm):
+            return functional_form.value
+        return functional_form
+
+    @staticmethod
+    def _normalize_domain_type(domain_type):
+        if isinstance(domain_type, DomainType):
+            return domain_type.value
+        # Legacy spelling from APPLPy Python 2 code.
+        if domain_type in ["Discrete", "discrete_functional"]:
+            return DomainType.DISCRETE_FUNCTIONAL.value
+        return domain_type
+
+    @classmethod
+    def _parse_ftype(cls, ftype):
+        if not isinstance(ftype, list) or len(ftype) != 2:
+            raise RVError("ftype must be a list with [domain_type, functional_form]")
+
+        domain_type = cls._normalize_domain_type(ftype[0])
+        functional_form = cls._normalize_functional_form(ftype[1])
+        return domain_type, functional_form
+
+    def __init__(self, func, support, ftype=None, functional_form=None, domain_type=None):
         """
         Creates an instance of the random variable class
-            The random variable default is to produce a continuous pdf
+            Pass either `ftype` or both `functional_form` and `domain_type`
         Checks the random variable for errors
         """
 
-        # Check for errors in the data structure of the random
-        #   variable
+        if ftype is None and (functional_form, domain_type) == (None, None):
+            functional_form = "pdf"
+            domain_type = "continuous"
+
+        using_ftype = ftype is not None
+        using_new_args = (functional_form is not None) or (domain_type is not None)
+
+        if using_ftype == using_new_args:
+            raise ValueError(
+                "Pass either ftype or both functional_form and domain_type, but not both."
+            )
+
+        if using_ftype:
+            domain_type, functional_form = self._parse_ftype(ftype)
+        else:
+            if functional_form is None or domain_type is None:
+                raise ValueError(
+                    "Pass either ftype or both functional_form and domain_type, but not both."
+                )
+            domain_type = self._normalize_domain_type(domain_type)
+            functional_form = self._normalize_functional_form(functional_form)
+
+        # Check for errors in the data structure of the random variable
 
         # Check to make sure that the given function is in the
         #   form of a list
@@ -155,7 +217,7 @@ class RV:
             raise RVError("Support must be a list")
         # Check to make sure that the random variable is either
         #   discrete or continuous
-        if ftype[0] not in ["continuous", "discrete", "Discrete"]:
+        if domain_type not in [item.value for item in DomainType]:
             string = "Random variables must either be discrete"
             string += " or continuous"
             raise RVError(string)
@@ -164,11 +226,11 @@ class RV:
         # The support list should be one element larger than the
         #   function list for continuous distributions, and the same
         #   size for discrete
-        if ftype[0] in ["continuous", "Discrete"]:
+        if domain_type in [DomainType.CONTINUOUS.value, DomainType.DISCRETE_FUNCTIONAL.value]:
             if len(support) - len(func) != 1:
                 string = "Support has incorrect number of elements"
                 raise RVError(string)
-        if ftype[0] == "discrete":
+        if domain_type == DomainType.DISCRETE.value:
             if len(support) - len(func) != 0:
                 string = "Support has incorrect number of elements"
                 raise RVError(string)
@@ -183,9 +245,21 @@ class RV:
         # Initialize the random variable
         self.func = func
         self.support = support
-        self.ftype = ftype
+        self.domain_type = domain_type
+        self.functional_form = functional_form
         self.cache = None
         self.filename = None
+
+    @property
+    def ftype(self):
+        # Backward compatibility for legacy callers.
+        return [self.domain_type, self.functional_form]
+
+    @ftype.setter
+    def ftype(self, ftype):
+        domain_type, functional_form = self._parse_ftype(ftype)
+        self.domain_type = domain_type
+        self.functional_form = functional_form
 
     """
     Special Class Methods
@@ -556,8 +630,8 @@ class RV:
         Output:     1. A print statement for each piece of the distribution
                         indicating the function and the relevant support
         """
-        if self.ftype[0] in ["continuous", "Discrete"]:
-            print(("%s %s" % (self.ftype[0], self.ftype[1])))
+        if self.domain_type in ["continuous", "discrete_functional"]:
+            print(("%s %s" % (self.domain_type, self.functional_form)))
             for i in range(len(self.func)):
                 print(("for %s <= x <= %s" % (self.support[i], self.support[i + 1])))
                 print("---------------------------")
@@ -567,8 +641,8 @@ class RV:
                     print(" ")
                     print(" ")
 
-        if self.ftype[0] == "discrete":
-            print("%s %s where {x->f(x)}:" % (self.ftype[0], self.ftype[1]))
+        if self.domain_type == "discrete":
+            print("%s %s where {x->f(x)}:" % (self.domain_type, self.functional_form))
             for i in range(len(self.support)):
                 if i != (len(self.support) - 1):
                     print("{%s -> %s}, " % (self.support[i], self.func[i]), end=" ")
@@ -608,7 +682,7 @@ class RV:
         Arugments:  1.self: the random variable
         Output:     1. The latex code for the random variable
         """
-        if self.ftype[0] not in ["continuous", "Discrete"]:
+        if self.domain_type not in ["continuous", "discrete_functional"]:
             error_string = "latex is only designed to work for continuous"
             error_string += " distributions and discrete distributions that "
             error_string += "are represented in functional form"
@@ -711,7 +785,7 @@ class RV:
                         random variable is valid.
         """
         # If the random variable is continuous, verify the PDF
-        if self.ftype[0] == "continuous":
+        if self.domain_type == "continuous":
             # Check to ensure that the distribution is fully
             #   specified
             for piece in self.func:
@@ -761,7 +835,7 @@ class RV:
                 return False
         # If the random variable is in a discrete functional form,
         #   verify the PDF
-        if self.ftype[0] == "Discrete":
+        if self.domain_type == "discrete_functional":
             # Convert the random variable to PDF form
             X_dummy = PDF(self)
             # Check to ensure that the area under the PDF is 1
@@ -792,7 +866,7 @@ class RV:
                 print("is not valid")
                 return False
         # If the random variable is discrete, verify the PDF
-        if self.ftype[0] == "discrete":
+        if self.domain_type == "discrete":
             X_dummy = PDF(self)
             is_valid = rust_bindings.verify_discrete_pdf(X_dummy.func)
             if is_valid:
@@ -943,7 +1017,7 @@ def CDF(RVar, value=x, cache=False):
 
     # If the distribution is continous, find and return the distribution
     #   of the random variable
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         # Short-cut for Weibull, jump straight to the closed form CDF
         if "Weibull" in RVar.__class__.__name__:
             if value == x:
@@ -954,7 +1028,7 @@ def CDF(RVar, value=x, cache=False):
 
         # If the random variable is already a cdf, nothing needs to
         #   be done
-        if RVar.ftype[1] == "cdf":
+        if RVar.functional_form == "cdf":
             if value == x:
                 return RVar
             if value != x:
@@ -964,7 +1038,7 @@ def CDF(RVar, value=x, cache=False):
                         return simplify(cdfvalue)
         # If the random variable is a sf, find and return the cdf of the
         #   random variable
-        if RVar.ftype[0] == "sf":
+        if RVar.domain_type == "sf":
             X_dummy = SF(RVar)
             # Compute the sf for each segment
             cdflist = []
@@ -1025,7 +1099,7 @@ def CDF(RVar, value=x, cache=False):
 
     # If the distribution is in discrete functional, find and return the
     #   distribution of the random variable
-    if RVar.ftype[0] == "Discrete":
+    if RVar.domain_type == "discrete_functional":
         # If the support is finite, then convert to expanded form and compute
         #   the CDF
         if oo not in RVar.support:
@@ -1034,7 +1108,7 @@ def CDF(RVar, value=x, cache=False):
                 return CDF(RVar2, value)
         # If the random variable is already a cdf, nothing needs to
         #   be done
-        if RVar.ftype[1] == "cdf":
+        if RVar.functional_form == "cdf":
             if value == x:
                 return RVar
             if value != x:
@@ -1044,7 +1118,7 @@ def CDF(RVar, value=x, cache=False):
                         return simplify(cdfvalue)
         # If the random variable is a sf, find and return the cdf of the
         #   random variable
-        if RVar.ftype[0] == "sf":
+        if RVar.domain_type == "sf":
             X_dummy = SF(RVar)
             # Compute the sf for each segment
             cdflist = []
@@ -1052,7 +1126,7 @@ def CDF(RVar, value=x, cache=False):
                 cdflist.append(1 - X_dummy.func[i])
             # If no value is specified, return the sf function
             if value == x:
-                cdffunc = RV(cdflist, X_dummy.support, ["Discrete", "cdf"])
+                cdffunc = RV(cdflist, X_dummy.support, ["discrete_functional", "cdf"])
                 if cache:
                     RVar.add_to_cache("cdf", cdffunc)
                 return cdffunc
@@ -1088,7 +1162,7 @@ def CDF(RVar, value=x, cache=False):
                 cdflist.append(simplify(cdffunc))
             # If no value is specified, return the cdf
             if value == x:
-                cdffunc = RV(cdflist, X_dummy.support, ["Discrete", "cdf"])
+                cdffunc = RV(cdflist, X_dummy.support, ["discrete_functional", "cdf"])
                 if cache:
                     RVar.add_to_cache("cdf", cdffunc)
                 return cdffunc
@@ -1101,10 +1175,10 @@ def CDF(RVar, value=x, cache=False):
 
     # If the distribution is discrete, find and return the cdf of
     #   the random variable
-    if RVar.ftype[0] == "discrete":
+    if RVar.domain_type == "discrete":
         # If the distribution is already a cdf, nothing needs to
         #   be done
-        if RVar.ftype[1] == "cdf":
+        if RVar.functional_form == "cdf":
             if value == x:
                 return RVar
             if value != x:
@@ -1116,7 +1190,7 @@ def CDF(RVar, value=x, cache=False):
                             return RVar.func[i]
         # If the distribution is a sf, find the cdf by reversing the
         #   function list
-        if RVar.ftype[1] in ["sf", "chf", "hf"]:
+        if RVar.functional_form in ["sf", "chf", "hf"]:
             X_dummy = SF(RVar)
             newfunc = []
             for i in reversed(list(range(len(X_dummy.func)))):
@@ -1187,10 +1261,10 @@ def CHF(RVar, value=x, cache=False):
 
     # If the distribution is continuous, find and return the chf of
     #   the random variable
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         # If the distribution is already a chf, nothing needs to
         #   be done
-        if RVar.ftype[1] == "chf":
+        if RVar.functional_form == "chf":
             if value == x:
                 return RVar
             if value != x:
@@ -1227,7 +1301,7 @@ def CHF(RVar, value=x, cache=False):
 
     # If the distribution is a discrete function, find and return the chf of
     #   the random variable
-    if RVar.ftype[0] == "Discrete":
+    if RVar.domain_type == "discrete_functional":
         # If the support is finite, then convert to expanded form and compute
         #   the CHF
         if oo not in RVar.support:
@@ -1236,7 +1310,7 @@ def CHF(RVar, value=x, cache=False):
                 return CHF(RVar2, value)
         # If the distribution is already a chf, nothing needs to
         #   be done
-        if RVar.ftype[1] == "chf":
+        if RVar.functional_form == "chf":
             if value == x:
                 return RVar
             if value != x:
@@ -1260,7 +1334,7 @@ def CHF(RVar, value=x, cache=False):
             # If a value is not specified, return the chf of the
             #   random variable
             if value == x:
-                chfrv = RV(chffunc, X_dummy.support, ["Discrete", "chf"])
+                chfrv = RV(chffunc, X_dummy.support, ["discrete_functional", "chf"])
                 if cache:
                     RVar.add_to_cache("chf", chfrv)
                 return chfrv
@@ -1272,10 +1346,10 @@ def CHF(RVar, value=x, cache=False):
                             return simplify(chfvalue)
 
     # If the random variable is discrete, find and return the chf
-    if RVar.ftype[0] == "discrete":
+    if RVar.domain_type == "discrete":
         # If the distribution is already a chf, nothing needs to
         #   be done
-        if RVar.ftype[1] == "chf":
+        if RVar.functional_form == "chf":
             if value == x:
                 return RVar
             if value != x:
@@ -1330,10 +1404,10 @@ def HF(RVar, value=x, cache=False):
 
     # If the distribution is continuous, find and return the hf of
     #   the random variable
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         # If the distribution is already a hf, nothing needs to be
         #   done
-        if RVar.ftype[1] == "hf":
+        if RVar.functional_form == "hf":
             if value == x:
                 return RVar
             if value != x:
@@ -1344,7 +1418,7 @@ def HF(RVar, value=x, cache=False):
                             return simplify(hfvalue)
         # If the distribution is in chf form, use differentiation
         #   to find the hf
-        if RVar.ftype[1] == "chf":
+        if RVar.functional_form == "chf":
             X_dummy = CHF(RVar)
             # Generate a list of hf functions
             hflist = []
@@ -1385,7 +1459,7 @@ def HF(RVar, value=x, cache=False):
 
     # If the distribution is a discrete function, find and return the hf of
     #   the random variable
-    if RVar.ftype[0] == "Discrete":
+    if RVar.domain_type == "discrete_functional":
         # If the support is finite, then convert to expanded form and compute
         #   the HF
         if oo not in RVar.support:
@@ -1394,7 +1468,7 @@ def HF(RVar, value=x, cache=False):
                 return HF(RVar2, value)
         # If the distribution is already a hf, nothing needs to be
         #   done
-        if RVar.ftype[1] == "hf":
+        if RVar.functional_form == "hf":
             if value == x:
                 return RVar
             if value != x:
@@ -1413,7 +1487,7 @@ def HF(RVar, value=x, cache=False):
                 hfunc = (X_pdf[i]) / (X_sf[i])
                 hflist.append(simplify(hfunc))
             if value == x:
-                hfrv = RV(hflist, RVar.support, ["Discrete", "hf"])
+                hfrv = RV(hflist, RVar.support, ["discrete_functional", "hf"])
                 if cache:
                     RVar.add_to_cache("hf", hfrv)
                 return hfrv
@@ -1425,10 +1499,10 @@ def HF(RVar, value=x, cache=False):
                             return simplify(hfvalue)
 
     # If the random variable is discrete, find and return the hf
-    if RVar.ftype[0] == "discrete":
+    if RVar.domain_type == "discrete":
         # If the distribution is already a hf, nothing needs
         #   to be done
-        if RVar.ftype[1] == "hf":
+        if RVar.functional_form == "hf":
             if value == x:
                 return RVar
             if value != x:
@@ -1484,9 +1558,9 @@ def IDF(RVar, value=x, cache=False):
 
     # If the distribution is continuous, find and return the idf
     #   of the random variable
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         if value == x:
-            if RVar.ftype[1] == "idf":
+            if RVar.functional_form == "idf":
                 return RVar
             # Convert the random variable to its CDF form
             X_dummy = CDF(RVar)
@@ -1548,7 +1622,7 @@ def IDF(RVar, value=x, cache=False):
 
     # If the distribution is a discrete function, find and return the idf
     #   of the random variable
-    if RVar.ftype[0] == "Discrete":
+    if RVar.domain_type == "discrete_functional":
         # If the support is finite, then convert to expanded form and compute
         #   the IDF
         if oo not in RVar.support:
@@ -1556,7 +1630,7 @@ def IDF(RVar, value=x, cache=False):
                 RVar2 = Convert(RVar)
                 return IDF(RVar2, value)
         if value == x:
-            if RVar.ftype[1] == "idf":
+            if RVar.functional_form == "idf":
                 return RVar
             # Convert the random variable to its CDF form
             X_dummy = CDF(RVar)
@@ -1604,7 +1678,7 @@ def IDF(RVar, value=x, cache=False):
                 idffunc2.append(simplify(func))
             # Return the IDF
             idfsup[0] = 0
-            idfrv = RV(idffunc2, idfsup, ["Discrete", "idf"])
+            idfrv = RV(idffunc2, idfsup, ["discrete_functional", "idf"])
             if cache:
                 RVar.add_to_cache("idf", idfrv)
             return idfrv
@@ -1621,9 +1695,9 @@ def IDF(RVar, value=x, cache=False):
 
     # If the distribution is discrete, find and return the idf of the
     # random variable
-    if RVar.ftype[0] == "discrete":
+    if RVar.domain_type == "discrete":
         # If the distribution is already an idf, nothing needs to be done
-        if RVar.ftype[1] == "idf":
+        if RVar.functional_form == "idf":
             if value == x:
                 return RVar
             if value != x:
@@ -1636,7 +1710,7 @@ def IDF(RVar, value=x, cache=False):
         # Otherwise, find the cdf, and then invert it
         else:
             # If the distribution is a chf or hf, convert to an sf first
-            if RVar.ftype[1] == "chf" or RVar.ftype[1] == "hf":
+            if RVar.functional_form == "chf" or RVar.functional_form == "hf":
                 X_dummy0 = SF(RVar)
                 X_dummy = CDF(X_dummy0)
             else:
@@ -1680,9 +1754,9 @@ def PDF(RVar, value=x, cache=False):
 
     # If the distribution is continuous, find and return the pdf of the
     # random variable
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         # If the distribution is already a pdf, nothing needs to be done
-        if RVar.ftype[1] == "pdf":
+        if RVar.functional_form == "pdf":
             if value == x:
                 return RVar
             if value != x:
@@ -1691,7 +1765,7 @@ def PDF(RVar, value=x, cache=False):
                         pdfvalue = RVar.func[i].subs(x, value)
                         return simplify(pdfvalue)
         # If the distribution is a hf or chf, use integration to find the pdf
-        if RVar.ftype[1] == "hf" or RVar.ftype[1] == "chf":
+        if RVar.functional_form == "hf" or RVar.functional_form == "chf":
             X_dummy = HF(RVar)
             # Substitute the dummy variable 't' into the hazard function
             hfsubslist = []
@@ -1748,9 +1822,9 @@ def PDF(RVar, value=x, cache=False):
                                 return simplify(pdfvalue)
 
     # If the distribution is a discrete function, find and return the pdf
-    if RVar.ftype[0] == "Discrete":
+    if RVar.domain_type == "discrete_functional":
         # If the distribution is already a pdf, nothing needs to be done
-        if RVar.ftype[1] == "pdf":
+        if RVar.functional_form == "pdf":
             if value == x:
                 return RVar
             if value != x:
@@ -1765,7 +1839,7 @@ def PDF(RVar, value=x, cache=False):
                 RVar2 = Convert(RVar)
                 return PDF(RVar2, value)
         # If the distribution is a hf or chf, use summation to find the pdf
-        if RVar.ftype[1] == "hf" or RVar.ftype[1] == "chf":
+        if RVar.functional_form == "hf" or RVar.functional_form == "chf":
             X_dummy = HF(RVar)
             # Substitute the dummy variable 't' into the hazard function
             hfsubslist = []
@@ -1791,7 +1865,7 @@ def PDF(RVar, value=x, cache=False):
                 newfunc = X_dummy.func[i] * exp(-sumlist[i])
                 pdffunc.append(simplify(newfunc))
             if value == x:
-                pdfrv = RV(pdffunc, RVar.support, ["Discrete", "pdf"])
+                pdfrv = RV(pdffunc, RVar.support, ["discrete_functional", "pdf"])
                 if cache:
                     RVar.add_to_cache("pdf", pdfrv)
                 return pdfrv
@@ -1811,7 +1885,7 @@ def PDF(RVar, value=x, cache=False):
                     funcX0 = X_dummy.func[i].subs(x, x - 1)
                     pmf = simplify(funcX1 - funcX0)
                     pdflist.append(pmf)
-                pdfrv = RV(pdflist, RVar.support, ["Discrete", "pdf"])
+                pdfrv = RV(pdflist, RVar.support, ["discrete_functional", "pdf"])
                 if cache:
                     RVar.add_to_cache("pdf", pdfrv)
                 return pdfrv
@@ -1828,9 +1902,9 @@ def PDF(RVar, value=x, cache=False):
 
     # If the distribution is discrete, find and return the pdf of the
     # random variable
-    if RVar.ftype[0] == "discrete":
+    if RVar.domain_type == "discrete":
         # If the distribution is already a pdf, nothing needs to be done
-        if RVar.ftype[1] == "pdf":
+        if RVar.functional_form == "pdf":
             if value == x:
                 return RVar
             if value != x:
@@ -1888,9 +1962,9 @@ def SF(RVar, value=x, cache=False):
 
     # If the distribution is continuous, find and return the sf of the
     # random variable
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         # If the distribution is already a sf, nothing needs to be done
-        if RVar.ftype[1] == "sf":
+        if RVar.functional_form == "sf":
             if value == x:
                 return RVar
             else:
@@ -1921,13 +1995,13 @@ def SF(RVar, value=x, cache=False):
 
     # If the distribution is discrete, find and return the sf of the
     # random variable
-    if RVar.ftype[0] == "Discrete":
+    if RVar.domain_type == "discrete_functional":
         if oo not in RVar.support:
             if -oo not in RVar.support:
                 RVar2 = Convert(RVar)
                 return SF(RVar2, value)
         # If the distribution is already a sf, nothing needs to be done
-        if RVar.ftype[1] == "sf":
+        if RVar.functional_form == "sf":
             if value == x:
                 return RVar
             else:
@@ -1958,9 +2032,9 @@ def SF(RVar, value=x, cache=False):
 
     # If the distribution is a discrete function, find and return the sf of the
     # random variable
-    if RVar.ftype[0] == "Discrete":
+    if RVar.domain_type == "discrete_functional":
         # If the distribution is already a sf, nothing needs to be done
-        if RVar.ftype[1] == "sf":
+        if RVar.functional_form == "sf":
             if value == x:
                 return RVar
             else:
@@ -1977,7 +2051,7 @@ def SF(RVar, value=x, cache=False):
             for i in range(len(X_dummy.func)):
                 sflist.append(1 - X_dummy.func[i])
             if value == x:
-                sfrv = RV(sflist, RVar.support, ["Discrete", "sf"])
+                sfrv = RV(sflist, RVar.support, ["discrete_functional", "sf"])
                 if cache:
                     RVar.add_to_cache("sf", sfrv)
                 return sfrv
@@ -1991,11 +2065,11 @@ def SF(RVar, value=x, cache=False):
 
     # If the distribution is a discrete function, find and return the
     # sf of the random variable
-    if RVar.ftype[0] == "discrete":
+    if RVar.domain_type == "discrete":
         if value != x:
             return 1 - CDF(RVar, value)
         # If the distribution is already an sf, nothing needs to be done
-        if RVar.ftype[1] == "sf":
+        if RVar.functional_form == "sf":
             if value == x:
                 return RVar
                 #
@@ -2004,7 +2078,7 @@ def SF(RVar, value=x, cache=False):
                 # else:
                 #    return RVar.func[RVar.support.index(value)]
         # If the distribution is a chf use exp(-chf) to find sf
-        if RVar.ftype[1] == "chf":
+        if RVar.functional_form == "chf":
             X_dummy = CHF(RVar)
             sffunc = []
             for i in range(len(X_dummy.func)):
@@ -2020,7 +2094,7 @@ def SF(RVar, value=x, cache=False):
                 else:
                     return sffunc[RVar.support.index(value)]
         # If the distribution is a hf, use bootstrap rv to find sf:
-        if RVar.ftype[1] == "hf":
+        if RVar.functional_form == "hf":
             X_pdf = BootstrapRV(RVar.support)
             X_hf = RVar
             sffunc = []
@@ -2094,8 +2168,8 @@ def Convert(RVar, inc=1):
     """
     # If the random variable is not in functional form, return
     #   an error
-    if RVar.ftype[0] != "Discrete":
-        raise RVError("The random variable must be Discrete")
+    if RVar.domain_type != "discrete_functional":
+        raise RVError("The random variable must be discrete_functional")
     # If the rv has infinite support, return an error
     if (oo or -oo) in RVar.support:
         raise RVError("Convert does not work for infinite support")
@@ -2111,7 +2185,7 @@ def Convert(RVar, inc=1):
         val = RVar.func[0].subs(x, discrete_supp[i])
         discrete_func.append(val)
     # Return the random variable in discrete form
-    return RV(discrete_func, discrete_supp, ["discrete", RVar.ftype[1]])
+    return RV(discrete_func, discrete_supp, ["discrete", RVar.functional_form])
 
 
 """
@@ -2206,7 +2280,7 @@ def ExpectedValue(RVar, gX=x):
     fx = PDF(RVar)
     # If the distribution is continuous, compute the expected
     #   value
-    if fx.ftype[0] == "continuous":
+    if fx.domain_type == "continuous":
         Expect = 0
         for i in range(len(fx.func)):
             Expect += integrate(gX * fx.func[i], (x, fx.support[i], fx.support[i + 1]))
@@ -2214,7 +2288,7 @@ def ExpectedValue(RVar, gX=x):
 
     # If the distribution is a discrete function, compute the expected
     #   value
-    if fx.ftype[0] == "Discrete":
+    if fx.domain_type == "discrete_functional":
         Expect = 0
         for i in range(len(fx.func)):
             Expect += summation(gX * fx.func[i], (x, fx.support[i], fx.support[i + 1]))
@@ -2222,11 +2296,16 @@ def ExpectedValue(RVar, gX=x):
 
     # If the distribution is discrete, compute the expected
     #   value
-    if fx.ftype[0] == "discrete":
+    if fx.domain_type == "discrete":
         # Transform the random variable, and then use the
         #   mean procedure to find the expected value
         fx_support = [gX.subs(x, value) for value in fx.support]
-        fx_trans = RV(fx.func, fx_support, fx.ftype)
+        fx_trans = RV(
+            fx.func,
+            fx_support,
+            functional_form=fx.functional_form,
+            domain_type=fx.domain_type,
+        )
         # fx_trans=Transform(fx,[[gX],[-oo,oo]])
         Expect = MeanDiscrete(fx_trans)
         return simplify(Expect)
@@ -2339,7 +2418,7 @@ def Mean(RVar, cache=False):
 
     # If the random variable is continuous, find and return the mean
     X_dummy = PDF(RVar)
-    if X_dummy.ftype[0] == "continuous":
+    if X_dummy.domain_type == "continuous":
         # Create list of x*f(x)
         meanfunc = []
         for i in range(len(X_dummy.func)):
@@ -2355,7 +2434,7 @@ def Mean(RVar, cache=False):
         return simplify(meanval)
 
     # If the random variable is a discrete function, find and return the mean
-    if X_dummy.ftype[0] == "Discrete":
+    if X_dummy.domain_type == "discrete_functional":
         # Create list of x*f(x)
         meanfunc = []
         for i in range(len(X_dummy.func)):
@@ -2371,7 +2450,7 @@ def Mean(RVar, cache=False):
         return simplify(meanval)
 
     # If the random variable is discrete, find and return the variance
-    if X_dummy.ftype[0] == "discrete":
+    if X_dummy.domain_type == "discrete":
         meanval = MeanDiscrete(RVar)
         if cache:
             RVar.add_to_cache("mean", meanval)
@@ -2398,9 +2477,9 @@ def MeanDiscrete(RVar):
     Output:     1. The mean of the random variable
     """
     # Check the random variable to make sure it is discrete
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         raise RVError("the random variable must be continuous")
-    elif RVar.ftype[0] == "Discrete":
+    elif RVar.domain_type == "discrete_functional":
         try:
             RVar = Convert(RVar)
         except Exception:
@@ -2484,7 +2563,7 @@ def OrderStat(RVar, n, r, replace="w"):
 
     # If the distribution is continuous, find and return the value of the
     #   order statistic
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         if replace == "wo":
             err_string = "OrderStat without replacement not implemented "
             err_string += "for continuous random variables"
@@ -2509,7 +2588,7 @@ def OrderStat(RVar, n, r, replace="w"):
 
     # If the distribution is in discrete symbolic form, convert it to
     #   discrete explicit form and find the order statistic
-    if RVar.ftype[0] == "Discrete":
+    if RVar.domain_type == "discrete_functional":
         if (-oo not in RVar.support) and (oo not in RVar.support):
             X_dummy = Convert(RVar)
             return OrderStat(X_dummy, n, r, replace)
@@ -2520,7 +2599,7 @@ def OrderStat(RVar, n, r, replace="w"):
 
     # If the distribution is continuous, find and return the value of
     #   the order statistic
-    if RVar.ftype[0] == "discrete":
+    if RVar.domain_type == "discrete":
         fx = PDF(RVar)
         Fx = CDF(RVar)
         Sx = SF(RVar)
@@ -2705,7 +2784,7 @@ def RangeStat(RVar, n, replace="w"):
     # If the random variable is continuous and its CDF is tractable,
     #   find the PDF of the range statistic
     z = Symbol("z")
-    if fX.ftype[0] == "continuous":
+    if fX.domain_type == "continuous":
         if replace == "wo":
             err_string = "OrderStat without replacement not implemented "
             err_string += "for continuous random variables"
@@ -2723,17 +2802,22 @@ def RangeStat(RVar, n, replace="w"):
                 (z, x, fX.support[i + 1]),
             )
             fXRange.append(ffX)
-        RangeRV = RV(fXRange, fX.support, fX.ftype)
+        RangeRV = RV(
+            fXRange,
+            fX.support,
+            functional_form=fX.functional_form,
+            domain_type=fX.domain_type,
+        )
         return RangeRV
     # If the random variable is discrete symbolic, convert it to discrete
     #   explicit and compute the range statistic
-    if fX.ftype[0] == "Discrete":
+    if fX.domain_type == "discrete_functional":
         if (-oo not in fX.support) and (oo not in fX.support):
             X_dummy = Convert(RVar)
             return RangeStat(X_dummy, n, replace)
     # If the reandom variable is discrete explicit, find and return the
     #   range stat
-    if fX.ftype[0] == "discrete":
+    if fX.domain_type == "discrete":
         fX = PDF(RVar)
         FX = CDF(RVar)
         N = len(fX.support)
@@ -2811,7 +2895,12 @@ def RangeStat(RVar, n, replace="w"):
                         perm = rust_bindings.next_permutation(perm)
                     combo = rust_bindings.next_combination(combo, N)
                 print(len(fXRange), len(fXSupport))
-                return RV(fXRange, fXSupport, fX.ftype)
+                return RV(
+                    fXRange,
+                    fXSupport,
+                    functional_form=fX.functional_form,
+                    domain_type=fX.domain_type,
+                )
 
 
 def Skewness(RVar, cache=False):
@@ -2881,7 +2970,7 @@ def Transform(RVar, gXt):
     X_dummy = PDF(RVar)
 
     # If the distribution is continuous, find and return the transformation
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         # Adjust the transformation to include the support of the random
         #   variable
         gXold = []
@@ -3042,7 +3131,7 @@ def Transform(RVar, gXt):
 
     # If the distribution in symbolic discrete, convert it and then compute
     #   the transformation
-    if RVar.ftype[0] == "Discrete":
+    if RVar.domain_type == "discrete_functional":
         for element in RVar.support:
             if (element in [-oo, oo]) or (isinstance(element, Symbol)):
                 err_string = "Transform is not implemented for discrete "
@@ -3053,7 +3142,7 @@ def Transform(RVar, gXt):
         return Transform(X_dummy, gXt)
 
     # If the distribution is discrete, find and return the transformation
-    if RVar.ftype[0] == "discrete":
+    if RVar.domain_type == "discrete":
         gX = gXt
         trans_sup = []
         # Find the portion of the transformation each element
@@ -3110,7 +3199,7 @@ def Truncate(RVar, supp):
 
     # If the random variable is continuous, find and return
     #   the truncated random variable
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         # Find the area of the truncated random variable
         area = CDF(cdf_dummy, supp[1]) - CDF(cdf_dummy, supp[0])
         # area=0
@@ -3143,7 +3232,7 @@ def Truncate(RVar, supp):
 
     # If the random variable is a discrete function, find and return
     #   the truncated random variable
-    if RVar.ftype[0] == "Discrete":
+    if RVar.domain_type == "discrete_functional":
         # Find the area of the truncated random variable
         area = CDF(cdf_dummy, supp[1]) - CDF(cdf_dummy, supp[0])
         # Cut out parts of the distribution that don't fall
@@ -3166,11 +3255,11 @@ def Truncate(RVar, supp):
                 truncsupp.append(X_dummy.support[i])
         truncsupp.append(supp[1])
         # Return the truncated random variable
-        return RV(truncfunc, truncsupp, ["Discrete", "pdf"])
+        return RV(truncfunc, truncsupp, ["discrete_functional", "pdf"])
 
     # If the distribution is discrete, find and return the
     #   truncated random variable
-    if RVar.ftype[0] == "discrete":
+    if RVar.domain_type == "discrete":
         # Find the area of the truncated random variable
         area = 0
         for i in range(len(X_dummy.support)):
@@ -3211,7 +3300,7 @@ def Variance(RVar, cache=False):
     # Find the PDF of the random variable
     X_dummy = PDF(RVar)
     # If the random variable is continuous, find and return the variance
-    if X_dummy.ftype[0] == "continuous":
+    if X_dummy.domain_type == "continuous":
         # Find the mean of the random variable
         EX = Mean(X_dummy)
         # Find E(X^2)
@@ -3233,7 +3322,7 @@ def Variance(RVar, cache=False):
 
     # If the random variable is a discrete function, find and return
     # the variance
-    if X_dummy.ftype[0] == "Discrete":
+    if X_dummy.domain_type == "discrete_functional":
         # Find the mean of the random variable
         EX = Mean(X_dummy)
         # Find E(X^2)
@@ -3254,7 +3343,7 @@ def Variance(RVar, cache=False):
         return simplify(var)
 
     # If the random variable is discrete, find and return the variance
-    if X_dummy.ftype[0] == "discrete":
+    if X_dummy.domain_type == "discrete":
         var = VarDiscrete(RVar)
         if cache:
             RVar.add_to_cache("variance", var)
@@ -3286,9 +3375,9 @@ def VarDiscrete(RVar):
     Output:     1. The variance of the random variable
     """
     # Check the random variable to make sure it is discrete
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         raise RVError("the random variable must be continuous")
-    elif RVar.ftype[0] == "Discrete":
+    elif RVar.domain_type == "discrete_functional":
         try:
             RVar = Convert(RVar)
         except Exception:
@@ -3347,9 +3436,9 @@ def Convolution(RVar1, RVar2):
     """
     # If the two random variables are not both continuous or
     #   both discrete, return an error
-    if RVar1.ftype[0] != RVar2.ftype[0]:
-        discr = ["discrete", "Discrete"]
-        if (RVar1.ftype[0] not in discr) and (RVar2.ftype[0] not in discr):
+    if RVar1.domain_type != RVar2.domain_type:
+        discr = ["discrete", "discrete_functional"]
+        if (RVar1.domain_type not in discr) and (RVar2.domain_type not in discr):
             raise RVError("Both random variables must have the same type")
 
     # Convert both random variables to their PDF form
@@ -3358,7 +3447,7 @@ def Convolution(RVar1, RVar2):
 
     # If the distributions are continuous, find and return the convolution
     #   of the two random variables
-    if RVar1.ftype[0] == "continuous":
+    if RVar1.domain_type == "continuous":
         # X1_dummy.drop_assumptions()
         # X2_dummy.drop_assumptions()
         # If the two distributions are both lifetime distributions, treat
@@ -3399,14 +3488,14 @@ def Convolution(RVar1, RVar2):
 
     # If the two random variables are discrete in functinonal form,
     #   find and return the convolution of the two random variables
-    if RVar1.ftype[0] == "Discrete":
+    if RVar1.domain_type == "discrete_functional":
         for num in RVar1.support:
             if not isinstance(num, (int, float)):
                 err_string = "Convolution does not currently work with"
                 err_string = " RVs that have symbolic or infinite support"
                 raise RVError(err_string)
         RVar1 = Convert(RVar1)
-    if RVar2.ftype[0] == "Discrete":
+    if RVar2.domain_type == "discrete_functional":
         for num in RVar1.support:
             if not isinstance(num, (int, float)):
                 err_string = "Convolution does not currently work with"
@@ -3416,7 +3505,7 @@ def Convolution(RVar1, RVar2):
 
     # If the distributions are discrete, find and return the convolution
     #   of the two random variables.
-    if RVar1.ftype[0] == "discrete":
+    if RVar1.domain_type == "discrete":
         # Convert each random variable to its pdf form
         X1_dummy = PDF(RVar1)
         X2_dummy = PDF(RVar2)
@@ -3483,11 +3572,11 @@ def MaximumRV(RVar1, RVar2):
 
     # If the two random variables are not of the same type
     #   raise an error
-    if RVar1.ftype[0] != RVar2.ftype[0]:
+    if RVar1.domain_type != RVar2.domain_type:
         raise RVError("The RVs must both be discrete or continuous")
 
     # If the distributions are continuous, find and return the max
-    if RVar1.ftype[0] == "continuous":
+    if RVar1.domain_type == "continuous":
         # X1_dummy.drop_assumptions()
         # X2_dummy.drop_assumptions()
         # Special case for lifetime distributions
@@ -3536,14 +3625,14 @@ def MaximumRV(RVar1, RVar2):
 
     # If the two random variables are discrete in functinonal form,
     #   find and return the maximum of the two random variables
-    if RVar1.ftype[0] == "Discrete":
+    if RVar1.domain_type == "discrete_functional":
         for num in RVar1.support:
             if not isinstance(num, (int, float)):
                 err_string = "Maximum does not currently work with"
                 err_string = " RVs that have symbolic or infinite support"
                 raise RVError(err_string)
         RVar1 = Convert(RVar1)
-    if RVar2.ftype[0] == "Discrete":
+    if RVar2.domain_type == "discrete_functional":
         for num in RVar1.support:
             if not isinstance(num, (int, float)):
                 err_string = "Maximum does not currently work with"
@@ -3553,7 +3642,7 @@ def MaximumRV(RVar1, RVar2):
 
     # If the distributions are discrete, find and return
     #   the maximum of the two rv's
-    if RVar1.ftype[0] == "discrete":
+    if RVar1.domain_type == "discrete":
         # Convert X and Y to their PDF representations
         fx = PDF(RVar1)
         fy = PDF(RVar2)
@@ -3633,11 +3722,11 @@ def MinimumRV(RVar1, RVar2):
 
     # If the two random variables are not of the same type
     #   raise an error
-    if RVar1.ftype[0] != RVar2.ftype[0]:
+    if RVar1.domain_type != RVar2.domain_type:
         raise RVError("The RVs must both be discrete or continuous")
 
     # If the distributions are continuous, find and return the min
-    if RVar1.ftype[0] == "continuous":
+    if RVar1.domain_type == "continuous":
         # X1_dummy.drop_assumptions()
         # X2_dummy.drop_assumptions()
         # Special case for lifetime distributions
@@ -3689,14 +3778,14 @@ def MinimumRV(RVar1, RVar2):
 
     # If the two random variables are discrete in functinonal form,
     #   find and return the minimum of the two random variables
-    if RVar1.ftype[0] == "Discrete":
+    if RVar1.domain_type == "discrete_functional":
         for num in RVar1.support:
             if not isinstance(num, (int, float)):
                 err_string = "Minimum does not currently work with"
                 err_string = " RVs that have symbolic or infinite support"
                 raise RVError(err_string)
         RVar1 = Convert(RVar1)
-    if RVar2.ftype[0] == "Discrete":
+    if RVar2.domain_type == "discrete_functional":
         for num in RVar1.support:
             if not isinstance(num, (int, float)):
                 err_string = "Minimum does not currently work with"
@@ -3706,7 +3795,7 @@ def MinimumRV(RVar1, RVar2):
 
     # If the distributions are discrete, find and return
     #   the minimum of the two rv's
-    if RVar1.ftype[0] == "discrete":
+    if RVar1.domain_type == "discrete":
         # Convert X and Y to their PDF representations
         fx = PDF(RVar1)
         fy = PDF(RVar2)
@@ -3781,7 +3870,7 @@ def Mixture(MixParameters, MixRVs):
     # Check to ensure that the mix rv's are all of the same type
     #   (discrete or continuous)
     for i in range(len(MixRVs)):
-        if MixRVs[0].ftype[0] != MixRVs[i].ftype[0]:
+        if MixRVs[0].domain_type != MixRVs[i].domain_type:
             raise RVError("Mix RVs must be all continuous or discrete")
     # Convert the Mix RVs to their PDF form
     Mixfx = []
@@ -3790,7 +3879,7 @@ def Mixture(MixParameters, MixRVs):
 
     # If the distributions are continuous, find and return the
     #   mixture pdf
-    if Mixfx[0].ftype[0] == "continuous":
+    if Mixfx[0].domain_type == "continuous":
         # X1_dummy.drop_assumptions()
         # X2_dummy.drop_assumptions()
         # Compute the support of the mixture as the union of the supports
@@ -3820,7 +3909,7 @@ def Mixture(MixParameters, MixRVs):
     # If the two random variables are discrete in functinonal form,
     #   find and return the mixture of the two random variables
     for i in range(len(Mixfx)):
-        if Mixfx[i].ftype[0] == "Discrete":
+        if Mixfx[i].domain_type == "discrete_functional":
             for num in Mixfx[i].support:
                 if not isinstance(num, (int, float)):
                     err_string = "Mixture does not currently work with"
@@ -3830,7 +3919,7 @@ def Mixture(MixParameters, MixRVs):
 
     # If the distributions are discrete, find and return the
     #   mixture pdf
-    if Mixfx[0].ftype[0] == "discrete":
+    if Mixfx[0].domain_type == "discrete":
         # Compute the mixture rv by summing over the weights
         MixSupp = []
         fxnew = []
@@ -3865,7 +3954,7 @@ def Product(RVar1, RVar2):
     """
     # If the random variable is continuous, find and return the
     #   product of the two random variables
-    if RVar1.ftype[0] == "continuous":
+    if RVar1.domain_type == "continuous":
         # X1_dummy.drop_assumptions()
         # X2_dummy.drop_assumptions()
         v = Symbol("v", positive=True)
@@ -4176,14 +4265,14 @@ def Product(RVar1, RVar2):
 
     # If the two random variables are discrete in functinonal form,
     #   find and return the product of the two random variables
-    if RVar1.ftype[0] == "Discrete":
+    if RVar1.domain_type == "discrete_functional":
         for num in RVar1.support:
             if not isinstance(num, (int, float)):
                 err_string = "Product does not currently work with"
                 err_string = " RVs that have symbolic or infinite support"
                 raise RVError(err_string)
         RVar1 = Convert(RVar1)
-    if RVar2.ftype[0] == "Discrete":
+    if RVar2.domain_type == "discrete_functional":
         for num in RVar1.support:
             if not isinstance(num, (int, float)):
                 err_string = "Product does not currently work with"
@@ -4193,7 +4282,7 @@ def Product(RVar1, RVar2):
 
     # If the distributions are discrete, find and return the product
     #   of the two random variables.
-    if RVar1.ftype[0] == "discrete":
+    if RVar1.domain_type == "discrete":
         # Convert each random variable to its pdf form
         X1_dummy = PDF(RVar1)
         X2_dummy = PDF(RVar2)
@@ -4236,7 +4325,7 @@ def ProductDiscrete(RVar1, RVar2):
     Output:     1. The product of RVar1 and RVar2
     """
     # Ensure that both random variables are discrete
-    if RVar1.ftype[0] != "discrete" or RVar2.ftype[0] != "discrete":
+    if RVar1.domain_type != "discrete" or RVar2.domain_type != "discrete":
         raise RVError("both random variables must be discrete")
     # Convert both random variables to pdf form
     X_dummy1 = PDF(RVar1)
@@ -4375,22 +4464,22 @@ def PlotDist(RVar, suplist=None, opt=None, color="r", display=True):
     Output:     1. A plot of the random variable
     """
     # Create the labels for the plot
-    if RVar.ftype[1] == "cdf":
+    if RVar.functional_form == "cdf":
         # lab1='F(x)'
         lab2 = "Cumulative Distribution Function"
-    elif RVar.ftype[1] == "chf":
+    elif RVar.functional_form == "chf":
         # lab1='H(x)'
         lab2 = "Cumulative Hazard Function"
-    elif RVar.ftype[1] == "hf":
+    elif RVar.functional_form == "hf":
         # lab1='h(x)'
         lab2 = "Hazard Function"
-    elif RVar.ftype[1] == "idf":
+    elif RVar.functional_form == "idf":
         # lab1='F-1(s)'
         lab2 = "Inverse Density Function"
-    elif RVar.ftype[1] == "pdf":
+    elif RVar.functional_form == "pdf":
         # lab1='f(x)'
         lab2 = "Probability Density Function"
-    elif RVar.ftype[1] == "sf":
+    elif RVar.functional_form == "sf":
         # lab1='S(X)'
         lab2 = "Survivor Function"
 
@@ -4398,7 +4487,7 @@ def PlotDist(RVar, suplist=None, opt=None, color="r", display=True):
         lab2 = "Empirical CDF"
 
     # If the distribution is continuous, plot the function
-    if RVar.ftype[0] == "continuous":
+    if RVar.domain_type == "continuous":
         # Return an error if the plot supports are not
         #   within the support of the random variable
         if suplist is not None:
@@ -4488,8 +4577,8 @@ def PlotDist(RVar, suplist=None, opt=None, color="r", display=True):
         #    plt.ion()
         # plt.mat_plot(plot_func,plotsupp,lab1,lab2,'continuous')
 
-    if RVar.ftype[0] == "discrete" or RVar.ftype[0] == "Discrete":
-        if RVar.ftype[0] == "Discrete":
+    if RVar.domain_type == "discrete" or RVar.domain_type == "discrete_functional":
+        if RVar.domain_type == "discrete_functional":
             if RVar.support[-1] != oo:
                 RVar = Convert(RVar)
             else:
@@ -4500,7 +4589,12 @@ def PlotDist(RVar, suplist=None, opt=None, color="r", display=True):
                     i += 1
                 newsupport = RVar.support
                 newsupport[-1] = i
-                RVar = RV(RVar.func, newsupport, RVar.ftype)
+                RVar = RV(
+                    RVar.func,
+                    newsupport,
+                    functional_form=RVar.functional_form,
+                    domain_type=RVar.domain_type,
+                )
                 RVar = Convert(RVar)
         # if display==True:
         #    plt.ion()

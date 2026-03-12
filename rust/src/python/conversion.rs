@@ -92,6 +92,8 @@ impl<'py> FromPyObject<'py> for DomainType {
         match s.as_str() {
             "continuous" => Ok(DomainType::Continuous),
             "discrete" => Ok(DomainType::Discrete),
+            "discrete_functional" => Ok(DomainType::DiscreteFunctional),
+            // Backward compatibility with existing Python code.
             "Discrete" => Ok(DomainType::DiscreteFunctional),
             _ => Err(pyo3::exceptions::PyValueError::new_err(
                 "Invalid DomainType",
@@ -105,7 +107,7 @@ impl IntoPy<PyObject> for DomainType {
         let s = match self {
             DomainType::Continuous => "continuous",
             DomainType::Discrete => "discrete",
-            DomainType::DiscreteFunctional => "Discrete",
+            DomainType::DiscreteFunctional => "discrete_functional",
         };
 
         s.into_py(py)

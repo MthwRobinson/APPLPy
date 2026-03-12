@@ -33,7 +33,7 @@ class ExponentialRV(RV):
         if theta in [-oo, oo]:
             err_string = "theta must be finite"
             raise RVError(err_string)
-        X_dummy = RV([theta * exp(-theta * x)], [0, oo])
+        X_dummy = RV([theta * exp(-theta * x)], [0, oo], ["continuous", "pdf"])
         self.func = X_dummy.func
         self.support = X_dummy.support
         self.ftype = X_dummy.ftype

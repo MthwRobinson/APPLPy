@@ -1,6 +1,5 @@
 """KSRV distribution."""
 
-
 from sympy import (
     Symbol,
     factorial,

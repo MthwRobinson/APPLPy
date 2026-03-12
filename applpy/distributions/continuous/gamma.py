@@ -1,6 +1,5 @@
 """GammaRV distribution."""
 
-
 from sympy import (
     Symbol,
     exp,

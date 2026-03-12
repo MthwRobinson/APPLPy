@@ -1,6 +1,5 @@
 """ChiRV distribution."""
 
-
 from sympy import (
     Rational,
     Symbol,

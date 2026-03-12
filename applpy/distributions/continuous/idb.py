@@ -1,6 +1,5 @@
 """IDBRV distribution."""
 
-
 from sympy import (
     Symbol,
     exp,
@@ -28,7 +27,11 @@ class IDBRV(RV):
         if theta in [-oo, oo] or delta in [-oo, oo] or kappa in [-oo, oo]:
             err_string = "all parameters must be finite"
             raise RVError(err_string)
-        X_dummy = RV(1 - (1 + kappa * x) ** (-theta / kappa) * exp(-delta * x**2 / 2), [0, oo])
+        X_dummy = RV(
+            1 - (1 + kappa * x) ** (-theta / kappa) * exp(-delta * x**2 / 2),
+            [0, oo],
+            ["continuous", "pdf"],
+        )
         self.func = X_dummy.func
         self.support = X_dummy.support
         self.ftype = X_dummy.ftype
