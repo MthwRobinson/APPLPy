@@ -3,7 +3,7 @@
 use crate::algorithms::number::Number;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 
-/// Converts a discrete PDF to a discrete PDF. Modifiers the random variable in place.
+/// Converts a discrete PDF to a discrete CDF
 pub fn discrete_pdf_to_cdf(random_variable: &mut RandomVariable) -> Result<RandomVariable, String> {
     let function = &random_variable.function;
     let function_length = function.len();
@@ -12,7 +12,7 @@ pub fn discrete_pdf_to_cdf(random_variable: &mut RandomVariable) -> Result<Rando
         return Err("cannot compute the cdf. function is empty".to_string());
     }
 
-    let mut cdf_function = Vec::with_capacity(function.len());
+    let mut cdf_function = Vec::with_capacity(function_length);
 
     let mut cdf_area = Number::default();
     for function_value in function {
@@ -28,6 +28,37 @@ pub fn discrete_pdf_to_cdf(random_variable: &mut RandomVariable) -> Result<Rando
     };
 
     Ok(cdf_random_variable)
+}
+
+/// Converts a discrete CDF to a discrete PDF
+pub fn discrete_cdf_to_pdf(random_variable: &mut RandomVariable) -> Result<RandomVariable, String> {
+    let function = &random_variable.function;
+    let function_length = function.len();
+
+    if function_length == 0 {
+        return Err("cannot compute the pdf. function is empty".to_string());
+    }
+
+    let mut pdf_function = Vec::with_capacity(function_length);
+
+    for (i, function_value) in function.iter().enumerate() {
+        if i == 0 {
+            pdf_function.push(*function_value)
+        } else {
+            let previous_value = function[i - 1];
+            let pdf_value = *function_value - previous_value;
+            pdf_function.push(pdf_value);
+        }
+    }
+
+    let pdf_random_variable = RandomVariable {
+        function: pdf_function,
+        support: random_variable.support.clone(),
+        functional_form: FunctionalForm::Pdf,
+        domain_type: DomainType::Discrete,
+    };
+
+    Ok(pdf_random_variable)
 }
 
 #[cfg(test)]
