@@ -122,4 +122,99 @@ mod tests {
         assert!(matches!(cdf.function[1], Number::Rational(x) if x == Rational64::new(1, 2)));
         assert!(matches!(cdf.function[2], Number::Rational(x) if x == Rational64::new(1, 1)));
     }
+
+    #[test]
+    fn discrete_cdf_to_pdf_returns_error_for_empty_function() {
+        let mut rv = RandomVariable {
+            function: vec![],
+            support: vec![],
+            functional_form: FunctionalForm::Cdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = discrete_cdf_to_pdf(&mut rv);
+        assert!(matches!(result, Err(msg) if msg == "cannot compute the pdf. function is empty"));
+    }
+
+    #[test]
+    fn discrete_cdf_to_pdf_differences_running_total_and_sets_metadata() {
+        let mut rv = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 10)),
+                Number::Rational(Rational64::new(2, 5)),
+                Number::Rational(Rational64::new(1, 1)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Cdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let pdf = discrete_cdf_to_pdf(&mut rv).unwrap();
+
+        assert!(matches!(pdf.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(pdf.domain_type, DomainType::Discrete));
+        assert_eq!(pdf.function.len(), 3);
+        assert!(matches!(pdf.function[0], Number::Rational(x) if x == Rational64::new(1, 10)));
+        assert!(matches!(pdf.function[1], Number::Rational(x) if x == Rational64::new(3, 10)));
+        assert!(matches!(pdf.function[2], Number::Rational(x) if x == Rational64::new(3, 5)));
+
+        assert_eq!(pdf.support.len(), 3);
+        assert!(matches!(pdf.support[0], Number::Integer(1)));
+        assert!(matches!(pdf.support[1], Number::Integer(2)));
+        assert!(matches!(pdf.support[2], Number::Integer(3)));
+    }
+
+    #[test]
+    fn discrete_pdf_to_cdf_to_pdf_returns_original_pdf() {
+        let original_pdf_function = vec![
+            Number::Rational(Rational64::new(1, 10)),
+            Number::Rational(Rational64::new(3, 10)),
+            Number::Rational(Rational64::new(3, 5)),
+        ];
+
+        let mut rv = RandomVariable {
+            function: original_pdf_function.clone(),
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let mut cdf = discrete_pdf_to_cdf(&mut rv).unwrap();
+        let pdf = discrete_cdf_to_pdf(&mut cdf).unwrap();
+
+        assert_eq!(pdf.function.len(), original_pdf_function.len());
+        for (actual, expected) in pdf.function.iter().zip(original_pdf_function.iter()) {
+            assert!(matches!(
+                (*actual, *expected),
+                (Number::Rational(a), Number::Rational(b)) if a == b
+            ));
+        }
+    }
+
+    #[test]
+    fn discrete_cdf_to_pdf_to_cdf_returns_original_cdf() {
+        let original_cdf_function = vec![
+            Number::Rational(Rational64::new(1, 10)),
+            Number::Rational(Rational64::new(2, 5)),
+            Number::Rational(Rational64::new(1, 1)),
+        ];
+
+        let mut rv = RandomVariable {
+            function: original_cdf_function.clone(),
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Cdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let mut pdf = discrete_cdf_to_pdf(&mut rv).unwrap();
+        let cdf = discrete_pdf_to_cdf(&mut pdf).unwrap();
+
+        assert_eq!(cdf.function.len(), original_cdf_function.len());
+        for (actual, expected) in cdf.function.iter().zip(original_cdf_function.iter()) {
+            assert!(matches!(
+                (*actual, *expected),
+                (Number::Rational(a), Number::Rational(b)) if a == b
+            ));
+        }
+    }
 }
