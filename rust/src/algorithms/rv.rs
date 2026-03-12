@@ -1,7 +1,10 @@
 #![allow(dead_code)]
 
+use std::fmt;
+
 use num_traits::cast::ToPrimitive;
 
+use crate::algorithms::conversion;
 use crate::algorithms::number::Number;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -14,11 +17,38 @@ pub enum FunctionalForm {
     Sf,
 }
 
+impl fmt::Display for FunctionalForm {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let value = match self {
+            FunctionalForm::Cdf => "cdf",
+            FunctionalForm::Chf => "chf",
+            FunctionalForm::Hf => "hf",
+            FunctionalForm::Idf => "idf",
+            FunctionalForm::Pdf => "pdf",
+            FunctionalForm::Sf => "sf",
+        };
+
+        write!(f, "{}", value)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum DomainType {
     Continuous,
     Discrete,
     DiscreteFunctional,
+}
+
+impl fmt::Display for DomainType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let value = match self {
+            DomainType::Continuous => "continuous",
+            DomainType::Discrete => "discrete",
+            DomainType::DiscreteFunctional => "discrete_functional",
+        };
+
+        write!(f, "{}", value)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -36,6 +66,26 @@ impl RandomVariable {
         }
 
         verify_pdf(&self.function, tolerance)
+    }
+
+    pub fn to_pdf(&self) -> Result<RandomVariable, String> {
+        let functional_form = &self.functional_form;
+        let random_variable = match functional_form {
+            FunctionalForm::Cdf => conversion::discrete_cdf_to_pdf(self),
+            FunctionalForm::Pdf => Ok(self.clone()),
+            _ => Err(format!("unable to convert {} to pdf", functional_form)),
+        };
+        random_variable
+    }
+
+    pub fn to_cdf(&self) -> Result<RandomVariable, String> {
+        let functional_form = &self.functional_form;
+        let random_variable = match functional_form {
+            FunctionalForm::Cdf => Ok(self.clone()),
+            FunctionalForm::Pdf => conversion::discrete_pdf_to_cdf(self),
+            _ => Err(format!("unable to convert {} to cdf", functional_form)),
+        };
+        random_variable
     }
 }
 

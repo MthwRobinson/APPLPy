@@ -4,7 +4,7 @@ use crate::algorithms::number::Number;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 
 /// Converts a discrete PDF to a discrete CDF
-pub fn discrete_pdf_to_cdf(random_variable: &mut RandomVariable) -> Result<RandomVariable, String> {
+pub fn discrete_pdf_to_cdf(random_variable: &RandomVariable) -> Result<RandomVariable, String> {
     let function = &random_variable.function;
     let function_length = function.len();
 
@@ -31,7 +31,7 @@ pub fn discrete_pdf_to_cdf(random_variable: &mut RandomVariable) -> Result<Rando
 }
 
 /// Converts a discrete CDF to a discrete PDF
-pub fn discrete_cdf_to_pdf(random_variable: &mut RandomVariable) -> Result<RandomVariable, String> {
+pub fn discrete_cdf_to_pdf(random_variable: &RandomVariable) -> Result<RandomVariable, String> {
     let function = &random_variable.function;
     let function_length = function.len();
 
