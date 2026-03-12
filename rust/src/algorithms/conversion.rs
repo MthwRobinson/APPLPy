@@ -68,27 +68,27 @@ mod tests {
 
     #[test]
     fn discrete_pdf_to_cdf_returns_error_for_empty_function() {
-        let mut rv = RandomVariable {
+        let rv = RandomVariable {
             function: vec![],
             support: vec![],
             functional_form: FunctionalForm::Pdf,
             domain_type: DomainType::Discrete,
         };
 
-        let result = discrete_pdf_to_cdf(&mut rv);
+        let result = discrete_pdf_to_cdf(&rv);
         assert!(matches!(result, Err(msg) if msg == "cannot compute the cdf. function is empty"));
     }
 
     #[test]
     fn discrete_pdf_to_cdf_builds_running_total_and_sets_metadata() {
-        let mut rv = RandomVariable {
+        let rv = RandomVariable {
             function: vec![Number::Float(0.2), Number::Float(0.3), Number::Float(0.5)],
             support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
             functional_form: FunctionalForm::Pdf,
             domain_type: DomainType::Discrete,
         };
 
-        let cdf = discrete_pdf_to_cdf(&mut rv).unwrap();
+        let cdf = discrete_pdf_to_cdf(&rv).unwrap();
 
         assert!(matches!(cdf.functional_form, FunctionalForm::Cdf));
         assert!(matches!(cdf.domain_type, DomainType::Discrete));
@@ -105,7 +105,7 @@ mod tests {
 
     #[test]
     fn discrete_pdf_to_cdf_supports_rational_values() {
-        let mut rv = RandomVariable {
+        let rv = RandomVariable {
             function: vec![
                 Number::Rational(Rational64::new(1, 4)),
                 Number::Rational(Rational64::new(1, 4)),
@@ -116,7 +116,7 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let cdf = discrete_pdf_to_cdf(&mut rv).unwrap();
+        let cdf = discrete_pdf_to_cdf(&rv).unwrap();
 
         assert!(matches!(cdf.function[0], Number::Rational(x) if x == Rational64::new(1, 4)));
         assert!(matches!(cdf.function[1], Number::Rational(x) if x == Rational64::new(1, 2)));
@@ -125,20 +125,20 @@ mod tests {
 
     #[test]
     fn discrete_cdf_to_pdf_returns_error_for_empty_function() {
-        let mut rv = RandomVariable {
+        let rv = RandomVariable {
             function: vec![],
             support: vec![],
             functional_form: FunctionalForm::Cdf,
             domain_type: DomainType::Discrete,
         };
 
-        let result = discrete_cdf_to_pdf(&mut rv);
+        let result = discrete_cdf_to_pdf(&rv);
         assert!(matches!(result, Err(msg) if msg == "cannot compute the pdf. function is empty"));
     }
 
     #[test]
     fn discrete_cdf_to_pdf_differences_running_total_and_sets_metadata() {
-        let mut rv = RandomVariable {
+        let rv = RandomVariable {
             function: vec![
                 Number::Rational(Rational64::new(1, 10)),
                 Number::Rational(Rational64::new(2, 5)),
@@ -149,7 +149,7 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let pdf = discrete_cdf_to_pdf(&mut rv).unwrap();
+        let pdf = discrete_cdf_to_pdf(&rv).unwrap();
 
         assert!(matches!(pdf.functional_form, FunctionalForm::Pdf));
         assert!(matches!(pdf.domain_type, DomainType::Discrete));
@@ -172,15 +172,15 @@ mod tests {
             Number::Rational(Rational64::new(3, 5)),
         ];
 
-        let mut rv = RandomVariable {
+        let rv = RandomVariable {
             function: original_pdf_function.clone(),
             support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
             functional_form: FunctionalForm::Pdf,
             domain_type: DomainType::Discrete,
         };
 
-        let mut cdf = discrete_pdf_to_cdf(&mut rv).unwrap();
-        let pdf = discrete_cdf_to_pdf(&mut cdf).unwrap();
+        let cdf = discrete_pdf_to_cdf(&rv).unwrap();
+        let pdf = discrete_cdf_to_pdf(&cdf).unwrap();
 
         assert_eq!(pdf.function.len(), original_pdf_function.len());
         for (actual, expected) in pdf.function.iter().zip(original_pdf_function.iter()) {
@@ -199,15 +199,15 @@ mod tests {
             Number::Rational(Rational64::new(1, 1)),
         ];
 
-        let mut rv = RandomVariable {
+        let rv = RandomVariable {
             function: original_cdf_function.clone(),
             support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
             functional_form: FunctionalForm::Cdf,
             domain_type: DomainType::Discrete,
         };
 
-        let mut pdf = discrete_cdf_to_pdf(&mut rv).unwrap();
-        let cdf = discrete_pdf_to_cdf(&mut pdf).unwrap();
+        let pdf = discrete_cdf_to_pdf(&rv).unwrap();
+        let cdf = discrete_pdf_to_cdf(&pdf).unwrap();
 
         assert_eq!(cdf.function.len(), original_cdf_function.len());
         for (actual, expected) in cdf.function.iter().zip(original_cdf_function.iter()) {
