@@ -117,6 +117,35 @@ pub fn swap_discrete_cdf_and_idf(
     Ok(swapped_random_variable)
 }
 
+/// Converts a random variable to hazard function for, using the relationship
+/// HF(x) = PDF(x) / SF(x)
+pub fn convert_discrete_rv_to_hf(
+    random_variable: &RandomVariable,
+) -> Result<RandomVariable, String> {
+    let pdf = random_variable.to_pdf()?;
+    let sf = random_variable.to_sf()?;
+
+    let function_length = pdf.function.len();
+    if function_length == 0 {
+        return Err("cannot compute hf. function is empty".to_string());
+    }
+
+    let mut hf_function = Vec::with_capacity(function_length);
+    for (pdf_value, sf_value) in pdf.function.iter().zip(sf.function.iter()) {
+        let hf_value = *pdf_value / *sf_value;
+        hf_function.push(hf_value);
+    }
+
+    let hf_random_variable = RandomVariable {
+        function: hf_function,
+        support: pdf.support.clone(),
+        functional_form: FunctionalForm::Hf,
+        domain_type: DomainType::Discrete,
+    };
+
+    Ok(hf_random_variable)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
