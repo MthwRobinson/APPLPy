@@ -396,4 +396,58 @@ mod tests {
         assert!(matches!(swapped_twice.functional_form, FunctionalForm::Cdf));
         assert!(matches!(swapped_twice.domain_type, DomainType::Discrete));
     }
+
+    #[test]
+    fn convert_discrete_rv_to_hf_returns_error_for_empty_pdf() {
+        let rv = RandomVariable {
+            function: vec![],
+            support: vec![],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = convert_discrete_rv_to_hf(&rv);
+        assert!(matches!(result, Err(msg) if msg == "cannot compute the cdf. function is empty"));
+    }
+
+    #[test]
+    fn convert_discrete_rv_to_hf_returns_error_for_unsupported_functional_form() {
+        let rv = RandomVariable {
+            function: vec![Number::Rational(Rational64::new(1, 2))],
+            support: vec![Number::Integer(1)],
+            functional_form: FunctionalForm::Chf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = convert_discrete_rv_to_hf(&rv);
+        assert!(matches!(result, Err(msg) if msg == "unable to convert chf to pdf"));
+    }
+
+    #[test]
+    fn convert_discrete_rv_to_hf_computes_hf_from_pdf_and_sf_and_sets_metadata() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 10)),
+                Number::Rational(Rational64::new(3, 10)),
+                Number::Rational(Rational64::new(3, 5)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let hf = convert_discrete_rv_to_hf(&rv).unwrap();
+
+        assert!(matches!(hf.functional_form, FunctionalForm::Hf));
+        assert!(matches!(hf.domain_type, DomainType::Discrete));
+        assert_eq!(hf.support, rv.support);
+        assert_eq!(
+            hf.function,
+            vec![
+                Number::Rational(Rational64::new(1, 10)),
+                Number::Rational(Rational64::new(3, 4)),
+                Number::Rational(Rational64::new(6, 1)),
+            ]
+        );
+    }
 }
