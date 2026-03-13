@@ -292,9 +292,9 @@ mod tests {
         let result = rv.to_pdf().unwrap();
 
         assert_eq!(result.function.len(), 3);
-        assert!(matches!(result.function[0], Number::Float(x) if (x - 0.3).abs() < 1e-12));
-        assert!(matches!(result.function[1], Number::Float(x) if (x - 0.5).abs() < 1e-12));
-        assert!(matches!(result.function[2], Number::Float(x) if (x - 0.2).abs() < 1e-12));
+        assert!(matches!(result.function[0], Number::Float(x) if (x - 0.0).abs() < 1e-12));
+        assert!(matches!(result.function[1], Number::Float(x) if (x - 0.2).abs() < 1e-12));
+        assert!(matches!(result.function[2], Number::Float(x) if (x - 0.5).abs() < 1e-12));
         assert_eq!(result.support, rv.support);
         assert!(matches!(result.functional_form, FunctionalForm::Pdf));
         assert!(matches!(result.domain_type, DomainType::Discrete));
@@ -371,9 +371,9 @@ mod tests {
         let result = rv.to_cdf().unwrap();
 
         assert_eq!(result.function.len(), 3);
-        assert!(matches!(result.function[0], Number::Float(x) if x == 0.3));
-        assert!(matches!(result.function[1], Number::Float(x) if x == 0.7));
-        assert!(matches!(result.function[2], Number::Float(x) if x == 1.0));
+        assert!(matches!(result.function[0], Number::Float(x) if (x - 0.0).abs() < 1e-12));
+        assert!(matches!(result.function[1], Number::Float(x) if (x - 0.3).abs() < 1e-12));
+        assert!(matches!(result.function[2], Number::Float(x) if (x - 0.7).abs() < 1e-12));
         assert_eq!(result.support, rv.support);
         assert!(matches!(result.functional_form, FunctionalForm::Cdf));
         assert!(matches!(result.domain_type, DomainType::Discrete));
@@ -434,9 +434,9 @@ mod tests {
         let result = rv.to_sf().unwrap();
 
         assert_eq!(result.function.len(), 3);
-        assert!(matches!(result.function[0], Number::Float(x) if x == 1.0));
-        assert!(matches!(result.function[1], Number::Float(x) if x == 0.7));
-        assert!(matches!(result.function[2], Number::Float(x) if x == 0.2));
+        assert!(matches!(result.function[0], Number::Float(x) if (x - 0.8).abs() < 1e-12));
+        assert!(matches!(result.function[1], Number::Float(x) if (x - 0.3).abs() < 1e-12));
+        assert!(matches!(result.function[2], Number::Float(x) if (x - 0.0).abs() < 1e-12));
         assert_eq!(result.support, rv.support);
         assert!(matches!(result.functional_form, FunctionalForm::Sf));
         assert!(matches!(result.domain_type, DomainType::Discrete));
@@ -454,9 +454,9 @@ mod tests {
         let result = rv.to_sf().unwrap();
 
         assert_eq!(result.function.len(), 3);
-        assert!(matches!(result.function[0], Number::Float(x) if x == 1.0));
-        assert!(matches!(result.function[1], Number::Float(x) if x == 0.7));
-        assert!(matches!(result.function[2], Number::Float(x) if x == 0.2));
+        assert!(matches!(result.function[0], Number::Float(x) if (x - 0.8).abs() < 1e-12));
+        assert!(matches!(result.function[1], Number::Float(x) if (x - 0.3).abs() < 1e-12));
+        assert!(matches!(result.function[2], Number::Float(x) if (x - 0.0).abs() < 1e-12));
         assert_eq!(result.support, rv.support);
         assert!(matches!(result.functional_form, FunctionalForm::Sf));
         assert!(matches!(result.domain_type, DomainType::Discrete));
@@ -554,10 +554,10 @@ mod tests {
         let result = rv.to_idf().unwrap();
 
         assert_eq!(result.function, rv.support);
-        assert_eq!(
-            result.support,
-            vec![Number::Float(0.3), Number::Float(0.7), Number::Float(1.0)]
-        );
+        assert_eq!(result.support.len(), 3);
+        assert!(matches!(result.support[0], Number::Float(x) if (x - 0.0).abs() < 1e-12));
+        assert!(matches!(result.support[1], Number::Float(x) if (x - 0.3).abs() < 1e-12));
+        assert!(matches!(result.support[2], Number::Float(x) if (x - 0.7).abs() < 1e-12));
         assert!(matches!(result.functional_form, FunctionalForm::Idf));
         assert!(matches!(result.domain_type, DomainType::Discrete));
     }

@@ -123,7 +123,7 @@ mod tests {
     use num_rational::Rational64;
 
     #[test]
-    fn swap_discrete_cdf_and_sf_reverses_function_and_toggles_form() {
+    fn swap_discrete_cdf_and_sf_complements_function_and_toggles_form() {
         let rv = RandomVariable {
             function: vec![
                 Number::Rational(Rational64::new(1, 10)),
@@ -140,9 +140,9 @@ mod tests {
         assert_eq!(
             swapped.function,
             vec![
-                Number::Rational(Rational64::new(1, 1)),
-                Number::Rational(Rational64::new(2, 5)),
-                Number::Rational(Rational64::new(1, 10)),
+                Number::Rational(Rational64::new(9, 10)),
+                Number::Rational(Rational64::new(3, 5)),
+                Number::Rational(Rational64::new(0, 1)),
             ]
         );
         assert_eq!(swapped.support, rv.support);

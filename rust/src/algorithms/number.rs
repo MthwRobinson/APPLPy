@@ -43,6 +43,10 @@ impl Number {
             _ => (self, other),
         }
     }
+
+    pub fn one() -> Number {
+        Number::Integer(1)
+    }
 }
 
 impl Default for Number {

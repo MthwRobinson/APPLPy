@@ -80,8 +80,8 @@ pub fn swap_discrete_cdf_and_sf(
 
     let mut swapped_function = Vec::with_capacity(function_length);
 
-    for value in original_function.iter().rev() {
-        swapped_function.push(*value);
+    for value in original_function.iter() {
+        swapped_function.push(Number::one() - *value);
     }
 
     let swapped_random_variable = RandomVariable {
@@ -117,7 +117,7 @@ pub fn swap_discrete_cdf_and_idf(
     Ok(swapped_random_variable)
 }
 
-/// Converts a random variable to hazard function for, using the relationship
+/// Converts a random variable to hazard function form, using the relationship
 /// HF(x) = PDF(x) / SF(x)
 pub fn convert_discrete_rv_to_hf(
     random_variable: &RandomVariable,
@@ -320,7 +320,7 @@ mod tests {
     }
 
     #[test]
-    fn swap_cdf_to_sf_reverses_function_and_sets_metadata() {
+    fn swap_cdf_to_sf_complements_function_and_sets_metadata() {
         let rv = RandomVariable {
             function: vec![
                 Number::Rational(Rational64::new(1, 10)),
@@ -339,16 +339,16 @@ mod tests {
         assert_eq!(
             swapped.function,
             vec![
-                Number::Rational(Rational64::new(1, 1)),
-                Number::Rational(Rational64::new(2, 5)),
-                Number::Rational(Rational64::new(1, 10)),
+                Number::Rational(Rational64::new(9, 10)),
+                Number::Rational(Rational64::new(3, 5)),
+                Number::Rational(Rational64::new(0, 1)),
             ]
         );
         assert_eq!(swapped.support, rv.support);
     }
 
     #[test]
-    fn swap_sf_to_cdf_reverses_function_and_sets_metadata() {
+    fn swap_sf_to_cdf_complements_function_and_sets_metadata() {
         let rv = RandomVariable {
             function: vec![
                 Number::Rational(Rational64::new(1, 1)),
@@ -367,9 +367,9 @@ mod tests {
         assert_eq!(
             swapped.function,
             vec![
-                Number::Rational(Rational64::new(1, 10)),
-                Number::Rational(Rational64::new(2, 5)),
-                Number::Rational(Rational64::new(1, 1)),
+                Number::Rational(Rational64::new(0, 1)),
+                Number::Rational(Rational64::new(3, 5)),
+                Number::Rational(Rational64::new(9, 10)),
             ]
         );
         assert_eq!(swapped.support, rv.support);
@@ -427,12 +427,12 @@ mod tests {
     fn convert_discrete_rv_to_hf_computes_hf_from_pdf_and_sf_and_sets_metadata() {
         let rv = RandomVariable {
             function: vec![
-                Number::Rational(Rational64::new(1, 10)),
+                Number::Rational(Rational64::new(9, 10)),
                 Number::Rational(Rational64::new(3, 10)),
-                Number::Rational(Rational64::new(3, 5)),
+                Number::Rational(Rational64::new(1, 10)),
             ],
             support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
-            functional_form: FunctionalForm::Pdf,
+            functional_form: FunctionalForm::Sf,
             domain_type: DomainType::Discrete,
         };
 
@@ -444,9 +444,9 @@ mod tests {
         assert_eq!(
             hf.function,
             vec![
-                Number::Rational(Rational64::new(1, 10)),
-                Number::Rational(Rational64::new(3, 4)),
-                Number::Rational(Rational64::new(6, 1)),
+                Number::Rational(Rational64::new(1, 9)),
+                Number::Rational(Rational64::new(2, 1)),
+                Number::Rational(Rational64::new(2, 1)),
             ]
         );
     }
