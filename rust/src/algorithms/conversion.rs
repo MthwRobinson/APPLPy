@@ -6,19 +6,12 @@ use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 /// Converts a discrete PDF to a discrete CDF
 pub fn discrete_pdf_to_cdf(random_variable: &RandomVariable) -> Result<RandomVariable, String> {
     let function = &random_variable.function;
-    let function_length = function.len();
 
-    if function_length == 0 {
+    if function.is_empty() {
         return Err("cannot compute the cdf. function is empty".to_string());
     }
 
-    let mut cdf_function = Vec::with_capacity(function_length);
-
-    let mut cdf_area = Number::default();
-    for function_value in function {
-        cdf_area += *function_value;
-        cdf_function.push(cdf_area);
-    }
+    let cdf_function = cumulative_sum(function);
 
     let cdf_random_variable = RandomVariable {
         function: cdf_function,
@@ -28,6 +21,18 @@ pub fn discrete_pdf_to_cdf(random_variable: &RandomVariable) -> Result<RandomVar
     };
 
     Ok(cdf_random_variable)
+}
+
+/// Computes the cumulative sum of a function. Used to compute both the CDF from the PDF
+/// and the cumulative hazard function from the hazard function.
+fn cumulative_sum(function: &[Number]) -> Vec<Number> {
+    function
+        .iter()
+        .scan(Number::default(), |accumulator, &x| {
+            *accumulator += x;
+            Some(*accumulator)
+        })
+        .collect()
 }
 
 /// Converts a discrete CDF to a discrete PDF
