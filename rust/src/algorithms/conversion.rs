@@ -3,6 +3,18 @@
 use crate::algorithms::number::Number;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 
+/// Computes the cumulative sum of a function. Used to compute both the CDF from the PDF
+/// and the cumulative hazard function from the hazard function.
+fn cumulative_sum(function: &[Number]) -> Vec<Number> {
+    function
+        .iter()
+        .scan(Number::default(), |accumulator, &x| {
+            *accumulator += x;
+            Some(*accumulator)
+        })
+        .collect()
+}
+
 /// Converts a discrete PDF to a discrete CDF
 pub fn discrete_pdf_to_cdf(random_variable: &RandomVariable) -> Result<RandomVariable, String> {
     let function = &random_variable.function;
@@ -23,16 +35,24 @@ pub fn discrete_pdf_to_cdf(random_variable: &RandomVariable) -> Result<RandomVar
     Ok(cdf_random_variable)
 }
 
-/// Computes the cumulative sum of a function. Used to compute both the CDF from the PDF
-/// and the cumulative hazard function from the hazard function.
-fn cumulative_sum(function: &[Number]) -> Vec<Number> {
-    function
-        .iter()
-        .scan(Number::default(), |accumulator, &x| {
-            *accumulator += x;
-            Some(*accumulator)
-        })
-        .collect()
+/// Converts a discrete HF to a discrete CHF
+pub fn discrete_hf_to_chf(random_variable: &RandomVariable) -> Result<RandomVariable, String> {
+    let function = &random_variable.function;
+
+    if function.is_empty() {
+        return Err("cannot compute the chf. function is empty".to_string());
+    }
+
+    let chf_function = cumulative_sum(function);
+
+    let chf_random_variable = RandomVariable {
+        function: chf_function,
+        support: random_variable.support.clone(),
+        functional_form: FunctionalForm::Chf,
+        domain_type: DomainType::Discrete,
+    };
+
+    Ok(chf_random_variable)
 }
 
 /// Converts a discrete CDF to a discrete PDF
