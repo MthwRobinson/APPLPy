@@ -117,8 +117,7 @@ pub fn swap_discrete_cdf_and_idf(
     let original_function = &random_variable.function;
     let original_support = &random_variable.support;
 
-    let function_length = original_function.len();
-    if function_length == 0 {
+    if original_function.is_empty() {
         return Err("cannot swap cdf and idf. function is empty".to_string());
     }
 
@@ -140,16 +139,16 @@ pub fn convert_discrete_rv_to_hf(
     let pdf = random_variable.to_pdf()?;
     let sf = random_variable.to_sf()?;
 
-    let function_length = pdf.function.len();
-    if function_length == 0 {
+    if pdf.function.is_empty() {
         return Err("cannot compute hf. function is empty".to_string());
     }
 
-    let mut hf_function = Vec::with_capacity(function_length);
-    for (pdf_value, sf_value) in pdf.function.iter().zip(sf.function.iter()) {
-        let hf_value = *pdf_value / *sf_value;
-        hf_function.push(hf_value);
-    }
+    let hf_function: Vec<Number> = pdf
+        .function
+        .iter()
+        .zip(sf.function.iter())
+        .map(|(pdf_value, sf_value)| *pdf_value / *sf_value)
+        .collect();
 
     let hf_random_variable = RandomVariable {
         function: hf_function,
