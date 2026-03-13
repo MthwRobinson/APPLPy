@@ -18,7 +18,6 @@ fn cumulative_sum(function: &[Number]) -> Vec<Number> {
 /// Converts a discrete PDF to a discrete CDF
 pub fn discrete_pdf_to_cdf(random_variable: &RandomVariable) -> Result<RandomVariable, String> {
     let function = &random_variable.function;
-
     if function.is_empty() {
         return Err("cannot compute the cdf. function is empty".to_string());
     }
@@ -38,7 +37,6 @@ pub fn discrete_pdf_to_cdf(random_variable: &RandomVariable) -> Result<RandomVar
 /// Converts a discrete HF to a discrete CHF
 pub fn discrete_hf_to_chf(random_variable: &RandomVariable) -> Result<RandomVariable, String> {
     let function = &random_variable.function;
-
     if function.is_empty() {
         return Err("cannot compute the chf. function is empty".to_string());
     }
@@ -86,9 +84,7 @@ pub fn swap_discrete_cdf_and_sf(
     random_variable: &RandomVariable,
 ) -> Result<RandomVariable, String> {
     let original_function = &random_variable.function;
-    let function_length = original_function.len();
-
-    if function_length == 0 {
+    if original_function.is_empty() {
         return Err("cannot swap cdf and sf. function is empty".to_string());
     }
 
@@ -98,11 +94,10 @@ pub fn swap_discrete_cdf_and_sf(
         _ => Err("swap_discrete_cdf_and_sf only works on cdf and sf functional forms".to_string()),
     };
 
-    let mut swapped_function = Vec::with_capacity(function_length);
-
-    for value in original_function.iter() {
-        swapped_function.push(Number::one() - *value);
-    }
+    let swapped_function: Vec<Number> = original_function
+        .iter()
+        .map(|value| Number::one() - *value)
+        .collect();
 
     let swapped_random_variable = RandomVariable {
         function: swapped_function,
