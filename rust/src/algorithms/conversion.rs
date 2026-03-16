@@ -456,6 +456,62 @@ mod tests {
     }
 
     #[test]
+    fn discrete_chf_to_hf_returns_error_for_empty_function() {
+        let rv = RandomVariable {
+            function: vec![],
+            support: vec![],
+            functional_form: FunctionalForm::Chf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = discrete_chf_to_hf(&rv);
+        assert!(matches!(result, Err(msg) if msg == "cannot compute the hf. function is empty"));
+    }
+
+    #[test]
+    fn discrete_chf_to_hf_returns_error_for_non_chf_functional_form() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.2), Number::Float(0.8)],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Cdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = discrete_chf_to_hf(&rv);
+        assert!(
+            matches!(result, Err(msg) if msg == "discrete_chf_to_hf requires an input with the chf functional form")
+        );
+    }
+
+    #[test]
+    fn discrete_chf_to_hf_differences_running_total_and_sets_metadata() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 10)),
+                Number::Rational(Rational64::new(2, 5)),
+                Number::Rational(Rational64::new(1, 1)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Chf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let hf = discrete_chf_to_hf(&rv).unwrap();
+
+        assert!(matches!(hf.functional_form, FunctionalForm::Hf));
+        assert!(matches!(hf.domain_type, DomainType::Discrete));
+        assert_eq!(hf.function.len(), 3);
+        assert_eq!(hf.function[0], Number::Rational(Rational64::new(1, 10)));
+        assert_eq!(hf.function[1], Number::Rational(Rational64::new(3, 10)));
+        assert_eq!(hf.function[2], Number::Rational(Rational64::new(3, 5)));
+
+        assert_eq!(hf.support.len(), 3);
+        assert!(matches!(hf.support[0], Number::Integer(1)));
+        assert!(matches!(hf.support[1], Number::Integer(2)));
+        assert!(matches!(hf.support[2], Number::Integer(3)));
+    }
+
+    #[test]
     fn discrete_pdf_to_cdf_to_pdf_returns_original_pdf() {
         let original_pdf_function = vec![
             Number::Rational(Rational64::new(1, 10)),

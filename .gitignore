@@ -8,4 +8,5 @@ APPLPy.egg-info/
 
 rust/target-local
 rust/target
+rust/.target
 rust/.cargo-target
