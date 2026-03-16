@@ -221,12 +221,12 @@ pub fn convert_discrete_rv_to_hf(
 
 /// Converts a discrete cumulative hazard function to a survivor function
 /// using the relationship SF(x) = exp(-CHF(x))
-pub fn convert_discrete_chf_to_sf(
+pub fn discrete_chf_to_sf(
     random_variable: &RandomVariable,
 ) -> Result<RandomVariable, String> {
     if random_variable.functional_form != FunctionalForm::Chf {
         return Err(
-            "convert_discrete_chf_to_sf requires an input with the chf functional form".to_string(),
+            "discrete_chf_to_sf requires an input with the chf functional form".to_string(),
         );
     }
 
@@ -729,7 +729,7 @@ mod tests {
     }
 
     #[test]
-    fn convert_discrete_chf_to_sf_returns_error_for_non_chf_functional_form() {
+    fn discrete_chf_to_sf_returns_error_for_non_chf_functional_form() {
         let rv = RandomVariable {
             function: vec![Number::Float(0.1), Number::Float(0.2)],
             support: vec![Number::Integer(1), Number::Integer(2)],
@@ -737,14 +737,14 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let result = convert_discrete_chf_to_sf(&rv);
+        let result = discrete_chf_to_sf(&rv);
         assert!(
-            matches!(result, Err(msg) if msg == "convert_discrete_chf_to_sf requires an input with the chf functional form")
+            matches!(result, Err(msg) if msg == "discrete_chf_to_sf requires an input with the chf functional form")
         );
     }
 
     #[test]
-    fn convert_discrete_chf_to_sf_returns_error_for_empty_function() {
+    fn discrete_chf_to_sf_returns_error_for_empty_function() {
         let rv = RandomVariable {
             function: vec![],
             support: vec![],
@@ -752,12 +752,12 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let result = convert_discrete_chf_to_sf(&rv);
+        let result = discrete_chf_to_sf(&rv);
         assert!(matches!(result, Err(msg) if msg == "cannot compute sf. function is empty"));
     }
 
     #[test]
-    fn convert_discrete_chf_to_sf_computes_survivor_function_and_sets_metadata() {
+    fn discrete_chf_to_sf_computes_survivor_function_and_sets_metadata() {
         let rv = RandomVariable {
             function: vec![Number::Float(0.0), Number::Float(1.0), Number::Float(2.0)],
             support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
@@ -765,7 +765,7 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let sf = convert_discrete_chf_to_sf(&rv).unwrap();
+        let sf = discrete_chf_to_sf(&rv).unwrap();
 
         assert!(matches!(sf.functional_form, FunctionalForm::Sf));
         assert!(matches!(sf.domain_type, DomainType::Discrete));

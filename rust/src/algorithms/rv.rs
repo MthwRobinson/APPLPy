@@ -71,18 +71,29 @@ impl RandomVariable {
     pub fn to_pdf(&self) -> Result<RandomVariable, String> {
         match &self.functional_form {
             FunctionalForm::Cdf => conversion::discrete_cdf_to_pdf(self),
+            FunctionalForm::Chf => {
+                let sf_random_variable = self.to_sf()?;
+                sf_random_variable.to_pdf()
+            },
+            FunctionalForm::Hf => {
+                let chf_random_variable = self.to_chf()?;
+                chf_random_variable.to_pdf()
+            },
             FunctionalForm::Pdf => Ok(self.clone()),
             FunctionalForm::Sf | FunctionalForm::Idf => {
                 let cdf_random_variable = self.to_cdf()?;
                 conversion::discrete_cdf_to_pdf(&cdf_random_variable)
             }
-            functional_form => Err(format!("unable to convert {} to pdf", functional_form)),
         }
     }
 
     pub fn to_cdf(&self) -> Result<RandomVariable, String> {
         match &self.functional_form {
             FunctionalForm::Cdf => Ok(self.clone()),
+            FunctionalForm::Chf => {
+                let sf_random_variable = self.to_sf()?;
+                sf_random_variable.to_cdf()
+            },
             FunctionalForm::Idf => conversion::swap_discrete_cdf_and_idf(self),
             FunctionalForm::Pdf => conversion::discrete_pdf_to_cdf(self),
             FunctionalForm::Sf => conversion::swap_discrete_cdf_and_sf(self),
@@ -93,12 +104,20 @@ impl RandomVariable {
     pub fn to_sf(&self) -> Result<RandomVariable, String> {
         match &self.functional_form {
             FunctionalForm::Cdf => conversion::swap_discrete_cdf_and_sf(self),
+            FunctionalForm::Chf => conversion::discrete_chf_to_sf(self),
             FunctionalForm::Pdf | FunctionalForm::Idf => {
                 let cdf_random_variable = self.to_cdf()?;
                 conversion::swap_discrete_cdf_and_sf(&cdf_random_variable)
             }
             FunctionalForm::Sf => Ok(self.clone()),
             functional_form => Err(format!("unable to convert {} to sf", functional_form)),
+        }
+    }
+
+    pub fn to_chf(&self) -> Result<RandomVariable, String> {
+        match &self.functional_form {
+            FunctionalForm::Hf => conversion::discrete_hf_to_chf(self),
+            functional_form => Err(format!("unable to convert {} to chf", functional_form)),
         }
     }
 
