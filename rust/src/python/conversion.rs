@@ -24,8 +24,21 @@ impl<'py> FromPyObject<'py> for Number {
             return Ok(Number::Float(float));
         }
 
+        // SymPy's singleton infinities (oo, -oo, zoo, nan) do not always coerce
+        // through `extract::<f64>()`, but they appear in precomputed discrete forms.
+        let text: String = obj.str()?.extract()?;
+        let special = match text.as_str() {
+            "oo" | "zoo" => Some(f64::INFINITY),
+            "-oo" => Some(f64::NEG_INFINITY),
+            "nan" => Some(f64::NAN),
+            _ => None,
+        };
+        if let Some(value) = special {
+            return Ok(Number::Float(value));
+        }
+
         Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
-            "Expected int, float, or sympy.Rational",
+            "Expected int, float, sympy.Rational, or sympy infinity singleton",
         ))
     }
 }
@@ -48,7 +61,17 @@ impl IntoPy<PyObject> for Number {
                     .expect("unable to initialize sympy Rational number")
                     .into_py(py)
             }
-            Number::Float(f) => f.into_py(py),
+            Number::Float(f) => {
+                let sympy = PyModule::import_bound(py, "sympy").expect("unable to import sympy");
+                let float = sympy
+                    .getattr("Float")
+                    .expect("unable to import the Float class from sympy");
+
+                float
+                    .call1((f,))
+                    .expect("unable to initialize sympy Float number")
+                    .into_py(py)
+            }
             Number::Integer(i) => i.into_py(py),
         };
 
@@ -204,5 +227,47 @@ mod tests {
         let result = swap_discrete_cdf_and_idf(&rv);
 
         assert!(matches!(result, Err(msg) if msg == "cannot swap cdf and idf. function is empty"));
+    }
+
+    #[test]
+    fn extracts_sympy_infinity_singletons_as_float() {
+        Python::with_gil(|py| {
+            let sympy = PyModule::import_bound(py, "sympy").unwrap();
+
+            let oo = sympy.getattr("oo").unwrap();
+            let neg_oo = oo.call_method0("__neg__").unwrap();
+            let zoo = sympy.getattr("zoo").unwrap();
+            let nan = sympy.getattr("nan").unwrap();
+
+            assert_eq!(
+                oo.extract::<Number>().unwrap(),
+                Number::Float(f64::INFINITY)
+            );
+            assert_eq!(
+                neg_oo.extract::<Number>().unwrap(),
+                Number::Float(f64::NEG_INFINITY)
+            );
+            assert_eq!(
+                zoo.extract::<Number>().unwrap(),
+                Number::Float(f64::INFINITY)
+            );
+
+            match nan.extract::<Number>().unwrap() {
+                Number::Float(value) => assert!(value.is_nan()),
+                _ => panic!("expected float variant for sympy.nan"),
+            }
+        });
+    }
+
+    #[test]
+    fn converts_float_variant_to_sympy_float() {
+        Python::with_gil(|py| {
+            let sympy = PyModule::import_bound(py, "sympy").unwrap();
+            let value = Number::Float(0.75).into_py(py).bind(py).clone();
+            let float_cls = sympy.getattr("Float").unwrap();
+
+            assert!(value.is_instance(&float_cls).unwrap());
+            assert_eq!(value.str().unwrap().to_string(), "0.750000000000000");
+        });
     }
 }

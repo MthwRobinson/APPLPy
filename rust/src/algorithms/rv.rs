@@ -485,6 +485,26 @@ mod tests {
     }
 
     #[test]
+    fn to_sf_converts_idf_to_sf_starting_at_one_and_non_increasing() {
+        let rv = RandomVariable {
+            function: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
+            support: vec![Number::Integer(0), Number::Float(0.2), Number::Float(0.7)],
+            functional_form: FunctionalForm::Idf,
+            domain_type: DomainType::DiscreteFunctional,
+        };
+
+        let result = rv.to_sf().unwrap();
+
+        assert_eq!(result.function.len(), 3);
+        assert_eq!(result.function[0], Number::Integer(1));
+        let values: Vec<f64> = result.function.iter().map(|value| value.to_f64()).collect();
+        assert!(values.windows(2).all(|window| window[0] >= window[1]));
+        assert_eq!(result.support, rv.function);
+        assert!(matches!(result.functional_form, FunctionalForm::Sf));
+        assert!(matches!(result.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
     fn to_sf_propagates_conversion_error_for_empty_pdf() {
         let rv = RandomVariable {
             function: vec![],

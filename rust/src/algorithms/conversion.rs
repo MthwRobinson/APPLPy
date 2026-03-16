@@ -201,15 +201,11 @@ pub fn swap_discrete_cdf_and_idf(
                     domain_type: DomainType::Discrete,
                 }
             }
-            // Convert IDF back into CDF by shifting probability bounds:
-            // F(x_i) = p_{i+1} for i < n-1, and F(x_n) = 1.
+            // Convert IDF back into CDF using the stored lower probability bounds.
+            // This preserves the discrete step alignment used by SF conversions,
+            // so SF starts at 1 and remains non-increasing for valid IDFs.
             FunctionalForm::Idf => {
-                let cdf_function: Vec<Number> = original_support
-                    .iter()
-                    .skip(1)
-                    .copied()
-                    .chain(std::iter::once(Number::one()))
-                    .collect();
+                let cdf_function = original_support.clone();
 
                 RandomVariable {
                     function: cdf_function,
@@ -270,7 +266,16 @@ pub fn discrete_chf_to_sf(random_variable: &RandomVariable) -> Result<RandomVari
     let sf_function: Vec<Number> = random_variable
         .function
         .iter()
-        .map(|value| Number::Float((-value.to_f64()).exp()))
+        .map(|value| {
+            let sf_value = (-value.to_f64()).exp();
+            if sf_value == 0.0 {
+                Number::Integer(0)
+            } else if sf_value == 1.0 {
+                Number::Integer(1)
+            } else {
+                Number::Float(sf_value)
+            }
+        })
         .collect();
 
     let sf_random_variable = RandomVariable {
@@ -662,7 +667,7 @@ mod tests {
 
         assert_eq!(
             cdf.function,
-            vec![Number::Float(0.2), Number::Float(0.7), Number::Integer(1)]
+            vec![Number::Integer(0), Number::Float(0.2), Number::Float(0.7)]
         );
         assert_eq!(cdf.support, idf.function);
         assert!(matches!(cdf.functional_form, FunctionalForm::Cdf));
@@ -846,8 +851,21 @@ mod tests {
         assert!(matches!(sf.domain_type, DomainType::Discrete));
         assert_eq!(sf.support, rv.support);
         assert_eq!(sf.function.len(), 3);
-        assert!(matches!(sf.function[0], Number::Float(x) if (x - 1.0).abs() < 1e-12));
+        assert!(matches!(sf.function[0], Number::Integer(1)));
         assert!(matches!(sf.function[1], Number::Float(x) if (x - (-1.0f64).exp()).abs() < 1e-12));
         assert!(matches!(sf.function[2], Number::Float(x) if (x - (-2.0f64).exp()).abs() < 1e-12));
+    }
+
+    #[test]
+    fn discrete_chf_to_sf_maps_positive_infinity_to_exact_zero() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(f64::INFINITY)],
+            support: vec![Number::Integer(1)],
+            functional_form: FunctionalForm::Chf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let sf = discrete_chf_to_sf(&rv).unwrap();
+        assert_eq!(sf.function, vec![Number::Integer(0)]);
     }
 }
