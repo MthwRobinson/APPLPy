@@ -8,6 +8,7 @@ use num_rational::Rational64;
 
 impl<'py> FromPyObject<'py> for Number {
     fn extract_bound(obj: &Bound<'py, PyAny>) -> PyResult<Self> {
+        // the p and q attributes are associated with the sympy Rtaional class
         if obj.hasattr("p")? & obj.hasattr("q")? {
             let numerator: i64 = obj.getattr("p")?.extract()?;
             let denominator: i64 = obj.getattr("q")?.extract()?;
