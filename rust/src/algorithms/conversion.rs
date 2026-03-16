@@ -192,9 +192,7 @@ pub fn swap_discrete_cdf_and_idf(
 
 /// Converts a random variable to hazard function form, using the relationship
 /// HF(x) = PDF(x) / SF(x)
-pub fn convert_discrete_rv_to_hf(
-    random_variable: &RandomVariable,
-) -> Result<RandomVariable, String> {
+pub fn discrete_rv_to_hf(random_variable: &RandomVariable) -> Result<RandomVariable, String> {
     let pdf = random_variable.to_pdf()?;
     let sf = random_variable.to_sf()?;
 
@@ -221,9 +219,7 @@ pub fn convert_discrete_rv_to_hf(
 
 /// Converts a discrete cumulative hazard function to a survivor function
 /// using the relationship SF(x) = exp(-CHF(x))
-pub fn discrete_chf_to_sf(
-    random_variable: &RandomVariable,
-) -> Result<RandomVariable, String> {
+pub fn discrete_chf_to_sf(random_variable: &RandomVariable) -> Result<RandomVariable, String> {
     if random_variable.functional_form != FunctionalForm::Chf {
         return Err(
             "discrete_chf_to_sf requires an input with the chf functional form".to_string(),
@@ -675,7 +671,7 @@ mod tests {
     }
 
     #[test]
-    fn convert_discrete_rv_to_hf_returns_error_for_empty_pdf() {
+    fn discrete_rv_to_hf_returns_error_for_empty_pdf() {
         let rv = RandomVariable {
             function: vec![],
             support: vec![],
@@ -683,25 +679,12 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let result = convert_discrete_rv_to_hf(&rv);
+        let result = discrete_rv_to_hf(&rv);
         assert!(matches!(result, Err(msg) if msg == "cannot compute the cdf. function is empty"));
     }
 
     #[test]
-    fn convert_discrete_rv_to_hf_returns_error_for_unsupported_functional_form() {
-        let rv = RandomVariable {
-            function: vec![Number::Rational(Rational64::new(1, 2))],
-            support: vec![Number::Integer(1)],
-            functional_form: FunctionalForm::Chf,
-            domain_type: DomainType::Discrete,
-        };
-
-        let result = convert_discrete_rv_to_hf(&rv);
-        assert!(matches!(result, Err(msg) if msg == "unable to convert chf to pdf"));
-    }
-
-    #[test]
-    fn convert_discrete_rv_to_hf_computes_hf_from_pdf_and_sf_and_sets_metadata() {
+    fn discrete_rv_to_hf_computes_hf_from_pdf_and_sf_and_sets_metadata() {
         let rv = RandomVariable {
             function: vec![
                 Number::Rational(Rational64::new(9, 10)),
@@ -713,7 +696,7 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let hf = convert_discrete_rv_to_hf(&rv).unwrap();
+        let hf = discrete_rv_to_hf(&rv).unwrap();
 
         assert!(matches!(hf.functional_form, FunctionalForm::Hf));
         assert!(matches!(hf.domain_type, DomainType::Discrete));

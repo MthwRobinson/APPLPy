@@ -74,11 +74,11 @@ impl RandomVariable {
             FunctionalForm::Chf => {
                 let sf_random_variable = self.to_sf()?;
                 sf_random_variable.to_pdf()
-            },
+            }
             FunctionalForm::Hf => {
                 let chf_random_variable = self.to_chf()?;
                 chf_random_variable.to_pdf()
-            },
+            }
             FunctionalForm::Pdf => Ok(self.clone()),
             FunctionalForm::Sf | FunctionalForm::Idf => {
                 let cdf_random_variable = self.to_cdf()?;
@@ -93,11 +93,14 @@ impl RandomVariable {
             FunctionalForm::Chf => {
                 let sf_random_variable = self.to_sf()?;
                 sf_random_variable.to_cdf()
-            },
+            }
+            FunctionalForm::Hf => {
+                let hf_random_variable = self.to_chf()?;
+                hf_random_variable.to_cdf()
+            }
             FunctionalForm::Idf => conversion::swap_discrete_cdf_and_idf(self),
             FunctionalForm::Pdf => conversion::discrete_pdf_to_cdf(self),
             FunctionalForm::Sf => conversion::swap_discrete_cdf_and_sf(self),
-            functional_form => Err(format!("unable to convert {} to cdf", functional_form)),
         }
     }
 
@@ -105,31 +108,44 @@ impl RandomVariable {
         match &self.functional_form {
             FunctionalForm::Cdf => conversion::swap_discrete_cdf_and_sf(self),
             FunctionalForm::Chf => conversion::discrete_chf_to_sf(self),
+            FunctionalForm::Hf => {
+                let chf_random_variable = conversion::discrete_hf_to_chf(self)?;
+                chf_random_variable.to_sf()
+            }
             FunctionalForm::Pdf | FunctionalForm::Idf => {
                 let cdf_random_variable = self.to_cdf()?;
                 conversion::swap_discrete_cdf_and_sf(&cdf_random_variable)
             }
             FunctionalForm::Sf => Ok(self.clone()),
-            functional_form => Err(format!("unable to convert {} to sf", functional_form)),
         }
     }
 
     pub fn to_chf(&self) -> Result<RandomVariable, String> {
         match &self.functional_form {
             FunctionalForm::Hf => conversion::discrete_hf_to_chf(self),
-            functional_form => Err(format!("unable to convert {} to chf", functional_form)),
+            _ => {
+                let hf_function = conversion::discrete_rv_to_hf(self)?;
+                hf_function.to_chf()
+            }
         }
+    }
+
+    pub fn to_hf(&self) -> Result<RandomVariable, String> {
+        conversion::discrete_rv_to_hf(self)
     }
 
     pub fn to_idf(&self) -> Result<RandomVariable, String> {
         match &self.functional_form {
             FunctionalForm::Cdf => conversion::swap_discrete_cdf_and_idf(self),
+            FunctionalForm::Chf | FunctionalForm::Hf => {
+                let cdf_random_variable = self.to_cdf()?;
+                cdf_random_variable.to_chf()
+            }
             FunctionalForm::Idf => Ok(self.clone()),
             FunctionalForm::Pdf | FunctionalForm::Sf => {
                 let cdf_random_variable = self.to_cdf()?;
                 conversion::swap_discrete_cdf_and_idf(&cdf_random_variable)
             }
-            functional_form => Err(format!("unable to convert {} to idf", functional_form)),
         }
     }
 }
@@ -399,19 +415,6 @@ mod tests {
     }
 
     #[test]
-    fn to_cdf_returns_error_for_unsupported_functional_form() {
-        let rv = RandomVariable {
-            function: vec![Number::Float(0.2), Number::Float(0.8)],
-            support: vec![Number::Integer(1), Number::Integer(2)],
-            functional_form: FunctionalForm::Hf,
-            domain_type: DomainType::Discrete,
-        };
-
-        let result = rv.to_cdf();
-        assert!(matches!(result, Err(msg) if msg == "unable to convert hf to cdf"));
-    }
-
-    #[test]
     fn to_cdf_propagates_conversion_error_for_empty_pdf() {
         let rv = RandomVariable {
             function: vec![],
@@ -479,19 +482,6 @@ mod tests {
         assert_eq!(result.support, rv.support);
         assert!(matches!(result.functional_form, FunctionalForm::Sf));
         assert!(matches!(result.domain_type, DomainType::Discrete));
-    }
-
-    #[test]
-    fn to_sf_returns_error_for_unsupported_functional_form() {
-        let rv = RandomVariable {
-            function: vec![Number::Float(0.2), Number::Float(0.8)],
-            support: vec![Number::Integer(1), Number::Integer(2)],
-            functional_form: FunctionalForm::Hf,
-            domain_type: DomainType::Discrete,
-        };
-
-        let result = rv.to_sf();
-        assert!(matches!(result, Err(msg) if msg == "unable to convert hf to sf"));
     }
 
     #[test]
@@ -582,16 +572,72 @@ mod tests {
     }
 
     #[test]
-    fn to_idf_returns_error_for_unsupported_functional_form() {
+    fn to_chf_converts_sf_to_chf() {
         let rv = RandomVariable {
-            function: vec![Number::Float(0.2), Number::Float(0.8)],
-            support: vec![Number::Integer(1), Number::Integer(2)],
-            functional_form: FunctionalForm::Hf,
+            function: vec![
+                Number::Rational(Rational64::new(9, 10)),
+                Number::Rational(Rational64::new(3, 10)),
+                Number::Rational(Rational64::new(1, 10)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Sf,
             domain_type: DomainType::Discrete,
         };
 
-        let result = rv.to_idf();
-        assert!(matches!(result, Err(msg) if msg == "unable to convert hf to idf"));
+        let result = rv.to_chf().unwrap();
+
+        assert_eq!(result.support, rv.support);
+        assert_eq!(
+            result.function,
+            vec![
+                Number::Rational(Rational64::new(1, 9)),
+                Number::Rational(Rational64::new(19, 9)),
+                Number::Rational(Rational64::new(37, 9)),
+            ]
+        );
+        assert!(matches!(result.functional_form, FunctionalForm::Chf));
+        assert!(matches!(result.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
+    fn to_chf_propagates_conversion_error_for_empty_pdf() {
+        let rv = RandomVariable {
+            function: vec![],
+            support: vec![],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = rv.to_chf();
+        assert!(matches!(result, Err(msg) if msg == "cannot compute the cdf. function is empty"));
+    }
+
+    #[test]
+    fn to_hf_converts_sf_to_hf() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(9, 10)),
+                Number::Rational(Rational64::new(3, 10)),
+                Number::Rational(Rational64::new(1, 10)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Sf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = rv.to_hf().unwrap();
+
+        assert_eq!(result.support, rv.support);
+        assert_eq!(
+            result.function,
+            vec![
+                Number::Rational(Rational64::new(1, 9)),
+                Number::Rational(Rational64::new(2, 1)),
+                Number::Rational(Rational64::new(2, 1)),
+            ]
+        );
+        assert!(matches!(result.functional_form, FunctionalForm::Hf));
+        assert!(matches!(result.domain_type, DomainType::Discrete));
     }
 
     #[test]
