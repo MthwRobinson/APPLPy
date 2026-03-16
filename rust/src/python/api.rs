@@ -74,6 +74,11 @@ impl FastRV {
     }
 
     #[getter]
+    pub fn func(&self) -> Vec<Number> {
+        self.inner.function.clone()
+    }
+
+    #[getter]
     pub fn support(&self) -> Vec<Number> {
         self.inner.support.clone()
     }

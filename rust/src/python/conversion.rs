@@ -164,7 +164,7 @@ mod tests {
     }
 
     #[test]
-    fn swap_discrete_cdf_and_idf_swaps_function_and_support() {
+    fn swap_discrete_cdf_and_idf_converts_cdf_to_inverse_cdf() {
         let rv = RandomVariable {
             function: vec![
                 Number::Rational(Rational64::new(1, 4)),
@@ -179,7 +179,14 @@ mod tests {
         let swapped = swap_discrete_cdf_and_idf(&rv).unwrap();
 
         assert_eq!(swapped.function, rv.support);
-        assert_eq!(swapped.support, rv.function);
+        assert_eq!(
+            swapped.support,
+            vec![
+                Number::Integer(0),
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(3, 4)),
+            ]
+        );
         assert!(matches!(swapped.functional_form, FunctionalForm::Idf));
         assert!(matches!(swapped.domain_type, DomainType::Discrete));
     }

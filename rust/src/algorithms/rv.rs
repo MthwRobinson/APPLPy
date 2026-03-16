@@ -526,7 +526,10 @@ mod tests {
         let result = rv.to_idf().unwrap();
 
         assert_eq!(result.function, rv.support);
-        assert_eq!(result.support, rv.function);
+        assert_eq!(
+            result.support,
+            vec![Number::Integer(0), Number::Float(0.2), Number::Float(0.7)]
+        );
         assert!(matches!(result.functional_form, FunctionalForm::Idf));
         assert!(matches!(result.domain_type, DomainType::Discrete));
     }
@@ -545,7 +548,7 @@ mod tests {
         assert_eq!(result.function, rv.support);
         assert_eq!(
             result.support,
-            vec![Number::Float(0.2), Number::Float(0.7), Number::Float(1.0)]
+            vec![Number::Integer(0), Number::Float(0.2), Number::Float(0.7)]
         );
         assert!(matches!(result.functional_form, FunctionalForm::Idf));
         assert!(matches!(result.domain_type, DomainType::Discrete));
@@ -564,9 +567,9 @@ mod tests {
 
         assert_eq!(result.function, rv.support);
         assert_eq!(result.support.len(), 3);
-        assert!(matches!(result.support[0], Number::Float(x) if (x - 0.0).abs() < 1e-12));
-        assert!(matches!(result.support[1], Number::Float(x) if (x - 0.3).abs() < 1e-12));
-        assert!(matches!(result.support[2], Number::Float(x) if (x - 0.7).abs() < 1e-12));
+        assert!(matches!(result.support[0], Number::Integer(0)));
+        assert!(matches!(result.support[1], Number::Float(x) if (x - 0.0).abs() < 1e-12));
+        assert!(matches!(result.support[2], Number::Float(x) if (x - 0.3).abs() < 1e-12));
         assert!(matches!(result.functional_form, FunctionalForm::Idf));
         assert!(matches!(result.domain_type, DomainType::Discrete));
     }
