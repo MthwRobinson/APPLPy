@@ -160,7 +160,7 @@ mod tests {
         };
 
         let error = swap_discrete_cdf_and_sf(&rv).unwrap_err();
-        assert!(error.contains("only works on cdf and sf functional forms"));
+        assert!(error.contains("requires an input with the cdf or sf functional form"));
     }
 
     #[test]
