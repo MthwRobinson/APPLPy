@@ -60,6 +60,7 @@ Plotting Procedures:
 """
 
 from applpy import rust_bindings
+from applpy_rust import FastRV
 
 from sympy import (
     Symbol,
@@ -1185,63 +1186,31 @@ def CDF(random_variable, value=x, cache=False):
                         cdfvalue = cdflist[i].subs(x, value)
                         return simplify(cdfvalue)
 
-    # If the distribution is discrete, find and return the cdf of
-    #   the random variable
     if random_variable.domain_type == "discrete":
-        # If the distribution is already a cdf, nothing needs to
-        #   be done
-        if random_variable.functional_form == "cdf":
-            if value == x:
-                return random_variable
-            if value != x:
-                for i in range(len(random_variable)):
-                    if random_variable.support[i] == value:
-                        return random_variable.func[i]
-                    if random_variable.support[i] < value:
-                        if random_variable.support[i + 1] > value:
-                            return random_variable.func[i]
-        # If the distribution is a sf, find the cdf by reversing the
-        #   function list
-        if random_variable.functional_form in ["sf", "chf", "hf"]:
-            X_dummy = SF(random_variable)
-            newfunc = []
-            for i in reversed(list(range(len(X_dummy.func)))):
-                newfunc.append(X_dummy.func[i])
-            Xsf = RV(newfunc, X_dummy.support, ["discrete", "cdf"])
-            if value == x:
-                if cache:
-                    random_variable.add_to_cache("cdf", Xsf)
-                return Xsf
-            if value != x:
-                X_dummy = CDF(X_dummy)
-                for i in range(len(X_dummy.support)):
-                    if X_dummy.support[i] == value:
-                        return X_dummy.func[i]
-                    if X_dummy.support[i] < value:
-                        if X_dummy.support[i + 1] > value:
-                            return X_dummy.func[i]
-        # If the distribution is not a cdf or sf, find the pdf and
-        #   then compute the cdf by summation
-        else:
-            X_dummy = PDF(random_variable)
-            cdffunc = []
-            area = 0
-            for i in range(len(X_dummy.support)):
-                area += X_dummy.func[i]
-                cdffunc.append(area)
-            if value == x:
-                cdffunc = RV(cdffunc, X_dummy.support, ["discrete", "cdf"])
-                if cache:
-                    random_variable.add_to_cache("cdf", cdffunc)
-                return cdffunc
-            if value != x:
-                X_dummy = CDF(X_dummy)
-                for i in range(len(X_dummy.support)):
-                    if X_dummy.support[i] == value:
-                        return X_dummy.func[i]
-                    if X_dummy.support[i] < value:
-                        if X_dummy.support[i + 1] > value:
-                            return X_dummy.func[i]
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type="discrete",
+        )
+        cdf_random_variable = fast_rv.to_cdf()
+
+        if value != x:
+            for i in range(len(cdf_random_variable.function)):
+                if cdf_random_variable.support[i] == value:
+                    return cdf_random_variable.function[i]
+                if i < len(cdf_random_variable.support) - 1:
+                    if cdf_random_variable.support[i] < value:
+                        if cdf_random_variable.support[i + 1] > value:
+                            return cdf_random_variable.function[i]
+            return cdf_random_variable.function[-1]
+
+        return RV(
+            func=cdf_random_variable.function,
+            support=cdf_random_variable.support,
+            functional_form=cdf_random_variable.functional_form,
+            domain_type="discrete",
+        )
 
 
 def CHF(random_variable, value=x, cache=False):
@@ -1357,34 +1326,28 @@ def CHF(random_variable, value=x, cache=False):
                             chfvalue = chffunc[i].subs(x, value)
                             return simplify(chfvalue)
 
-    # If the random variable is discrete, find and return the chf
     if random_variable.domain_type == "discrete":
-        # If the distribution is already a chf, nothing needs to
-        #   be done
-        if random_variable.functional_form == "chf":
-            if value == x:
-                return random_variable
-            if value != x:
-                if value not in random_variable.support:
-                    return 0
-                else:
-                    return random_variable.func[random_variable.support.index(value)]
-        # Otherwise, use the survivor function to find the chf
-        else:
-            X_sf = SF(random_variable)
-            chffunc = []
-            for i in range(len(X_sf.func)):
-                chffunc.append(-log(X_sf.func[i]))
-            if value == x:
-                chfrv = RV(chffunc, X_sf.support, ["discrete", "chf"])
-                if cache:
-                    random_variable.add_to_cache("chf", chfrv)
-                return chfrv
-            if value != x:
-                if value not in random_variable.support:
-                    return 0
-                else:
-                    return chffunc[random_variable.support.index(value)]
+        X_sf = SF(random_variable)
+        chflist = []
+        for i in range(len(X_sf.func)):
+            if X_sf.func[i] == 0:
+                chflist.append(oo)
+            else:
+                chflist.append(simplify(-ln(X_sf.func[i])))
+
+        if value != x:
+            for i in range(len(X_sf.support)):
+                if X_sf.support[i] == value:
+                    return chflist[i]
+                if i < len(X_sf.support) - 1:
+                    if X_sf.support[i] < value and X_sf.support[i + 1] > value:
+                        return chflist[i]
+            return chflist[-1]
+
+        chfrv = RV(chflist, X_sf.support, ["discrete", "chf"])
+        if cache:
+            random_variable.add_to_cache("chf", chfrv)
+        return chfrv
 
 
 def HF(random_variable, value=x, cache=False):
@@ -1510,35 +1473,26 @@ def HF(random_variable, value=x, cache=False):
                             hfvalue = hflist[i].subs(x, value)
                             return simplify(hfvalue)
 
-    # If the random variable is discrete, find and return the hf
     if random_variable.domain_type == "discrete":
-        # If the distribution is already a hf, nothing needs
-        #   to be done
-        if random_variable.functional_form == "hf":
-            if value == x:
-                return random_variable
-            if value != x:
-                if value not in random_variable.support:
-                    return 0
-                else:
-                    return random_variable.func[random_variable.support.index(value)]
-        # Otherwise, use the pdf and sf to find the hf
-        else:
-            X_pdf = PDF(random_variable)
-            X_sf = SF(random_variable)
-            hffunc = []
-            for i in range(len(X_pdf.func)):
-                hffunc.append(X_pdf.func[i] / X_sf.func[i])
-            if value == x:
-                hfrv = RV(hffunc, X_pdf.support, ["discrete", "hf"])
-                if cache:
-                    random_variable.add_to_cache("hf", hfrv)
-                return hfrv
-            if value != x:
-                if value not in X_pdf.support:
-                    return 0
-                else:
-                    return hffunc[X_pdf.support.index(value)]
+        X_pdf = PDF(random_variable)
+        X_sf = SF(random_variable)
+        hflist = []
+        for i in range(len(X_pdf.func)):
+            hflist.append(simplify(X_pdf.func[i] / X_sf.func[i]))
+
+        if value != x:
+            for i in range(len(X_pdf.support)):
+                if X_pdf.support[i] == value:
+                    return hflist[i]
+                if i < len(X_pdf.support) - 1:
+                    if X_pdf.support[i] < value and X_pdf.support[i + 1] > value:
+                        return hflist[i]
+            return hflist[-1]
+
+        hfrv = RV(hflist, X_pdf.support, ["discrete", "hf"])
+        if cache:
+            random_variable.add_to_cache("hf", hfrv)
+        return hfrv
 
 
 def IDF(random_variable, value=x, cache=False):
@@ -1702,41 +1656,33 @@ def IDF(random_variable, value=x, cache=False):
                 if value >= X_dummy.support[i] and value <= X_dummy.support[i + 1]:
                     idfvalue = X_dummy.func[i].subs(x, value)
                     return simplify(idfvalue)
-            # varlist=random_variable.variate(s=value)
-            # return varlist[0]
 
-    # If the distribution is discrete, find and return the idf of the
-    # random variable
+
     if random_variable.domain_type == "discrete":
-        # If the distribution is already an idf, nothing needs to be done
-        if random_variable.functional_form == "idf":
-            if value == x:
-                return random_variable
-            if value != x:
-                for i in range(len(X_dummy.support)):
-                    if X_dummy.support[i] == value:
-                        return X_dummy.func[i]
-                    if X_dummy.support[i] < value:
-                        if X_dummy.support[i + 1] > value:
-                            return X_dummy.func[i + 1]
-        # Otherwise, find the cdf, and then invert it
-        else:
-            # If the distribution is a chf or hf, convert to an sf first
-            if random_variable.functional_form == "chf" or random_variable.functional_form == "hf":
-                X_dummy0 = SF(random_variable)
-                X_dummy = CDF(X_dummy0)
-            else:
-                X_dummy = CDF(random_variable)
-            if value == x:
-                return RV(X_dummy.support, X_dummy.func, ["discrete", "idf"])
-            if value != x:
-                X_dummy = RV(X_dummy.support, X_dummy.func, ["discrete", "idf"])
-                for i in range(len(X_dummy.support)):
-                    if X_dummy.support[i] == value:
-                        return X_dummy.func[i]
-                    if X_dummy.support[i] < value:
-                        if X_dummy.support[i + 1] > value:
-                            return X_dummy.func[i + 1]
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type="discrete",
+        )
+        idf_random_variable = fast_rv.to_idf()
+
+        if value != x:
+            for i in range(len(idf_random_variable.function)):
+                if idf_random_variable.support[i] == value:
+                    return idf_random_variable.function[i]
+                if i < len(idf_random_variable.support) - 1:
+                    if idf_random_variable.support[i] < value:
+                        if idf_random_variable.support[i + 1] > value:
+                            return idf_random_variable.function[i]
+            return idf_random_variable.function[-1]
+
+        return RV(
+            func=idf_random_variable.function,
+            support=idf_random_variable.support,
+            functional_form=idf_random_variable.functional_form,
+            domain_type="discrete",
+        )
 
 
 def PDF(random_variable, value=x, cache=False):
@@ -1918,38 +1864,31 @@ def PDF(random_variable, value=x, cache=False):
                                 pdfvalue = pmf.subs(x, value)
                                 return simplify(pdfvalue)
 
-    # If the distribution is discrete, find and return the pdf of the
-    # random variable
     if random_variable.domain_type == "discrete":
-        # If the distribution is already a pdf, nothing needs to be done
-        if random_variable.functional_form == "pdf":
-            if value == x:
-                return random_variable
-            if value != x:
-                if value not in random_variable.support:
-                    return 0
-                else:
-                    return random_variable.func[random_variable.support.index(value)]
-        # Otherwise, find the cdf of the random variable, and compute the pdf
-        #   by finding differences
-        else:
-            X_dummy = CDF(random_variable)
-            pdffunc = []
-            for i in range(len(X_dummy.func)):
-                if i == 0:
-                    pdffunc.append(X_dummy.func[i])
-                else:
-                    pdffunc.append(X_dummy.func[i] - X_dummy.func[i - 1])
-            if value == x:
-                pdfrv = RV(pdffunc, X_dummy.support, ["discrete", "pdf"])
-                if cache:
-                    random_variable.add_to_cache("pdf", pdfrv)
-                return pdfrv
-            if value != x:
-                if value not in X_dummy.support:
-                    return 0
-                else:
-                    return pdffunc.func[X_dummy.support.index(value)]
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type="discrete",
+        )
+        pdf_random_variable = fast_rv.to_pdf()
+
+        if value != x:
+            for i in range(len(pdf_random_variable.function)):
+                if pdf_random_variable.support[i] == value:
+                    return pdf_random_variable.function[i]
+                if i < len(pdf_random_variable.support) - 1:
+                    if pdf_random_variable.support[i] < value:
+                        if pdf_random_variable.support[i + 1] > value:
+                            return pdf_random_variable.function[i]
+            return pdf_random_variable.function[-1]
+
+        return RV(
+            func=pdf_random_variable.function,
+            support=pdf_random_variable.support,
+            functional_form=pdf_random_variable.functional_form,
+            domain_type="discrete",
+        )
 
 
 def SF(random_variable, value=x, cache=False):
@@ -2057,10 +1996,6 @@ def SF(random_variable, value=x, cache=False):
                 return random_variable
             else:
                 return 1 - CDF(random_variable, value)
-                # for i in range(len(random_variable.support)):
-                #    if value>=random_variable.support[i] and value<=random_variable.support[i+1]:
-                #        sfvalue=random_variable.func[i].subs(x,value)
-                #        return simplify(sfvalue)
         # If not, then use subtraction to find the sf
         else:
             X_dummy = CDF(random_variable)
@@ -2075,79 +2010,32 @@ def SF(random_variable, value=x, cache=False):
                 return sfrv
             if value != x:
                 return 1 - CDF(random_variable, value)
-                # for i in range(len(X_dummy.support)):
-                #    if value>=X_dummy.support[i]:
-                #       if value<=X_dummy.support[i+1]:
-                #        sfvalue=sflist[i].subs(x,value)
-                #        return simplify(sfvalue)
 
-    # If the distribution is a discrete function, find and return the
-    # sf of the random variable
     if random_variable.domain_type == "discrete":
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type="discrete",
+        )
+        sf_random_variable = fast_rv.to_sf()
+
         if value != x:
-            return 1 - CDF(random_variable, value)
-        # If the distribution is already an sf, nothing needs to be done
-        if random_variable.functional_form == "sf":
-            if value == x:
-                return random_variable
-                #
-                # if value not in random_variable.support:
-                #    return 0
-                # else:
-                #    return random_variable.func[random_variable.support.index(value)]
-        # If the distribution is a chf use exp(-chf) to find sf
-        if random_variable.functional_form == "chf":
-            X_dummy = CHF(random_variable)
-            sffunc = []
-            for i in range(len(X_dummy.func)):
-                sffunc.append(exp(-(X_dummy.func[i])))
-            if value == x:
-                sfrv = RV(sffunc, X_dummy.support, ["discrete", "sf"])
-                if cache:
-                    random_variable.add_to_cache("sf", sfrv)
-                return sfrv
-            if value != x:
-                if value not in random_variable.support:
-                    return 0
-                else:
-                    return sffunc[random_variable.support.index(value)]
-        # If the distribution is a hf, use bootstrap rv to find sf:
-        if random_variable.functional_form == "hf":
-            X_pdf = BootstrapRV(random_variable.support)
-            X_hf = random_variable
-            sffunc = []
-            for i in range(len(random_variable.func)):
-                sffunc.append(X_pdf.func[i] / X_hf.func[i])
-            if value == x:
-                sfrv = RV(sffunc, random_variable.support, ["discrete", "sf"])
-                if cache:
-                    random_variable.add_to_cache("sf", sfrv)
-                return sfrv
-            if value != x:
-                if value not in random_variable.support:
-                    return 0
-                else:
-                    return sffunc[random_variable.support.index(value)]
-        # Otherwise, find the cdf of the random variable, and reverse the
-        # function argument
-        else:
-            X_dummy = CDF(random_variable)
-            newfunc = []
-            for i in range(len(X_dummy.func)):
-                if i == 0:
-                    newfunc.append(0)
-                else:
-                    newfunc.append(1 - X_dummy.func[i - 1])
-            Xsf = RV(newfunc, X_dummy.support, ["discrete", "sf"])
-            if value == x:
-                if cache:
-                    random_variable.add_to_cache("sf", Xsf)
-                return Xsf
-            if value != x:
-                if value not in Xsf.support:
-                    return 0
-                else:
-                    return Xsf.func[Xsf.support.index(value)]
+            for i in range(len(sf_random_variable.function)):
+                if sf_random_variable.support[i] == value:
+                    return sf_random_variable.function[i]
+                if i < len(sf_random_variable.support) - 1:
+                    if sf_random_variable.support[i] < value:
+                        if sf_random_variable.support[i + 1] > value:
+                            return sf_random_variable.function[i]
+            return sf_random_variable.function[-1]
+
+        return RV(
+            func=sf_random_variable.function,
+            support=sf_random_variable.support,
+            functional_form=sf_random_variable.functional_form,
+            domain_type="discrete",
+        )
 
 
 def BootstrapRV(varlist, symbolic=False):
