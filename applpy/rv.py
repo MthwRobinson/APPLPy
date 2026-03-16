@@ -1660,7 +1660,6 @@ def IDF(random_variable, value=x, cache=False):
                     idfvalue = X_dummy.func[i].subs(x, value)
                     return simplify(idfvalue)
 
-
     if random_variable.domain_type == "discrete":
         fast_rv = FastRV(
             function=random_variable.func,

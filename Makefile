@@ -38,15 +38,35 @@ install-rust: ## Install Rust extension build tooling.
 build-dist-rust: ## Build Python distribution and Rust extension wheels into dist/.
 	rm -rf dist
 	uv build --out-dir dist
-	uv run --no-sync maturin build -m rust/Cargo.toml --release --out dist
+	uv run --no-sync maturin build -m rust/Cargo.toml --features extension-module --release --out dist
 
 .PHONY: rust-develop
 rust-develop: ## Build and install the Rust extension into the active uv environment.
-	uv run --no-sync maturin develop -m rust/Cargo.toml
+	uv run --no-sync maturin develop -m rust/Cargo.toml --features extension-module
 
 .PHONY: rust-check-import
 rust-check-import: ## Verify APPLPy can call the Rust dummy function.
 	uv run --no-sync python -c "from applpy.rust_bindings import dummy_ping; print(dummy_ping())"
+
+.PHONY: cargo-test
+cargo-test: ## Run rust cargo tests with Python runtime paths derived from the active uv environment.
+	@set -eu; \
+		pybin="$$(uv run --no-sync python -c 'import sys; print(sys.executable)')"; \
+		libdir="$$(uv run --no-sync python -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR") or "")')"; \
+		sitepkgs="$$(uv run --no-sync python -c 'import os, sysconfig; paths=[]; purelib=sysconfig.get_path("purelib"); platlib=sysconfig.get_path("platlib"); [paths.append(p) for p in (purelib, platlib) if p and p not in paths]; print(os.pathsep.join(paths))')"; \
+		PYO3_PYTHON="$$pybin" \
+		LD_LIBRARY_PATH="$${libdir}$${LD_LIBRARY_PATH:+:$${LD_LIBRARY_PATH}}" \
+		PYTHONPATH="$${sitepkgs}$${PYTHONPATH:+:$${PYTHONPATH}}" \
+		cargo test --manifest-path rust/Cargo.toml
+
+.PHONY: cargo-lint
+cargo-lint: ## Run rust formatter check and clippy lint checks.
+	cargo fmt --manifest-path rust/Cargo.toml --check
+	cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
+
+.PHONY: cargo-tidy
+cargo-tidy: ## Format rust code.
+	cargo fmt --manifest-path rust/Cargo.toml
 
 .PHONY: test
 test: ## Run all tests, or one test when TEST=/path/to/test is provided.

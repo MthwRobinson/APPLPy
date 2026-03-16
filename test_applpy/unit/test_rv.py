@@ -1,5 +1,5 @@
 import pytest
-from sympy import Integer, Rational, Symbol, exp, oo, zoo
+from sympy import Integer, Rational, Symbol, exp, oo
 
 from applpy import rust_bindings
 from applpy.rv import (
