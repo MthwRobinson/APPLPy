@@ -63,6 +63,20 @@ pub fn discrete_hf_to_chf(random_variable: &RandomVariable) -> Result<RandomVari
     Ok(chf_random_variable)
 }
 
+/// Differentiates a cumulative function to convert CDF -> PDF or CHF -> HF
+fn differentiate_cumulative_function(cumulative_function: &[Number]) -> Vec<Number> {
+    let differentiated_function: Vec<Number> =
+        // The previous cumulative function, [0, F1, F2, F3, ...]
+        std::iter::once(Number::default()).chain(cumulative_function.iter().copied())
+        // The current cumulative function, [F1, F2, F3, ...]
+        .zip(cumulative_function.iter().copied())
+        // Computes [F1-0, F2-F1, F3-F2, ...]
+        .map(|(previous, current)| current - previous)
+        .collect();
+
+    differentiated_function
+}
+
 /// Converts a discrete CDF to a discrete PDF
 pub fn discrete_cdf_to_pdf(random_variable: &RandomVariable) -> Result<RandomVariable, String> {
     let function = &random_variable.function;
@@ -76,15 +90,7 @@ pub fn discrete_cdf_to_pdf(random_variable: &RandomVariable) -> Result<RandomVar
         );
     }
 
-    let pdf_function: Vec<Number> =
-        // The previous CDF function, [0, F1, F2, F3, ...]
-        std::iter::once(Number::default()).chain(function.iter().copied())
-        // The current CDF function, [F1, F2, F3, ...]
-        .zip(function.iter().copied())
-        // Computes [F1-0, F2-F1, F3-F2, ...]
-        .map(|(previous, current)| current - previous)
-        .collect();
-
+    let pdf_function = differentiate_cumulative_function(function);
     let pdf_random_variable = RandomVariable {
         function: pdf_function,
         support: random_variable.support.clone(),
@@ -93,6 +99,30 @@ pub fn discrete_cdf_to_pdf(random_variable: &RandomVariable) -> Result<RandomVar
     };
 
     Ok(pdf_random_variable)
+}
+
+/// Converts a discrete CHF to a discrete HF
+pub fn discrete_chf_to_hf(random_variable: &RandomVariable) -> Result<RandomVariable, String> {
+    let function = &random_variable.function;
+    if function.is_empty() {
+        return Err("cannot compute the hf. function is empty".to_string());
+    }
+
+    if random_variable.functional_form != FunctionalForm::Chf {
+        return Err(
+            "discrete_chf_to_hf requires an input with the chf functional form".to_string(),
+        );
+    }
+
+    let hf_function = differentiate_cumulative_function(function);
+    let hf_random_variable = RandomVariable {
+        function: hf_function,
+        support: random_variable.support.clone(),
+        functional_form: FunctionalForm::Hf,
+        domain_type: DomainType::Discrete,
+    };
+
+    Ok(hf_random_variable)
 }
 
 /// Converts between CDF and SF using the CDF = 1 - SF relatonship
