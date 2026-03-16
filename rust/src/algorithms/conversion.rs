@@ -116,6 +116,13 @@ pub fn swap_discrete_cdf_and_idf(
 ) -> Result<RandomVariable, String> {
     let original_function = &random_variable.function;
     let original_support = &random_variable.support;
+    let original_functional_form = &random_variable.functional_form;
+
+    let swapped_functional_form = match original_functional_form {
+        FunctionalForm::Cdf => Ok(FunctionalForm::Idf),
+        FunctionalForm::Idf => Ok(FunctionalForm::Cdf),
+        _ => Err("swap_discrete_cdf_and_idf requires a CDF or IDF input.".to_string()),
+    };
 
     if original_function.is_empty() {
         return Err("cannot swap cdf and idf. function is empty".to_string());
@@ -124,7 +131,7 @@ pub fn swap_discrete_cdf_and_idf(
     let swapped_random_variable = RandomVariable {
         function: original_support.clone(),
         support: original_function.clone(),
-        functional_form: FunctionalForm::Idf,
+        functional_form: swapped_functional_form?,
         domain_type: DomainType::Discrete,
     };
 
@@ -159,6 +166,37 @@ pub fn convert_discrete_rv_to_hf(
 
     Ok(hf_random_variable)
 }
+
+/// Converts a discrete cumulative hazard function to a survivor function
+/// using the relationship HF(x) = -exp(CHF(x)
+pub fn convert_discrete_chf_to_sf(
+    random_variable: &RandomVariable,
+) -> Result<RandomVariable, String> {
+
+    if random_variable.functional_form != FunctionalForm::Chf {
+        return Err("convert_discrete_dhf_to_sf requires an input CHF".to_string());
+    }
+
+    if random_variable.function.is_empty() {
+        return Err("cannot compute sf. function is empty".to_string());
+    }
+
+    let sf_function: Vec<Number> = random_variable
+        .function
+        .iter()
+        .map(|value| Number::Float(value.to_f64().exp()))
+        .collect();
+
+    let sf_random_variable = RandomVariable {
+        function: sf_function,
+        support: random_variable.support.clone(),
+        functional_form: FunctionalForm::Chf,
+        domain_type: DomainType::Discrete,
+    };
+
+    Ok(sf_random_variable)
+}
+
 
 #[cfg(test)]
 mod tests {
