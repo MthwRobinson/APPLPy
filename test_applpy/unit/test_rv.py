@@ -277,11 +277,9 @@ def test_conversion_family_for_continuous_and_discrete_distributions():
 
     assert CDF(discrete, 1) == Rational(1, 4)
     assert SF(discrete, 1) == Rational(3, 4)
-    assert HF(discrete, 1) == zoo
+    assert HF(discrete, 1) == Rational(1, 3)
     assert CHF(discrete, 2) > 0
     assert IDF(discrete, Rational(1, 2)) == 2
-    with pytest.raises(AttributeError, match="func"):
-        PDF(CDF(discrete), 2)
 
     converted = Convert(functional_discrete)
     assert CDF(functional_discrete) == CDF(converted)
@@ -516,9 +514,6 @@ def test_conversion_roundtrips_across_precomputed_discrete_forms():
         assert IDF(source).ftype == ["discrete", "idf"]
         assert PDF(source).ftype == ["discrete", "pdf"]
 
-    for fn in [CDF, SF, HF, CHF, PDF]:
-        with pytest.raises(RecursionError):
-            fn(idf)
     assert IDF(idf).ftype == ["discrete", "idf"]
 
 

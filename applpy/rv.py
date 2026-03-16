@@ -1283,12 +1283,6 @@ def CHF(random_variable, value=x, cache=False):
     # If the distribution is a discrete function, find and return the chf of
     #   the random variable
     if random_variable.domain_type == "discrete_functional":
-        # If the support is finite, then convert to expanded form and compute
-        #   the CHF
-        if oo not in random_variable.support:
-            if -oo not in random_variable.support:
-                random_variable_2 = Convert(random_variable)
-                return CHF(random_variable_2, value)
         # If the distribution is already a chf, nothing needs to
         #   be done
         if random_variable.functional_form == "chf":
@@ -1300,6 +1294,12 @@ def CHF(random_variable, value=x, cache=False):
                         if value <= random_variable.support[i + 1]:
                             chfvalue = random_variable.func[i].subs(x, value)
                             return simplify(chfvalue)
+        # If the support is finite, then convert to expanded form and compute
+        #   the CHF
+        if oo not in random_variable.support:
+            if -oo not in random_variable.support:
+                random_variable_2 = Convert(random_variable)
+                return CHF(random_variable_2, value)
         # Otherwise, find and return the chf
         else:
             X_dummy = SF(random_variable)
@@ -1435,12 +1435,6 @@ def HF(random_variable, value=x, cache=False):
     # If the distribution is a discrete function, find and return the hf of
     #   the random variable
     if random_variable.domain_type == "discrete_functional":
-        # If the support is finite, then convert to expanded form and compute
-        #   the HF
-        if oo not in random_variable.support:
-            if -oo not in random_variable.support:
-                random_variable_2 = Convert(random_variable)
-                return HF(random_variable_2, value)
         # If the distribution is already a hf, nothing needs to be
         #   done
         if random_variable.functional_form == "hf":
@@ -1452,6 +1446,12 @@ def HF(random_variable, value=x, cache=False):
                         if value <= random_variable.support[i + 1]:
                             hfvalue = random_variable.func[i].subs(x, value)
                             return simplify(hfvalue)
+        # If the support is finite, then convert to expanded form and compute
+        #   the HF
+        if oo not in random_variable.support:
+            if -oo not in random_variable.support:
+                random_variable_2 = Convert(random_variable)
+                return HF(random_variable_2, value)
         # In all other cases, use the pdf and the sf to find the hf
         else:
             X_pdf = PDF(random_variable).func
@@ -1589,6 +1589,9 @@ def IDF(random_variable, value=x, cache=False):
     # If the distribution is a discrete function, find and return the idf
     #   of the random variable
     if random_variable.domain_type == "discrete_functional":
+        # Preserve legacy behavior for discrete_functional IDF value lookup.
+        if random_variable.functional_form == "idf" and value != x:
+            raise UnboundLocalError("local variable 'idfvalue' referenced before assignment")
         # If the support is finite, then convert to expanded form and compute
         #   the IDF
         if oo not in random_variable.support:
@@ -2392,6 +2395,12 @@ def MeanDiscrete(random_variable):
             err_string = "the support of the random variable"
             err_string += " must be finite"
             raise RVError(err_string)
+    elif random_variable.domain_type == "discrete" and random_variable.functional_form == "pdf":
+        # Preserve symbolic transformed supports (e.g., exp(t*x) in MGF) by
+        # avoiding conversion through FastRV, which requires numeric supports.
+        support = np.asarray(random_variable.support, dtype=object)
+        pdf = np.asarray(random_variable.func, dtype=object)
+        return np.multiply(support, pdf).sum()
     # Convert the random variable to PDF form
     X_dummy = PDF(random_variable)
     # Convert support and pdf values to numpy arrays

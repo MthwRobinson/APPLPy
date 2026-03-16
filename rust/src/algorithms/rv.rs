@@ -139,7 +139,7 @@ impl RandomVariable {
             FunctionalForm::Cdf => conversion::swap_discrete_cdf_and_idf(self),
             FunctionalForm::Chf | FunctionalForm::Hf => {
                 let cdf_random_variable = self.to_cdf()?;
-                cdf_random_variable.to_chf()
+                cdf_random_variable.to_idf()
             }
             FunctionalForm::Idf => Ok(self.clone()),
             FunctionalForm::Pdf | FunctionalForm::Sf => {
