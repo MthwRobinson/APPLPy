@@ -22,6 +22,12 @@ pub fn discrete_pdf_to_cdf(random_variable: &RandomVariable) -> Result<RandomVar
         return Err("cannot compute the cdf. function is empty".to_string());
     }
 
+    if random_variable.functional_form != FunctionalForm::Pdf {
+        return Err(
+            "discrete_pdf_to_cdf requires an input with the pdf functional form".to_string(),
+        );
+    }
+
     let cdf_function = cumulative_sum(function);
 
     let cdf_random_variable = RandomVariable {
@@ -41,6 +47,10 @@ pub fn discrete_hf_to_chf(random_variable: &RandomVariable) -> Result<RandomVari
         return Err("cannot compute the chf. function is empty".to_string());
     }
 
+    if random_variable.functional_form != FunctionalForm::Hf {
+        return Err("discrete_hf_to_chf requires an input with the hf functional form".to_string());
+    }
+
     let chf_function = cumulative_sum(function);
 
     let chf_random_variable = RandomVariable {
@@ -58,6 +68,12 @@ pub fn discrete_cdf_to_pdf(random_variable: &RandomVariable) -> Result<RandomVar
     let function = &random_variable.function;
     if function.is_empty() {
         return Err("cannot compute the pdf. function is empty".to_string());
+    }
+
+    if random_variable.functional_form != FunctionalForm::Cdf {
+        return Err(
+            "discrete_cdf_to_pdf requires an input with the cdf functional form".to_string(),
+        );
     }
 
     let pdf_function: Vec<Number> =
@@ -121,7 +137,7 @@ pub fn swap_discrete_cdf_and_idf(
     let swapped_functional_form = match original_functional_form {
         FunctionalForm::Cdf => Ok(FunctionalForm::Idf),
         FunctionalForm::Idf => Ok(FunctionalForm::Cdf),
-        _ => Err("swap_discrete_cdf_and_idf requires a CDF or IDF input.".to_string()),
+        _ => Err("swap_discrete_cdf_and_idf requires cdf or idf functional forms.".to_string()),
     };
 
     if original_function.is_empty() {
@@ -172,7 +188,6 @@ pub fn convert_discrete_rv_to_hf(
 pub fn convert_discrete_chf_to_sf(
     random_variable: &RandomVariable,
 ) -> Result<RandomVariable, String> {
-
     if random_variable.functional_form != FunctionalForm::Chf {
         return Err("convert_discrete_dhf_to_sf requires an input CHF".to_string());
     }
@@ -196,7 +211,6 @@ pub fn convert_discrete_chf_to_sf(
 
     Ok(sf_random_variable)
 }
-
 
 #[cfg(test)]
 mod tests {
