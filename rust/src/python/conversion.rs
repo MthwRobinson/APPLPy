@@ -8,19 +8,19 @@ use num_rational::Rational64;
 
 impl<'py> FromPyObject<'py> for Number {
     fn extract_bound(obj: &Bound<'py, PyAny>) -> PyResult<Self> {
+        if obj.hasattr("p")? & obj.hasattr("q")? {
+            let numerator: i64 = obj.getattr("p")?.extract()?;
+            let denominator: i64 = obj.getattr("q")?.extract()?;
+            let rational = Rational64::new(numerator, denominator);
+            return Ok(Number::Rational(rational));
+        }
+
         if let Ok(int) = obj.extract::<i64>() {
             return Ok(Number::Integer(int));
         }
 
         if let Ok(float) = obj.extract::<f64>() {
             return Ok(Number::Float(float));
-        }
-
-        if obj.hasattr("p")? & obj.hasattr("q")? {
-            let numerator: i64 = obj.getattr("p")?.extract()?;
-            let denominator: i64 = obj.getattr("q")?.extract()?;
-            let rational = Rational64::new(numerator, denominator);
-            return Ok(Number::Rational(rational));
         }
 
         Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
@@ -32,8 +32,6 @@ impl<'py> FromPyObject<'py> for Number {
 impl IntoPy<PyObject> for Number {
     fn into_py(self, py: Python<'_>) -> PyObject {
         let s = match self {
-            Number::Float(f) => f.into_py(py),
-            Number::Integer(i) => i.into_py(py),
             Number::Rational(r) => {
                 let sympy = PyModule::import_bound(py, "sympy").expect("unable to import sympy");
 
@@ -49,6 +47,8 @@ impl IntoPy<PyObject> for Number {
                     .expect("unable to initialize sympy Rational number")
                     .into_py(py)
             }
+            Number::Float(f) => f.into_py(py),
+            Number::Integer(i) => i.into_py(py),
         };
 
         s
