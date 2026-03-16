@@ -6,9 +6,16 @@ publish = false
 
 [lib]
 name = "applpy_rust"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+extension-module = ["pyo3/extension-module"]
+
+[package.metadata.maturin]
+features = ["extension-module"]
 
 [dependencies]
 num-rational = "0.4.2"
 num-traits = "0.2.19"
-pyo3 = { version = "0.22", features = ["extension-module", "abi3-py38"] }
+pyo3 = { version = "0.22", features = ["abi3-py38", "auto-initialize"] }

@@ -40,13 +40,8 @@ jobs:
         with:
           components: clippy, rustfmt
 
-      - name: Run rustfmt check
-        run: cargo fmt --check
-        working-directory: rust
-
-      - name: Run clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
-        working-directory: rust
+      - name: Run rust lint checks
+        run: make cargo-lint
 
   test-python:
     name: Python Test Suite
@@ -88,9 +83,19 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install test dependencies
+        run: make install-test
+
       - name: Run rust tests
-        run: cargo test
-        working-directory: rust
+        run: make cargo-test

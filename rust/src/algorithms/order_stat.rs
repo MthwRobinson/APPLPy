@@ -10,6 +10,8 @@
 /// # Examples
 ///
 /// ```
+/// use applpy_rust::algorithms::order_stat::next_combination;
+///
 /// let c = vec![0, 1, 2];
 /// assert_eq!(next_combination(&c, 4), Some(vec![0, 1, 3]));
 ///
