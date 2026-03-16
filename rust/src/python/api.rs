@@ -152,6 +152,30 @@ impl FastRV {
             "converstion to idf failed",
         ))
     }
+
+    pub fn to_chf(&self) -> PyResult<FastRV> {
+        if let Ok(random_variable) = self.inner.to_chf() {
+            return Ok(FastRV {
+                inner: random_variable,
+            });
+        }
+
+        Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "converstion to chf failed",
+        ))
+    }
+
+    pub fn to_hf(&self) -> PyResult<FastRV> {
+        if let Ok(random_variable) = self.inner.to_hf() {
+            return Ok(FastRV {
+                inner: random_variable,
+            });
+        }
+
+        Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "converstion to hf failed",
+        ))
+    }
 }
 
 #[cfg(test)]
