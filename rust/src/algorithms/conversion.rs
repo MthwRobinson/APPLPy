@@ -238,7 +238,7 @@ pub fn discrete_rv_to_hf(random_variable: &RandomVariable) -> Result<RandomVaria
         .iter()
         .zip(sf.function.iter())
         .map(|(pdf_value, sf_value)| {
-            if *sf_value > Number::zero() {
+            if sf_value.to_f64() <= 0.0 {
                 return Number::Float(f64::INFINITY);
             }
             *pdf_value / *sf_value
@@ -811,6 +811,25 @@ mod tests {
                 Number::Rational(Rational64::new(2, 1)),
             ]
         );
+    }
+
+    #[test]
+    fn discrete_rv_to_hf_maps_zero_sf_entries_to_infinity_without_dividing() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let hf = discrete_rv_to_hf(&rv).unwrap();
+
+        assert_eq!(hf.function.len(), 2);
+        assert_eq!(hf.function[0], Number::Rational(Rational64::new(1, 1)));
+        assert!(matches!(hf.function[1], Number::Float(x) if x.is_infinite() && x.is_sign_positive()));
     }
 
     #[test]
