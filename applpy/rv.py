@@ -1196,14 +1196,7 @@ def CDF(random_variable, value=x, cache=False):
         cdf_random_variable = fast_rv.to_cdf()
 
         if value != x:
-            for i in range(len(cdf_random_variable.function)):
-                if cdf_random_variable.support[i] == value:
-                    return cdf_random_variable.function[i]
-                if i < len(cdf_random_variable.support) - 1:
-                    if cdf_random_variable.support[i] < value:
-                        if cdf_random_variable.support[i + 1] > value:
-                            return cdf_random_variable.function[i]
-            return cdf_random_variable.function[-1]
+            return cdf_random_variable.evaluate(value)
 
         return RV(
             func=cdf_random_variable.function,
@@ -1327,27 +1320,23 @@ def CHF(random_variable, value=x, cache=False):
                             return simplify(chfvalue)
 
     if random_variable.domain_type == "discrete":
-        X_sf = SF(random_variable)
-        chflist = []
-        for i in range(len(X_sf.func)):
-            if X_sf.func[i] == 0:
-                chflist.append(oo)
-            else:
-                chflist.append(simplify(-ln(X_sf.func[i])))
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type="discrete",
+        )
+        chf_random_variable = fast_rv.to_chf()
 
         if value != x:
-            for i in range(len(X_sf.support)):
-                if X_sf.support[i] == value:
-                    return chflist[i]
-                if i < len(X_sf.support) - 1:
-                    if X_sf.support[i] < value and X_sf.support[i + 1] > value:
-                        return chflist[i]
-            return chflist[-1]
+            return chf_random_variable.evaluate(value)
 
-        chfrv = RV(chflist, X_sf.support, ["discrete", "chf"])
-        if cache:
-            random_variable.add_to_cache("chf", chfrv)
-        return chfrv
+        return RV(
+            func=chf_random_variable.function,
+            support=chf_random_variable.support,
+            functional_form=chf_random_variable.functional_form,
+            domain_type="discrete",
+        )
 
 
 def HF(random_variable, value=x, cache=False):
@@ -1474,25 +1463,23 @@ def HF(random_variable, value=x, cache=False):
                             return simplify(hfvalue)
 
     if random_variable.domain_type == "discrete":
-        X_pdf = PDF(random_variable)
-        X_sf = SF(random_variable)
-        hflist = []
-        for i in range(len(X_pdf.func)):
-            hflist.append(simplify(X_pdf.func[i] / X_sf.func[i]))
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type="discrete",
+        )
+        hf_random_variable = fast_rv.to_hf()
 
         if value != x:
-            for i in range(len(X_pdf.support)):
-                if X_pdf.support[i] == value:
-                    return hflist[i]
-                if i < len(X_pdf.support) - 1:
-                    if X_pdf.support[i] < value and X_pdf.support[i + 1] > value:
-                        return hflist[i]
-            return hflist[-1]
+            return hf_random_variable.evaluate(value)
 
-        hfrv = RV(hflist, X_pdf.support, ["discrete", "hf"])
-        if cache:
-            random_variable.add_to_cache("hf", hfrv)
-        return hfrv
+        return RV(
+            func=hf_random_variable.function,
+            support=hf_random_variable.support,
+            functional_form=hf_random_variable.functional_form,
+            domain_type="discrete",
+        )
 
 
 def IDF(random_variable, value=x, cache=False):
@@ -1670,14 +1657,7 @@ def IDF(random_variable, value=x, cache=False):
         idf_random_variable = fast_rv.to_idf()
 
         if value != x:
-            for i in range(len(idf_random_variable.function)):
-                if idf_random_variable.support[i] == value:
-                    return idf_random_variable.function[i]
-                if i < len(idf_random_variable.support) - 1:
-                    if idf_random_variable.support[i] < value:
-                        if idf_random_variable.support[i + 1] > value:
-                            return idf_random_variable.function[i]
-            return idf_random_variable.function[-1]
+            return idf_random_variable.evaluate(value)
 
         return RV(
             func=idf_random_variable.function,
@@ -1876,14 +1856,7 @@ def PDF(random_variable, value=x, cache=False):
         pdf_random_variable = fast_rv.to_pdf()
 
         if value != x:
-            for i in range(len(pdf_random_variable.function)):
-                if pdf_random_variable.support[i] == value:
-                    return pdf_random_variable.function[i]
-                if i < len(pdf_random_variable.support) - 1:
-                    if pdf_random_variable.support[i] < value:
-                        if pdf_random_variable.support[i + 1] > value:
-                            return pdf_random_variable.function[i]
-            return pdf_random_variable.function[-1]
+            return pdf_random_variable.evaluate(value)
 
         return RV(
             func=pdf_random_variable.function,
@@ -2023,14 +1996,7 @@ def SF(random_variable, value=x, cache=False):
         sf_random_variable = fast_rv.to_sf()
 
         if value != x:
-            for i in range(len(sf_random_variable.function)):
-                if sf_random_variable.support[i] == value:
-                    return sf_random_variable.function[i]
-                if i < len(sf_random_variable.support) - 1:
-                    if sf_random_variable.support[i] < value:
-                        if sf_random_variable.support[i + 1] > value:
-                            return sf_random_variable.function[i]
-            return sf_random_variable.function[-1]
+            return sf_random_variable.evaluate(value)
 
         return RV(
             func=sf_random_variable.function,

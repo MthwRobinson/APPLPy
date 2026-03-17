@@ -237,7 +237,12 @@ pub fn discrete_rv_to_hf(random_variable: &RandomVariable) -> Result<RandomVaria
         .function
         .iter()
         .zip(sf.function.iter())
-        .map(|(pdf_value, sf_value)| *pdf_value / *sf_value)
+        .map(|(pdf_value, sf_value)| {
+            if *sf_value > Number::zero() {
+                return Number::Float(f64::INFINITY);
+            }
+            *pdf_value / *sf_value
+        })
         .collect();
 
     let hf_random_variable = RandomVariable {

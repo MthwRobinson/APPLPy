@@ -12,6 +12,9 @@ impl<'py> FromPyObject<'py> for Number {
         if obj.hasattr("p")? & obj.hasattr("q")? {
             let numerator: i64 = obj.getattr("p")?.extract()?;
             let denominator: i64 = obj.getattr("q")?.extract()?;
+            if denominator == 0 {
+                return Ok(Number::Float(f64::INFINITY));
+            }
             let rational = Rational64::new(numerator, denominator);
             return Ok(Number::Rational(rational));
         }
@@ -55,6 +58,17 @@ impl IntoPy<PyObject> for Number {
 
                 let numerator: i64 = *r.numer();
                 let denominator: i64 = *r.denom();
+
+                if denominator == 0 {
+                    let float = sympy
+                        .getattr("Float")
+                        .expect("unable to import the Float class from sympy");
+
+                    return float
+                        .call1((f64::INFINITY,))
+                        .expect("unable to initialize sympy Float number")
+                        .into_py(py);
+                }
 
                 rational
                     .call1((numerator, denominator))
