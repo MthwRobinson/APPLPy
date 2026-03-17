@@ -68,6 +68,10 @@ impl RandomVariable {
         verify_pdf(&self.function, tolerance)
     }
 
+    pub fn evaluate(&self, value: Number) -> Option<Number> {
+        evaluate_rv(&self.function, &self.support, value)
+    }
+
     pub fn to_pdf(&self) -> Result<RandomVariable, String> {
         match &self.functional_form {
             FunctionalForm::Cdf => conversion::discrete_cdf_to_pdf(self),
@@ -695,5 +699,52 @@ mod tests {
 
         let result = rv.to_idf();
         assert!(matches!(result, Err(msg) if msg == "cannot compute the cdf. function is empty"));
+    }
+
+    #[test]
+    fn evaluate_rv_returns_interval_value_for_interior_point() {
+        let function = vec![Number::Float(0.1), Number::Float(0.4), Number::Float(0.9)];
+        let support = vec![Number::Integer(1), Number::Integer(3), Number::Integer(5)];
+
+        let result = evaluate_rv(&function, &support, Number::Integer(2));
+        assert_eq!(result, Some(Number::Float(0.1)));
+    }
+
+    #[test]
+    fn evaluate_rv_returns_value_for_exact_support_point() {
+        let function = vec![
+            Number::Integer(10),
+            Number::Integer(20),
+            Number::Integer(30),
+        ];
+        let support = vec![Number::Integer(1), Number::Integer(3), Number::Integer(5)];
+
+        let result = evaluate_rv(&function, &support, Number::Integer(3));
+        assert_eq!(result, Some(Number::Integer(20)));
+    }
+
+    #[test]
+    fn evaluate_rv_returns_last_value_for_points_outside_support_range() {
+        let function = vec![
+            Number::Integer(10),
+            Number::Integer(20),
+            Number::Integer(30),
+        ];
+        let support = vec![Number::Integer(1), Number::Integer(3), Number::Integer(5)];
+
+        let below_min = evaluate_rv(&function, &support, Number::Integer(0));
+        let above_max = evaluate_rv(&function, &support, Number::Integer(9));
+
+        assert_eq!(below_min, Some(Number::Integer(30)));
+        assert_eq!(above_max, Some(Number::Integer(30)));
+    }
+
+    #[test]
+    fn evaluate_rv_returns_none_for_empty_function() {
+        let function: Vec<Number> = vec![];
+        let support = vec![Number::Integer(1), Number::Integer(2)];
+
+        let result = evaluate_rv(&function, &support, Number::Integer(1));
+        assert_eq!(result, None);
     }
 }

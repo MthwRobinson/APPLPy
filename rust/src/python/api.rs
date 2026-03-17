@@ -68,6 +68,16 @@ impl FastRV {
         }
     }
 
+    pub fn __repr__(&self) -> String {
+        format!(
+            "FastRV(function=[{}], support=[{}], functional_form='{}', domain_type='{}')",
+            format_number_list(&self.inner.function),
+            format_number_list(&self.inner.support),
+            self.inner.functional_form,
+            self.inner.domain_type
+        )
+    }
+
     #[getter]
     pub fn function(&self) -> Vec<Number> {
         self.inner.function.clone()
@@ -100,14 +110,8 @@ impl FastRV {
             .expect("veriy_pdf method failed")
     }
 
-    pub fn __repr__(&self) -> String {
-        format!(
-            "FastRV(function=[{}], support=[{}], functional_form='{}', domain_type='{}')",
-            format_number_list(&self.inner.function),
-            format_number_list(&self.inner.support),
-            self.inner.functional_form,
-            self.inner.domain_type
-        )
+    pub fn evaluate(&self, value: Number) -> Option<Number> {
+        self.inner.evaluate(value)
     }
 
     pub fn to_pdf(&self) -> PyResult<FastRV> {
