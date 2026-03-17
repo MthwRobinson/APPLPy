@@ -829,7 +829,9 @@ mod tests {
 
         assert_eq!(hf.function.len(), 2);
         assert_eq!(hf.function[0], Number::Rational(Rational64::new(1, 1)));
-        assert!(matches!(hf.function[1], Number::Float(x) if x.is_infinite() && x.is_sign_positive()));
+        assert!(
+            matches!(hf.function[1], Number::Float(x) if x.is_infinite() && x.is_sign_positive())
+        );
     }
 
     #[test]

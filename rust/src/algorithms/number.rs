@@ -44,10 +44,6 @@ impl Number {
         }
     }
 
-    pub fn zero() -> Number {
-        Number::Integer(0)
-    }
-
     pub fn one() -> Number {
         Number::Integer(1)
     }
