@@ -191,6 +191,27 @@ pub fn verify_pdf(function: &[Number], tolerance: Option<f64>) -> Result<bool, S
     Ok((area > 1.0 - tolerance) && (area < 1.0 + tolerance))
 }
 
+/// Evaluates a random variable at a specific value. Used to compute F(x) for
+/// the random variable
+///
+/// # Arguments
+/// * `function` - the probability mass functon of the RV
+/// * `support` - the support of the RV
+/// * `value` - the value at which to evaulate the function
+///
+/// # Returns
+/// * `output` - a Number representing F(x) at the
+pub fn evaluate_rv(function: &[Number], support: &[Number], value: Number) -> Option<Number> {
+    for (support_window, &function_value) in support.windows(2).zip(function.iter()) {
+        let (current_support, next_support) = (support_window[0], support_window[1]);
+        if current_support <= value && next_support > value {
+            return Some(function_value);
+        }
+    }
+
+    function.last().copied()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

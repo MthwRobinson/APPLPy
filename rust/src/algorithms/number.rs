@@ -4,7 +4,7 @@ use std::ops::{Add, AddAssign, Div, Mul, Sub};
 use num_rational::Rational64;
 use num_traits::cast::ToPrimitive;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub enum Number {
     Float(f64),
     Integer(i64),
