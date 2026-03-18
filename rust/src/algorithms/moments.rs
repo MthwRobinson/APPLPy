@@ -70,6 +70,40 @@ pub fn discrete_mean(random_variable: &RandomVariable) -> Result<Number, String>
 /// * `variance`: the variance of the random variable
 ///
 /// # Examples
+/// ```
+/// use applpy_rust::algorithms::moments::discrete_variance;
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+/// use num_rational::Rational64;
+///
+/// let rv = RandomVariable {
+///     function: vec![Number::Rational(Rational64::new(1, 2)); 2],
+///     support: vec![Number::Integer(1), Number::Integer(3)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let variance = discrete_variance(&rv).unwrap();
+/// assert_eq!(variance, Number::Rational(Rational64::new(1, 1)));
+/// ```
+///
+/// ```
+/// use applpy_rust::algorithms::moments::discrete_variance;
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+///
+/// // PDF [0.2, 0.5, 0.3] over support [1, 2, 4]
+/// // E[X] = 2.4, E[X^2] = 7.0, so Var(X) = 1.24
+/// let rv = RandomVariable {
+///     function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
+///     support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(4)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let variance = discrete_variance(&rv).unwrap();
+/// assert!((variance.to_f64() - 1.24).abs() < 1e-12);
+/// ```
 pub fn discrete_variance(random_variable: &RandomVariable) -> Result<Number, String> {
     // E(X) is the mean of X
     let mean = random_variable.mean()?;
@@ -143,6 +177,58 @@ mod tests {
         };
 
         let result = discrete_mean(&rv);
+        assert!(result.is_err());
+        assert_eq!(
+            result.err().unwrap(),
+            "cannot compute the pdf. function is empty"
+        );
+    }
+
+    #[test]
+    fn discrete_variance_computes_expected_value_for_discrete_pdf() {
+        // Fair die: E[X] = 7/2, E[X^2] = 91/6, so Var(X) = 35/12
+        let rv = RandomVariable {
+            function: vec![Number::Rational(Rational64::new(1, 6)); 6],
+            support: vec![
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+                Number::Integer(5),
+                Number::Integer(6),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let variance = discrete_variance(&rv).unwrap();
+        assert_eq!(variance, Number::Rational(Rational64::new(35, 12)));
+    }
+
+    #[test]
+    fn discrete_variance_computes_expected_value_for_float_pdf() {
+        // E[X] = 2.4 and E[X^2] = 7.0 for this distribution
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(4)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let variance = discrete_variance(&rv).unwrap();
+        assert!((variance.to_f64() - 1.24).abs() < 1e-12);
+    }
+
+    #[test]
+    fn discrete_variance_returns_error_when_mean_computation_fails() {
+        let rv = RandomVariable {
+            function: vec![],
+            support: vec![],
+            functional_form: FunctionalForm::Cdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = discrete_variance(&rv);
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap(),
