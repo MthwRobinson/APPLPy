@@ -23,6 +23,9 @@ is running as expected:
     If `cargo fmt --check` fails, run `make cargo-tidy` to format the code
 - `make cargo-test`: runs the unit tests for the rust code
 
+For rust tests, include doc string tests for basic examples and a test module for more complex
+examples.
+
 If you modify the python code, run the following commands to confirm everything is running
 as expected:
 
