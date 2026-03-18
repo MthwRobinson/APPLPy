@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::fmt;
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
@@ -12,6 +14,10 @@ pub enum Number {
 }
 
 impl Number {
+    pub fn one() -> Number {
+        Number::Integer(1)
+    }
+
     fn to_rational(self) -> Rational64 {
         match self {
             Number::Float(x) => Rational64::approximate_float(x)
@@ -29,6 +35,61 @@ impl Number {
         }
     }
 
+    pub fn pow(self, exponent: Number) -> Number {
+        match self {
+            Number::Float(base) => match exponent {
+                Number::Float(f) => Number::Float(base.powf(f)),
+                Number::Rational(r) => {
+                    let result = base.powf(r.to_f64().expect("failed to convert number to f64"));
+                    Number::Float(result)
+                }
+                Number::Integer(i) => {
+                    let result = base
+                        .to_f64()
+                        .expect("failed to convert number to f64")
+                        .powi(i.to_i32().expect("failed to convert number to u32"));
+                    Number::Float(result)
+                }
+            },
+            Number::Rational(base) => match exponent {
+                Number::Float(f) => {
+                    let result = base
+                        .to_f64()
+                        .expect("failed to convert number to f64")
+                        .powf(f);
+                    Number::Float(result)
+                }
+                Number::Rational(r) => {
+                    let result = base
+                        .to_f64()
+                        .expect("failed to convert number to f64")
+                        .powf(r.to_f64().expect("failed to convert number to f64"));
+                    Number::Float(result)
+                }
+                Number::Integer(i) => {
+                    let result = base
+                        .to_f64()
+                        .expect("failed to convert number to f64")
+                        .powf(i.to_f64().expect("failed to convert number to u32"));
+                    Number::Float(result)
+                }
+            },
+            Number::Integer(base) => match exponent {
+                Number::Integer(i) => {
+                    let result = base.pow(i.to_u32().expect("failed to convert number to u32"));
+                    Number::Integer(result)
+                }
+                n => {
+                    let result = base
+                        .to_f64()
+                        .expect("failed to convert number to f64")
+                        .powf(n.to_f64());
+                    Number::Float(result)
+                }
+            },
+        }
+    }
+
     fn promote(self, other: Self) -> (Self, Self) {
         match (&self, &other) {
             (Number::Float(_), _) | (_, Number::Float(_)) => {
@@ -42,10 +103,6 @@ impl Number {
 
             _ => (self, other),
         }
-    }
-
-    pub fn one() -> Number {
-        Number::Integer(1)
     }
 }
 
