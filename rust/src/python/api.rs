@@ -182,7 +182,17 @@ impl FastRV {
         }
 
         Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-            "converstion to hf failed",
+            "conversion to hf failed",
+        ))
+    }
+
+    pub fn mean(&self) -> PyResult<Number> {
+        if let Ok(mean) = self.inner.mean() {
+            return Ok(mean);
+        }
+
+        Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "failed to compute the mean of the random variable",
         ))
     }
 }

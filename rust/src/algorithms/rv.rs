@@ -5,6 +5,7 @@ use std::fmt;
 use num_traits::cast::ToPrimitive;
 
 use crate::algorithms::conversion;
+use crate::algorithms::moments;
 use crate::algorithms::number::Number;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -156,6 +157,10 @@ impl RandomVariable {
             }
         }
     }
+
+    pub fn mean(&self) -> Result<Number, String> {
+        moments::discrete_mean(self)
+    }
 }
 
 /// Verifies that the area under the PDF of random variable sums to 1
@@ -167,7 +172,7 @@ impl RandomVariable {
 ///   can deviate from 1
 ///
 /// # Returns
-/// * `valid` - a boolean indicatin if the PDF is valid
+/// * `valid` - a boolean indicating if the PDF is valid
 pub fn verify_pdf(function: &[Number], tolerance: Option<f64>) -> Result<bool, String> {
     let default_tolerance: f64 = 0.000001;
     let tolerance = tolerance.unwrap_or(default_tolerance);
