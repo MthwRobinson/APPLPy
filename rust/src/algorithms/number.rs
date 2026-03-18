@@ -47,7 +47,7 @@ impl Number {
                     let result = base
                         .to_f64()
                         .expect("failed to convert number to f64")
-                        .powi(i.to_i32().expect("failed to convert number to u32"));
+                        .powi(i.to_i32().expect("failed to convert number to i32"));
                     Number::Float(result)
                 }
             },
@@ -58,6 +58,16 @@ impl Number {
                         .expect("failed to convert number to f64")
                         .powf(f);
                     Number::Float(result)
+                }
+                Number::Rational(r) if *r.denom() == 1 => {
+                    let result = base
+                        .numer()
+                        .to_i32()
+                        .expect("failed to convert numerator to i32")
+                        .pow(r.to_u32().expect("failed to convert number to u32"))
+                        .to_i64()
+                        .expect("failed to convert number to i64");
+                    Number::Integer(result)
                 }
                 Number::Rational(r) => {
                     let result = base
