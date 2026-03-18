@@ -36,71 +36,74 @@ impl Number {
     }
 
     pub fn pow(self, exponent: Number) -> Number {
-        match self {
-            Number::Float(base) => match exponent {
-                Number::Float(f) => Number::Float(base.powf(f)),
-                Number::Rational(r) => {
-                    let result = base.powf(r.to_f64().expect("failed to convert number to f64"));
-                    Number::Float(result)
+        match (self, exponent) {
+            (Number::Float(base), Number::Float(exp)) => Number::Float(base.powf(exp)),
+
+            (Number::Float(base), Number::Rational(exp)) => Number::Float(
+                base.powf(
+                    exp.to_f64()
+                        .expect("failed to convert rational exponent to f64"),
+                ),
+            ),
+
+            (Number::Float(base), Number::Integer(exp)) => {
+                let e = exp
+                    .to_i32()
+                    .expect("failed to convert integer exponent to i32");
+                Number::Float(base.powi(e))
+            }
+
+            (Number::Rational(base), Number::Float(exp)) => Number::Float(
+                base.to_f64()
+                    .expect("failed to convert rational base to f64")
+                    .powf(exp),
+            ),
+
+            (Number::Rational(base), Number::Rational(exp)) if *exp.denom() == 1 => {
+                let i = *exp.numer();
+
+                if i >= 0 {
+                    let n = u32::try_from(i).expect("failed to convert exponent to u32");
+                    Number::Rational(base.pow(n))
+                } else {
+                    let n =
+                        u32::try_from(i.unsigned_abs()).expect("failed to convert exponent to u32");
+                    Number::Rational(base.recip().pow(n))
                 }
-                Number::Integer(i) => {
-                    let result = base
-                        .to_f64()
-                        .expect("failed to convert number to f64")
-                        .powi(i.to_i32().expect("failed to convert number to i32"));
-                    Number::Float(result)
+            }
+
+            (Number::Rational(base), Number::Rational(exp)) => Number::Float(
+                base.to_f64()
+                    .expect("failed to convert rational base to f64")
+                    .powf(
+                        exp.to_f64()
+                            .expect("failed to convert rational exponent to f64"),
+                    ),
+            ),
+
+            (Number::Rational(base), Number::Integer(exp)) => {
+                if exp >= 0 {
+                    let n = u32::try_from(exp).expect("failed to convert exponent to u32");
+                    Number::Rational(base.pow(n))
+                } else {
+                    let n = u32::try_from(exp.unsigned_abs())
+                        .expect("failed to convert exponent to u32");
+                    Number::Rational(base.recip().pow(n))
                 }
-            },
-            Number::Rational(base) => match exponent {
-                Number::Float(f) => {
-                    let result = base
-                        .to_f64()
-                        .expect("failed to convert number to f64")
-                        .powf(f);
-                    Number::Float(result)
+            }
+
+            (Number::Integer(base), Number::Integer(exp)) => {
+                if exp >= 0 {
+                    let n = u32::try_from(exp).expect("failed to convert exponent to u32");
+                    Number::Integer(base.pow(n))
+                } else {
+                    let n = u32::try_from(exp.unsigned_abs())
+                        .expect("failed to convert exponent to u32");
+                    Number::Rational(Rational64::new(1, base).pow(n))
                 }
-                Number::Rational(r) if *r.denom() == 1 => {
-                    let result = base
-                        .numer()
-                        .to_i32()
-                        .expect("failed to convert numerator to i32")
-                        .pow(r.to_u32().expect("failed to convert number to u32"))
-                        .to_i64()
-                        .expect("failed to convert number to i64");
-                    Number::Integer(result)
-                }
-                Number::Rational(r) => {
-                    let result = base
-                        .to_f64()
-                        .expect("failed to convert number to f64")
-                        .powf(r.to_f64().expect("failed to convert number to f64"));
-                    Number::Float(result)
-                }
-                Number::Integer(i) => {
-                    let n = i
-                        .unsigned_abs()
-                        .to_i32()
-                        .expect("failed to convert number to i32");
-                    if i.to_f64() >= Some(0.0) {
-                        Number::Rational(base.pow(n))
-                    } else {
-                        Number::Rational(base.recip().pow(n))
-                    }
-                }
-            },
-            Number::Integer(base) => match exponent {
-                Number::Integer(i) => {
-                    let result = base.pow(i.to_u32().expect("failed to convert number to u32"));
-                    Number::Integer(result)
-                }
-                n => {
-                    let result = base
-                        .to_f64()
-                        .expect("failed to convert number to f64")
-                        .powf(n.to_f64());
-                    Number::Float(result)
-                }
-            },
+            }
+
+            (Number::Integer(base), exp) => Number::Float((base as f64).powf(exp.to_f64())),
         }
     }
 
