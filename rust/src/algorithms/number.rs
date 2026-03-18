@@ -77,11 +77,15 @@ impl Number {
                     Number::Float(result)
                 }
                 Number::Integer(i) => {
-                    let result = base
-                        .to_f64()
-                        .expect("failed to convert number to f64")
-                        .powf(i.to_f64().expect("failed to convert number to u32"));
-                    Number::Float(result)
+                    let n = i
+                        .unsigned_abs()
+                        .to_i32()
+                        .expect("failed to convert number to i32");
+                    if i.to_f64() >= Some(0.0) {
+                        Number::Rational(base.pow(n))
+                    } else {
+                        Number::Rational(base.recip().pow(n))
+                    }
                 }
             },
             Number::Integer(base) => match exponent {
