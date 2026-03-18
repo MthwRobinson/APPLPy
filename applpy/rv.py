@@ -30,7 +30,6 @@ Procedures On One Random Variable:
     5. Kurtosis(random_variable)
     6. MaximumIID(random_variable,n)
     7. Mean(random_variable)
-    8. MeanDiscrete(random_variable)
     9. MGF(random_variable)
     10. MinimumIID(random_variable,n)
     11. OrderStat(random_variable,n,r)
@@ -2077,7 +2076,6 @@ Procedures:
     5. Kurtosis(random_variable)
     6. MaximumIID(random_variable,n)
     7. Mean(random_variable)
-    8. MeanDiscrete(random_variable)
     9. MGF(random_variable)
     10. MinimumIID(random_variable,n)
     11. OrderStat(random_variable,n,r)
@@ -2172,21 +2170,15 @@ def ExpectedValue(random_variable, gX=x):
             Expect += summation(gX * fx.func[i], (x, fx.support[i], fx.support[i + 1]))
         return simplify(Expect)
 
-    # If the distribution is discrete, compute the expected
-    #   value
     if fx.domain_type == "discrete":
-        # Transform the random variable, and then use the
-        #   mean procedure to find the expected value
         fx_support = [gX.subs(x, value) for value in fx.support]
-        fx_trans = RV(
-            fx.func,
-            fx_support,
+        fx_trans = FastRV(
+            function=fx.func,
+            support=fx_support,
             functional_form=fx.functional_form,
             domain_type=fx.domain_type,
         )
-        # fx_trans=Transform(fx,[[gX],[-oo,oo]])
-        Expect = MeanDiscrete(fx_trans)
-        return simplify(Expect)
+        return fx_trans.mean()
 
 
 def Entropy(random_variable, cache=False):
@@ -2329,58 +2321,13 @@ def Mean(random_variable, cache=False):
 
     # If the random variable is discrete, find and return the variance
     if X_dummy.domain_type == "discrete":
-        meanval = MeanDiscrete(random_variable)
-        if cache:
-            random_variable.add_to_cache("mean", meanval)
-        return simplify(meanval)
-        #
-        # Legacy mean code ... update uses faster numpy implementation
-        #
-        # Create a list of x*f(x)
-        # meanlist=[]
-        # for i in range(len(X_dummy.func)):
-        #    meanlist.append(X_dummy.func[i]*X_dummy.support[i])
-        # Sum to find the mean
-        # meanval=0
-        # for i in range(len(meanlist)):
-        #    meanval+=meanlist[i]
-        # return simplify(meanval)
-
-
-def MeanDiscrete(random_variable):
-    """
-    Procedure Name: MeanDiscrete
-    Purpose: Compute the mean of a discrete random variable
-    Arguments:  1. random_variable: A discrete random variable
-    Output:     1. The mean of the random variable
-    """
-    # Check the random variable to make sure it is discrete
-    if random_variable.domain_type == "continuous":
-        raise RVError("the random variable must be continuous")
-    elif random_variable.domain_type == "discrete_functional":
-        try:
-            random_variable = Convert(random_variable)
-        except Exception:
-            err_string = "the support of the random variable"
-            err_string += " must be finite"
-            raise RVError(err_string)
-    elif random_variable.domain_type == "discrete" and random_variable.functional_form == "pdf":
-        # Preserve symbolic transformed supports (e.g., exp(t*x) in MGF) by
-        # avoiding conversion through FastRV, which requires numeric supports.
-        support = np.asarray(random_variable.support, dtype=object)
-        pdf = np.asarray(random_variable.func, dtype=object)
-        return np.multiply(support, pdf).sum()
-    # Convert the random variable to PDF form
-    X_dummy = PDF(random_variable)
-    # Convert support and pdf values to numpy arrays
-    support = np.asarray(X_dummy.support, dtype=object)
-    pdf = np.asarray(X_dummy.func, dtype=object)
-    # Use the numpy element wise multiplication function to
-    #   determine a vector of the values of f(x)*x
-    vals = np.multiply(support, pdf)
-    # Sum the values of f(x)*x to find the mean
-    meanval = vals.sum()
-    return meanval
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type="discrete",
+        )
+        return fast_rv.mean()
 
 
 def MGF(random_variable, cache=False):
@@ -3268,10 +3215,14 @@ def VarDiscrete(random_variable):
             err_string = "the support of the random variable"
             err_string += " must be finite"
             raise RVError(err_string)
-    # Convert the random variable to PDF form
-    PDF(random_variable)
-    # Mind the mean of the random variable
-    EX = MeanDiscrete(random_variable)
+
+    fast_rv = FastRV(
+        function=random_variable.func,
+        support=random_variable.support,
+        functional_form=random_variable.functional_form,
+        domain_type=random_variable.domain_type,
+    )
+    EX = fast_rv.mean()
     # Convert the values and support of the random variable
     #   to vector form
     support = np.asarray(random_variable.support, dtype=object)

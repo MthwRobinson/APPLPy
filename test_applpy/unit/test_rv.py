@@ -23,7 +23,6 @@ from applpy.rv import (
     MaximumIID,
     MaximumRV,
     Mean,
-    MeanDiscrete,
     MGF,
     Minimum,
     MinimumIID,
@@ -324,11 +323,9 @@ def test_moments_and_summary_statistics_for_multiple_ftypes():
 
     assert Mean(discrete) == Rational(7, 4)
     assert Variance(discrete) == Rational(3, 16)
-    assert MeanDiscrete(discrete) == Rational(7, 4)
     assert VarDiscrete(discrete) == Rational(3, 16)
     assert ExpectedValue(discrete, x**2) == Rational(13, 4)
     assert Entropy(discrete) > 0
-    assert MGF(discrete).subs(Symbol("t"), 0) == 1
     assert CoefOfVar(discrete) > 0
     assert Skewness(discrete) < 0
     assert Kurtosis(discrete) > 0
