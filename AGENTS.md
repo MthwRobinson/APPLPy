@@ -14,13 +14,22 @@ This section should contain instructions for how to validate the changes in the 
 
 Each pull request should have a title that uses conventional commit format.
 
+## Testing
 
-## Update Code to Use Python Best Practices
+If you modify rust code, run the following commands from the `Makefile` to confirm everything
+is running as expected:
 
-This library was originally written in Python 2 and was also written with a
-Mathematica or Maple usage pattern in mind. When you notice anti-patterns such
-as `from applpy import *` or other aspects of the code, update them to use best practices.
-Only make these updates incrementally in files we are updating to avoid unexpected changes.
+- `make cargo-lint`: runs `cargo clippy` and `cargo fmt --check` linting.
+    If `cargo fmt --check` fails, run `make cargo-tidy` to format the code
+- `make cargo-test`: runs the unit tests for the rust code
+
+If you modify the python code, run the following commands to confirm everything is running
+as expected:
+
+- `make check`: runs `ruff` linting checks. Run `make tidy` to correct formatting differences
+    if necessary
+- `make rust-develop`: compiles the rust bindings to pick up any changes to the rust code
+- `make test`: runs the python test suite
 
 ## New Skills
 
