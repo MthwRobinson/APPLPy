@@ -1222,8 +1222,9 @@ def CHF(random_variable, value=x, cache=False):
     #   variable's support
     if not isinstance(value, Symbol):
         if value > random_variable.support[-1] or value < random_variable.support[0]:
-            string = "Value is not within the support of the random variable"
-            raise RVError(string)
+            if random_variable.domain_type != "discrete":
+                string = "Value is not within the support of the random variable"
+                raise RVError(string)
 
     # If the CHF of the random variable is already cached in memory,
     #   retriew the value of the CHF and return in.
@@ -1355,8 +1356,9 @@ def HF(random_variable, value=x, cache=False):
     #   variable's support
     if not isinstance(value, Symbol):
         if value > random_variable.support[-1] or value < random_variable.support[0]:
-            string = "Value is not within the support of the random variable"
-            raise RVError(string)
+            if random_variable.domain_type != "discrete":
+                string = "Value is not within the support of the random variable"
+                raise RVError(string)
 
     # If the HF of the random variable is already cached in memory,
     #   retriew the value of the HF and return in.
@@ -1498,8 +1500,9 @@ def IDF(random_variable, value=x, cache=False):
     #   variable's support
     if not isinstance(value, Symbol):
         if value > 1 or value < 0:
-            string = "Value is not within the support of the random variable"
-            raise RVError(string)
+            if random_variable.domain_type != "discrete":
+                string = "Value is not within the support of the random variable"
+                raise RVError(string)
 
     # If the IDF of the random variable is already cached in memory,
     #   retriew the value of the IDF and return in.
@@ -1681,8 +1684,9 @@ def PDF(random_variable, value=x, cache=False):
     #   variable's support
     if not isinstance(value, Symbol):
         if value > random_variable.support[-1] or value < random_variable.support[0]:
-            string = "Value is not within the support of the random variable"
-            raise RVError(string)
+            if random_variable.domain_type != "discrete":
+                string = "Value is not within the support of the random variable"
+                raise RVError(string)
 
     # If the PDF of the random variable is already cached in memory,
     #   retriew the value of the PDF and return in.

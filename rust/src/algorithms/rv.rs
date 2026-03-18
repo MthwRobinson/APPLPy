@@ -69,7 +69,7 @@ impl RandomVariable {
     }
 
     pub fn evaluate(&self, value: Number) -> Option<Number> {
-        evaluate_rv(&self.function, &self.support, value)
+        evaluate_rv(&self.function, &self.support, &self.functional_form, value)
     }
 
     pub fn to_pdf(&self) -> Result<RandomVariable, String> {
@@ -201,14 +201,56 @@ pub fn verify_pdf(function: &[Number], tolerance: Option<f64>) -> Result<bool, S
 /// # Arguments
 /// * `function` - the probability mass functon of the RV
 /// * `support` - the support of the RV
+/// * `functional_form` - the functional form of the RV
 /// * `value` - the value at which to evaulate the function
 ///
 /// # Returns
 /// * `output` - a Number representing F(x) at the
-pub fn evaluate_rv(function: &[Number], support: &[Number], value: Number) -> Option<Number> {
+pub fn evaluate_rv(
+    function: &[Number],
+    support: &[Number],
+    functional_form: &FunctionalForm,
+    value: Number,
+) -> Option<Number> {
+    if function.is_empty() || support.is_empty() {
+        return None;
+    }
+
+    let value_f64 = value.to_f64();
+    let lower_bound = support[0].to_f64();
+
+    if *functional_form == FunctionalForm::Idf {
+        if value_f64 < lower_bound || value_f64 > 1.0 {
+            return None;
+        }
+    } else {
+        let upper_bound = support[support.len() - 1].to_f64();
+
+        if value_f64 < lower_bound {
+            return match functional_form {
+                FunctionalForm::Cdf
+                | FunctionalForm::Chf
+                | FunctionalForm::Hf
+                | FunctionalForm::Pdf => Some(Number::Integer(0)),
+                FunctionalForm::Sf => Some(Number::Integer(1)),
+                FunctionalForm::Idf => None,
+            };
+        }
+
+        if value_f64 > upper_bound {
+            return match functional_form {
+                FunctionalForm::Cdf => Some(Number::Integer(1)),
+                FunctionalForm::Sf | FunctionalForm::Pdf => Some(Number::Integer(0)),
+                FunctionalForm::Chf | FunctionalForm::Hf => Some(Number::Float(f64::INFINITY)),
+                FunctionalForm::Idf => None,
+            };
+        }
+    }
+
     for (support_window, &function_value) in support.windows(2).zip(function.iter()) {
-        let (current_support, next_support) = (support_window[0], support_window[1]);
-        if current_support <= value && next_support > value {
+        let current_support = support_window[0].to_f64();
+        let next_support = support_window[1].to_f64();
+        if current_support <= value_f64 && next_support > value_f64 {
             return Some(function_value);
         }
     }
@@ -706,7 +748,12 @@ mod tests {
         let function = vec![Number::Float(0.1), Number::Float(0.4), Number::Float(0.9)];
         let support = vec![Number::Integer(1), Number::Integer(3), Number::Integer(5)];
 
-        let result = evaluate_rv(&function, &support, Number::Integer(2));
+        let result = evaluate_rv(
+            &function,
+            &support,
+            &FunctionalForm::Cdf,
+            Number::Integer(2),
+        );
         assert_eq!(result, Some(Number::Float(0.1)));
     }
 
@@ -719,12 +766,17 @@ mod tests {
         ];
         let support = vec![Number::Integer(1), Number::Integer(3), Number::Integer(5)];
 
-        let result = evaluate_rv(&function, &support, Number::Integer(3));
+        let result = evaluate_rv(
+            &function,
+            &support,
+            &FunctionalForm::Cdf,
+            Number::Integer(3),
+        );
         assert_eq!(result, Some(Number::Integer(20)));
     }
 
     #[test]
-    fn evaluate_rv_returns_last_value_for_points_outside_support_range() {
+    fn evaluate_rv_uses_functional_form_specific_out_of_support_behavior() {
         let function = vec![
             Number::Integer(10),
             Number::Integer(20),
@@ -732,11 +784,89 @@ mod tests {
         ];
         let support = vec![Number::Integer(1), Number::Integer(3), Number::Integer(5)];
 
-        let below_min = evaluate_rv(&function, &support, Number::Integer(0));
-        let above_max = evaluate_rv(&function, &support, Number::Integer(9));
-
-        assert_eq!(below_min, Some(Number::Integer(30)));
-        assert_eq!(above_max, Some(Number::Integer(30)));
+        assert_eq!(
+            evaluate_rv(
+                &function,
+                &support,
+                &FunctionalForm::Cdf,
+                Number::Integer(0)
+            ),
+            Some(Number::Integer(0))
+        );
+        assert_eq!(
+            evaluate_rv(
+                &function,
+                &support,
+                &FunctionalForm::Cdf,
+                Number::Integer(9)
+            ),
+            Some(Number::Integer(1))
+        );
+        assert_eq!(
+            evaluate_rv(&function, &support, &FunctionalForm::Sf, Number::Integer(0)),
+            Some(Number::Integer(1))
+        );
+        assert_eq!(
+            evaluate_rv(&function, &support, &FunctionalForm::Sf, Number::Integer(9)),
+            Some(Number::Integer(0))
+        );
+        assert_eq!(
+            evaluate_rv(
+                &function,
+                &support,
+                &FunctionalForm::Pdf,
+                Number::Integer(0)
+            ),
+            Some(Number::Integer(0))
+        );
+        assert_eq!(
+            evaluate_rv(
+                &function,
+                &support,
+                &FunctionalForm::Pdf,
+                Number::Integer(9)
+            ),
+            Some(Number::Integer(0))
+        );
+        assert_eq!(
+            evaluate_rv(
+                &function,
+                &support,
+                &FunctionalForm::Idf,
+                Number::Integer(0)
+            ),
+            None
+        );
+        assert_eq!(
+            evaluate_rv(
+                &function,
+                &support,
+                &FunctionalForm::Idf,
+                Number::Integer(9)
+            ),
+            None
+        );
+        assert_eq!(
+            evaluate_rv(&function, &support, &FunctionalForm::Hf, Number::Integer(0)),
+            Some(Number::Integer(0))
+        );
+        assert!(matches!(
+            evaluate_rv(&function, &support, &FunctionalForm::Hf, Number::Integer(9)),
+            Some(Number::Float(x)) if x.is_infinite() && x.is_sign_positive()
+        ));
+        assert_eq!(
+            evaluate_rv(
+                &function,
+                &support,
+                &FunctionalForm::Chf,
+                Number::Integer(0)
+            ),
+            Some(Number::Integer(0))
+        );
+        assert!(matches!(
+            evaluate_rv(&function, &support, &FunctionalForm::Chf, Number::Integer(9)),
+            Some(Number::Float(x)) if x.is_infinite() && x.is_sign_positive()
+        ));
     }
 
     #[test]
@@ -744,7 +874,12 @@ mod tests {
         let function: Vec<Number> = vec![];
         let support = vec![Number::Integer(1), Number::Integer(2)];
 
-        let result = evaluate_rv(&function, &support, Number::Integer(1));
+        let result = evaluate_rv(
+            &function,
+            &support,
+            &FunctionalForm::Cdf,
+            Number::Integer(1),
+        );
         assert_eq!(result, None);
     }
 }

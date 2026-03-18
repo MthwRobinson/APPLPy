@@ -276,10 +276,22 @@ def test_conversion_family_for_continuous_and_discrete_distributions():
     assert PDF(CDF(continuous), Rational(1, 4)) == 1
 
     assert CDF(discrete, 1) == Rational(1, 4)
+    assert CDF(discrete, 0) == 0
+    assert CDF(discrete, 3) == 1
     assert SF(discrete, 1) == Rational(3, 4)
+    assert SF(discrete, 0) == 1
+    assert SF(discrete, 3) == 0
     assert HF(discrete, 1) == Rational(1, 3)
+    assert HF(discrete, 0) == 0
+    assert HF(discrete, 3) == oo
     assert CHF(discrete, 2) > 0
+    assert CHF(discrete, 0) == 0
+    assert CHF(discrete, 3) == oo
     assert IDF(discrete, Rational(1, 2)) == 2
+    assert IDF(discrete, -1) is None
+    assert IDF(discrete, 2) is None
+    assert PDF(discrete, 0) == 0
+    assert PDF(discrete, 3) == 0
 
     converted = Convert(functional_discrete)
     assert CDF(functional_discrete) == CDF(converted)
