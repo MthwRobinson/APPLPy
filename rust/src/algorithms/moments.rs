@@ -60,6 +60,38 @@ pub fn discrete_mean(random_variable: &RandomVariable) -> Result<Number, String>
     Ok(mean)
 }
 
+/// Computers the variance of a discrete random variable using the relationships
+/// Var(x) = E(X^2) - E(X)^2
+///
+/// # Arguments
+/// * `random_variable`: a discrete random variable
+///
+/// # Returns
+/// * `variance`: the variance of the random variable
+///
+/// # Examples
+pub fn discrete_variance(random_variable: &RandomVariable) -> Result<Number, String> {
+    // E(X) is the mean of X
+    let mean = random_variable.mean()?;
+    let two = Number::Integer(2);
+
+    // Now fine E(X^2)
+    let function = &random_variable.function;
+    let support = &random_variable.support;
+    let expected_x_squared =
+        function
+            .iter()
+            .zip(support.iter())
+            .fold(Number::default(), |ex2, (&f, &s)| {
+                let s_squared = s.pow(two).expect("failed to compute support^2");
+                ex2 + (f * s_squared)
+            });
+
+    // Var(X) = E(X^2) - E(X)^2
+    let variance = expected_x_squared - mean.pow(two)?;
+    Ok(variance)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
