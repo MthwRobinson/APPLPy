@@ -126,6 +126,7 @@ impl RandomVariable {
 
     pub fn to_chf(&self) -> Result<RandomVariable, String> {
         match &self.functional_form {
+            FunctionalForm::Chf => Ok(self.clone()),
             FunctionalForm::Hf => conversion::discrete_hf_to_chf(self),
             _ => {
                 let hf_function = conversion::discrete_rv_to_hf(self)?;
@@ -135,7 +136,10 @@ impl RandomVariable {
     }
 
     pub fn to_hf(&self) -> Result<RandomVariable, String> {
-        conversion::discrete_rv_to_hf(self)
+        match &self.functional_form {
+            FunctionalForm::Hf => Ok(self.clone()),
+            _ => conversion::discrete_rv_to_hf(self),
+        }
     }
 
     pub fn to_idf(&self) -> Result<RandomVariable, String> {
@@ -690,6 +694,27 @@ mod tests {
     }
 
     #[test]
+    fn to_chf_returns_clone_when_already_chf() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 9)),
+                Number::Rational(Rational64::new(19, 9)),
+                Number::Rational(Rational64::new(37, 9)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Chf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = rv.to_chf().unwrap();
+
+        assert_eq!(result.function, rv.function);
+        assert_eq!(result.support, rv.support);
+        assert!(matches!(result.functional_form, FunctionalForm::Chf));
+        assert!(matches!(result.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
     fn to_chf_propagates_conversion_error_for_empty_pdf() {
         let rv = RandomVariable {
             function: vec![],
@@ -726,6 +751,27 @@ mod tests {
                 Number::Rational(Rational64::new(2, 1)),
             ]
         );
+        assert!(matches!(result.functional_form, FunctionalForm::Hf));
+        assert!(matches!(result.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
+    fn to_hf_returns_clone_when_already_hf() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 9)),
+                Number::Rational(Rational64::new(2, 1)),
+                Number::Rational(Rational64::new(2, 1)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Hf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = rv.to_hf().unwrap();
+
+        assert_eq!(result.function, rv.function);
+        assert_eq!(result.support, rv.support);
         assert!(matches!(result.functional_form, FunctionalForm::Hf));
         assert!(matches!(result.domain_type, DomainType::Discrete));
     }

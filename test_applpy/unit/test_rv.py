@@ -526,6 +526,12 @@ def test_conversion_roundtrips_across_precomputed_discrete_forms():
         assert IDF(source).ftype == ["discrete", "idf"]
         assert PDF(source).ftype == ["discrete", "pdf"]
 
+    # HF/CHF conversions should be idempotent when the source is already in that form.
+    assert HF(hf).func == hf.func
+    assert HF(hf).support == hf.support
+    assert CHF(chf).func == chf.func
+    assert CHF(chf).support == chf.support
+
     assert IDF(idf).ftype == ["discrete", "idf"]
 
 

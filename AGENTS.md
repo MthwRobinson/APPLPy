@@ -31,6 +31,9 @@ as expected:
 - `make rust-develop`: compiles the rust bindings to pick up any changes to the rust code
 - `make test`: runs the python test suite
 
+For Python targets, if you get an error saying `ModuleNotFound: applpy_rust`, that likely
+means the rust bindings have not been built. You can fix this with `make rust-develop`.
+
 ## New Skills
 
 Unless specifically requested, scope new skills created with the skill-creator skill to this repository. Only add new
