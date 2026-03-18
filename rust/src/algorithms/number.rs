@@ -18,6 +18,14 @@ impl Number {
         Number::Integer(1)
     }
 
+    fn is_zero(self) -> bool {
+        match self {
+            Number::Float(x) => x == 0.0,
+            Number::Integer(x) => x == 0,
+            Number::Rational(x) => *x.numer() == 0,
+        }
+    }
+
     fn to_rational(self) -> Rational64 {
         match self {
             Number::Float(x) => Rational64::approximate_float(x)
@@ -35,75 +43,70 @@ impl Number {
         }
     }
 
-    pub fn pow(self, exponent: Number) -> Number {
-        match (self, exponent) {
-            (Number::Float(base), Number::Float(exp)) => Number::Float(base.powf(exp)),
+    fn powi(self, exponent: i32) -> Result<Number, String> {
+        match self {
+            Number::Float(base) => Ok(Number::Float(base.powi(exponent))),
+            Number::Integer(base) => {
+                if base == 0 && exponent < 0 {
+                    return Err("0 cannot be raised to a negative power".to_string());
+                }
 
-            (Number::Float(base), Number::Rational(exp)) => Number::Float(
-                base.powf(
-                    exp.to_f64()
-                        .expect("failed to convert rational exponent to f64"),
-                ),
-            ),
-
-            (Number::Float(base), Number::Integer(exp)) => {
-                let e = exp
-                    .to_i32()
-                    .expect("failed to convert integer exponent to i32");
-                Number::Float(base.powi(e))
-            }
-
-            (Number::Rational(base), Number::Float(exp)) => Number::Float(
-                base.to_f64()
-                    .expect("failed to convert rational base to f64")
-                    .powf(exp),
-            ),
-
-            (Number::Rational(base), Number::Rational(exp)) if *exp.denom() == 1 => {
-                let i = *exp.numer();
-
-                if i >= 0 {
-                    let n = u32::try_from(i).expect("failed to convert exponent to u32");
-                    Number::Rational(base.pow(n))
+                if exponent >= 0 {
+                    let n = exponent.unsigned_abs();
+                    Ok(Number::Integer(base.pow(n)))
                 } else {
-                    let n =
-                        u32::try_from(i.unsigned_abs()).expect("failed to convert exponent to u32");
-                    Number::Rational(base.recip().pow(n))
+                    Ok(Number::Rational(
+                        Rational64::from_integer(base).pow(exponent),
+                    ))
                 }
             }
-
-            (Number::Rational(base), Number::Rational(exp)) => Number::Float(
-                base.to_f64()
-                    .expect("failed to convert rational base to f64")
-                    .powf(
-                        exp.to_f64()
-                            .expect("failed to convert rational exponent to f64"),
-                    ),
-            ),
-
-            (Number::Rational(base), Number::Integer(exp)) => {
-                if exp >= 0 {
-                    let n = u32::try_from(exp).expect("failed to convert exponent to u32");
-                    Number::Rational(base.pow(n))
-                } else {
-                    let n = u32::try_from(exp.unsigned_abs())
-                        .expect("failed to convert exponent to u32");
-                    Number::Rational(base.recip().pow(n))
+            Number::Rational(base) => {
+                if *base.numer() == 0 && exponent < 0 {
+                    return Err("0 cannot be raised to a negative power".to_string());
                 }
-            }
 
-            (Number::Integer(base), Number::Integer(exp)) => {
-                if exp >= 0 {
-                    let n = u32::try_from(exp).expect("failed to convert exponent to u32");
-                    Number::Integer(base.pow(n))
-                } else {
-                    let n = u32::try_from(exp.unsigned_abs())
-                        .expect("failed to convert exponent to u32");
-                    Number::Rational(Rational64::new(1, base).pow(n))
+                Ok(Number::Rational(base.pow(exponent)))
+            }
+        }
+    }
+
+    /// Raises a `Number` to a numeric exponent.
+    ///
+    /// ```
+    /// use applpy_rust::algorithms::number::Number;
+    ///
+    /// let result = Number::Integer(3).pow(Number::Integer(2)).unwrap();
+    /// assert_eq!(result, Number::Integer(9));
+    /// ```
+    pub fn pow(self, exponent: Number) -> Result<Number, String> {
+        match exponent {
+            Number::Integer(exp) => {
+                let exp = i32::try_from(exp)
+                    .map_err(|_| "integer exponent is too large for powi".to_string())?;
+                self.powi(exp)
+            }
+            Number::Rational(exp) if *exp.denom() == 1 => {
+                let exp = i32::try_from(*exp.numer())
+                    .map_err(|_| "integer exponent is too large for powi".to_string())?;
+                self.powi(exp)
+            }
+            other => {
+                let base = self.to_f64();
+                let exponent = other.to_f64();
+
+                if self.is_zero() && exponent < 0.0 {
+                    return Err("0 cannot be raised to a negative power".to_string());
                 }
-            }
 
-            (Number::Integer(base), exp) => Number::Float((base as f64).powf(exp.to_f64())),
+                if base < 0.0 {
+                    return Err(
+                        "fractional powers of negative numbers are not supported in real arithmetic"
+                            .to_string(),
+                    );
+                }
+
+                Ok(Number::Float(base.powf(exponent)))
+            }
         }
     }
 
@@ -245,5 +248,50 @@ mod tests {
         assert_eq!(Number::Integer(7).to_string(), "7");
         assert_eq!(Number::Rational(Rational64::new(3, 2)).to_string(), "3/2");
         assert_eq!(Number::Rational(Rational64::new(4, 1)).to_string(), "4");
+    }
+
+    #[test]
+    fn integer_power_stays_exact() {
+        let result = Number::Integer(3).pow(Number::Integer(2)).unwrap();
+        assert_eq!(result, Number::Integer(9));
+    }
+
+    #[test]
+    fn rational_base_with_integer_exponent_stays_rational() {
+        let result = Number::Rational(Rational64::new(2, 3))
+            .pow(Number::Rational(Rational64::new(2, 1)))
+            .unwrap();
+        assert_eq!(result, Number::Rational(Rational64::new(4, 9)));
+    }
+
+    #[test]
+    fn negative_integer_exponent_returns_reciprocal() {
+        let result = Number::Integer(2).pow(Number::Integer(-3)).unwrap();
+        assert_eq!(result, Number::Rational(Rational64::new(1, 8)));
+    }
+
+    #[test]
+    fn zero_to_negative_power_errors() {
+        let err = Number::Integer(0).pow(Number::Integer(-1)).unwrap_err();
+        assert_eq!(err, "0 cannot be raised to a negative power");
+    }
+
+    #[test]
+    fn negative_base_fractional_power_errors() {
+        let err = Number::Integer(-4)
+            .pow(Number::Rational(Rational64::new(1, 2)))
+            .unwrap_err();
+        assert_eq!(
+            err,
+            "fractional powers of negative numbers are not supported in real arithmetic"
+        );
+    }
+
+    #[test]
+    fn fractional_exponents_fall_back_to_float() {
+        let result = Number::Integer(9)
+            .pow(Number::Rational(Rational64::new(1, 2)))
+            .unwrap();
+        assert_eq!(result, Number::Float(3.0));
     }
 }
