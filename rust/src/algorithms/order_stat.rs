@@ -2,16 +2,16 @@
 
 use statrs::function::factorial::binomial;
 
-use crate::algorithms::number:Number;
+use crate::algorithms::number::Number;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 
 pub fn factorial_number(n: i64) -> Number {
-	if n < 0 {
-		panic!("factorial undefined for negative numbers");
-	}
+    if n < 0 {
+        panic!("factorial undefined for negative numbers");
+    }
 
-	let result: i64 = (1..=n).product();
-	Number::Integer(result)
+    let result: i64 = (1..=n).product();
+    Number::Integer(result)
 }
 
 /// Computes the order statistic of the random variable without replacement
@@ -26,99 +26,80 @@ pub fn factorial_number(n: i64) -> Number {
 ///
 /// # Examples
 pub fn discrete_order_stat_with_replacement(
-   random_variable: &RandomVariable,
-   num_items: u64,
-   index: u64,
+    random_variable: &RandomVariable,
+    num_items: u64,
+    index: u64,
 ) -> Result<RandomVariable, String> {
-
     let function = &random_variable.function;
     let support = &random_variable.support;
 
     if function.is_empty() {
         return Err("cannot compute the order. function is empty".to_string());
     }
+    if num_items == 0 {
+        return Err("cannot compute the order with zero sampled items".to_string());
+    }
+    if index == 0 || index > num_items {
+        return Err("index must be between 1 and num_items (inclusive)".to_string());
+    }
 
-    let len_function = function.len();
+    let len_support = support.len();
     if len_support == 1 {
-        let ones = Number::Integer(1);
-        return RandomVariable {
-            function: ones,
+        return Ok(RandomVariable {
+            function: vec![Number::Integer(1)],
             support: support.clone(),
             functional_form: FunctionalForm::Pdf,
             domain_type: DomainType::Discrete,
-        };
+        });
     }
 
     let pdf_random_variable = random_variable.to_pdf()?;
     let pdf_function = pdf_random_variable.function;
 
-    let cdf_random_variable = random_variable.to_sdf()?;
+    let cdf_random_variable = random_variable.to_cdf()?;
     let cdf_function = cdf_random_variable.function;
 
-    let sf_random_variable = random_variable.to_sdf()?;
-    let sf_function = sf_random_variable.function;
-
-
-    let order_stat_probabilities: Vec<Number> = Vec::new();
-    let max_term = num_items - index + 1;
-
-	// Add the first term
-    let mut first_order_stat_sum: Number = Number::default();
-    for w in (0..max_term) {
-        let binomial_value = Number::Integer(binomial(num_items, w) as i64)?;
-        let pdf_value = pdf_function[0].pow(num_items - w);
-        let sf_value = sf_function[1].pow(w);
-        order_stat_sum += binomial_value * pdf_value * sf_value;
+    if cdf_function.len() != len_support || pdf_function.len() != len_support {
+        return Err("invalid random variable: function/support length mismatch".to_string());
     }
-    order_stat_probabilities.push(first_order_stat_sum);
 
-	// Add term 2 through N - 1
-    for k in (2..len_support) {
-        let mut order_stat_sum: Number = Number::default();
-        for w in (0..max_term) {
-            for u in (0..index) {
-                let factorial_numer = factorial_number(num_items);
-                let factorial_denom = factorial_number(u)
-                    * factorial_number(num_items - u - w)
-                    * factorial_number(w);
-                let cdf_value = cdf_function[k-2].pow(u);
-                let pdf_value = pdf_function[k-1].pow(num_items - u - w);
-                let sf_value = sf_function[k].pow(w);
-
-                let value = factorial_numer
-                    / factorial_denom
-                    * cdf_value
-                    * pdf_value
-                    * sf_value;
-
-                order_stat_sum += value;
-            }
-            order_stat_probabilities.push(order_stat_sum);
+    let mut order_stat_cdf = Vec::with_capacity(len_support);
+    for &cdf_value_at_k in &cdf_function {
+        let one_minus_cdf = Number::one() - cdf_value_at_k;
+        let mut cdf_sum = Number::default();
+        for j in index..=num_items {
+            let choose = Number::Float(binomial(num_items, j));
+            let j_exp = Number::Integer(
+                i64::try_from(j)
+                    .map_err(|_| "num_items is too large for integer exponent".to_string())?,
+            );
+            let remaining = Number::Integer(
+                i64::try_from(num_items - j)
+                    .map_err(|_| "num_items is too large for integer exponent".to_string())?,
+            );
+            let cdf_term = cdf_value_at_k.pow(j_exp)?;
+            let sf_term = one_minus_cdf.pow(remaining)?;
+            cdf_sum += choose * cdf_term * sf_term;
         }
+        order_stat_cdf.push(cdf_sum);
     }
 
-    // Add the final term
-    let mut final_order_stat_sum = Number::default();
-    for u in (0..index) {
-        let binomial_value = Number::Integer(binomial(num_items, u))?;
-        let cdf_value = cdf_function[len_function - 2].pow(u);
-        let pdf_value = pdf_function[len_function - 1].pow(num_items-u);
-
-        let value = binomial_value + cdf_value + pdf_value;
-        final_order_stat_sum += value;
+    let mut order_stat_probabilities = Vec::with_capacity(len_support);
+    let mut previous_cdf = Number::default();
+    for cdf_value in order_stat_cdf {
+        order_stat_probabilities.push(cdf_value - previous_cdf);
+        previous_cdf = cdf_value;
     }
-    order_stat_probabilities.push(order_stat_sum)
 
-    let random_variable = RandomVariable{
+    let random_variable = RandomVariable {
         function: order_stat_probabilities,
         support: support.clone(),
         functional_form: FunctionalForm::Pdf,
         domain_type: DomainType::Discrete,
-    }
+    };
+
     Ok(random_variable)
 }
-
-
 
 /// Given the previous combination, finds the next lexicographical combination.
 ///
@@ -211,7 +192,6 @@ pub fn next_permutation(previous: &[usize]) -> Option<Vec<usize>> {
 
     None
 }
-
 
 #[cfg(test)]
 mod tests {
