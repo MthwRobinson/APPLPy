@@ -14,17 +14,35 @@ pub fn factorial_number(n: i64) -> Number {
     Number::Integer(result)
 }
 
-/// Computes the order statistic of the random variable without replacement
+/// Computes the discrete `index`-th order statistic of i.i.d. samples drawn
+/// with replacement from a random variable.
 ///
 /// # Arguments
 /// * `random_variable`- the random variable to compute the order state for
 /// * `num_items` - the number of items randomly drawn from the random variable
-/// * `index` - the index of the order statistic
+/// * `index` - the 1-based index of the order statistic
 ///
 /// # Returns
 /// * `random_variable` - the random variable for the desired order statistic
 ///
 /// # Examples
+/// ```
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::order_stat::discrete_order_stat_with_replacement;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+///
+/// let rv = RandomVariable {
+///     function: vec![Number::Float(0.5), Number::Float(0.5)],
+///     support: vec![Number::Integer(0), Number::Integer(1)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// // Minimum of two draws from {0,1} with equal mass.
+/// let min_of_two = discrete_order_stat_with_replacement(&rv, 2, 1).unwrap();
+/// assert!((min_of_two.function[0].to_f64() - 0.75).abs() < 1e-12);
+/// assert!((min_of_two.function[1].to_f64() - 0.25).abs() < 1e-12);
+/// ```
 pub fn discrete_order_stat_with_replacement(
     random_variable: &RandomVariable,
     num_items: u64,
@@ -195,7 +213,84 @@ pub fn next_permutation(previous: &[usize]) -> Option<Vec<usize>> {
 
 #[cfg(test)]
 mod tests {
-    use super::{next_combination, next_permutation};
+    use super::{discrete_order_stat_with_replacement, next_combination, next_permutation};
+    use crate::algorithms::number::Number;
+    use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+
+    fn assert_close(actual: Number, expected: f64, tolerance: f64) {
+        assert!((actual.to_f64() - expected).abs() < tolerance);
+    }
+
+    #[test]
+    fn order_stat_with_replacement_returns_expected_min_distribution() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.5), Number::Float(0.5)],
+            support: vec![Number::Integer(0), Number::Integer(1)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = discrete_order_stat_with_replacement(&rv, 2, 1).unwrap();
+
+        assert_close(result.function[0], 0.75, 1e-12);
+        assert_close(result.function[1], 0.25, 1e-12);
+        assert_eq!(result.support, rv.support);
+        assert_eq!(result.functional_form, FunctionalForm::Pdf);
+        assert_eq!(result.domain_type, DomainType::Discrete);
+    }
+
+    #[test]
+    fn order_stat_with_replacement_returns_expected_max_distribution() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.5), Number::Float(0.5)],
+            support: vec![Number::Integer(0), Number::Integer(1)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = discrete_order_stat_with_replacement(&rv, 2, 2).unwrap();
+
+        assert_close(result.function[0], 0.25, 1e-12);
+        assert_close(result.function[1], 0.75, 1e-12);
+    }
+
+    #[test]
+    fn order_stat_with_replacement_returns_degenerate_distribution_for_single_support_value() {
+        let rv = RandomVariable {
+            function: vec![Number::Integer(1)],
+            support: vec![Number::Integer(7)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = discrete_order_stat_with_replacement(&rv, 3, 2).unwrap();
+
+        assert_eq!(result.function, vec![Number::Integer(1)]);
+        assert_eq!(result.support, vec![Number::Integer(7)]);
+    }
+
+    #[test]
+    fn order_stat_with_replacement_rejects_invalid_index_and_sample_count() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.5), Number::Float(0.5)],
+            support: vec![Number::Integer(0), Number::Integer(1)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        assert_eq!(
+            discrete_order_stat_with_replacement(&rv, 0, 1).unwrap_err(),
+            "cannot compute the order with zero sampled items"
+        );
+        assert_eq!(
+            discrete_order_stat_with_replacement(&rv, 2, 0).unwrap_err(),
+            "index must be between 1 and num_items (inclusive)"
+        );
+        assert_eq!(
+            discrete_order_stat_with_replacement(&rv, 2, 3).unwrap_err(),
+            "index must be between 1 and num_items (inclusive)"
+        );
+    }
 
     #[test]
     fn increments_last_value_when_below_upper_bound() {
