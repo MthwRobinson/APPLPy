@@ -6,7 +6,7 @@ from . import rust_bindings
 from .rv import Convert, RV, RVError, MaximumRV, MinimumRV, cdf, pdf, sf, x
 
 
-def MaximumIID(random_variable, n=Symbol("n")):
+def maximum_iid(random_variable, n=Symbol("n")):
     """
     Procedure Name: MaximumIID
     Purpose: Compute the maximum of n iid random variables
@@ -19,16 +19,16 @@ def MaximumIID(random_variable, n=Symbol("n")):
             raise RVError("The second argument must be an integer")
 
     if isinstance(n, Symbol):
-        return OrderStat(random_variable, n, n)
+        return order_stat(random_variable, n, n)
 
     x_dummy = random_variable
     x_final = x_dummy
     for _ in range(n - 1):
-        x_final = Maximum(x_final, x_dummy)
+        x_final = maximum(x_final, x_dummy)
     return pdf(x_final)
 
 
-def MinimumIID(random_variable, n):
+def minimum_iid(random_variable, n):
     """
     Procedure Name: MinimumIID
     Purpose: Compute the minimum of n iid random variables
@@ -41,16 +41,16 @@ def MinimumIID(random_variable, n):
             raise RVError("The second argument must be an integer")
 
     if isinstance(n, Symbol):
-        return OrderStat(random_variable, 1, n)
+        return order_stat(random_variable, 1, n)
 
     x_dummy = random_variable
     x_final = x_dummy
     for _ in range(n - 1):
-        x_final = Minimum(x_final, x_dummy)
+        x_final = minimum(x_final, x_dummy)
     return pdf(x_final)
 
 
-def OrderStat(random_variable, n, r, replace="w"):
+def order_stat(random_variable, n, r, replace="w"):
     """
     Procedure Name: OrderStat
     Purpose: Compute the distribution of the rth order statistic
@@ -87,7 +87,7 @@ def OrderStat(random_variable, n, r, replace="w"):
     if random_variable.is_discrete_functional():
         if (-oo not in random_variable.support) and (oo not in random_variable.support):
             x_dummy = Convert(random_variable)
-            return OrderStat(x_dummy, n, r, replace)
+            return order_stat(x_dummy, n, r, replace)
         err_string = "OrderStat is not currently implemented for "
         err_string += "discrete RVs with infinite support"
         raise RVError(err_string)
@@ -102,7 +102,7 @@ def OrderStat(random_variable, n, r, replace="w"):
         )
 
 
-def RangeStat(random_variable, n, replace="w"):
+def range_stat(random_variable, n, replace="w"):
     """
     Procedure Name: RangeStat
     Purpose: Compute the distribution of the range of n iid rvs
@@ -146,7 +146,7 @@ def RangeStat(random_variable, n, replace="w"):
     if fX.is_discrete_functional():
         if (-oo not in fX.support) and (oo not in fX.support):
             x_dummy = Convert(random_variable)
-            return RangeStat(x_dummy, n, replace)
+            return range_stat(x_dummy, n, replace)
     if fX.is_discrete():
         fX = pdf(random_variable)
         FX = cdf(random_variable)
@@ -221,7 +221,7 @@ def RangeStat(random_variable, n, replace="w"):
                 )
 
 
-def Maximum(*argv):
+def maximum(*argv):
     """
     Procedure Name: Maximum
     Purpose: Compute the maximum of a list of random variables
@@ -238,7 +238,7 @@ def Maximum(*argv):
     return temp
 
 
-def Minimum(*argv):
+def minimum(*argv):
     """
     Procedure Name: Minimum
     Purpose: Compute the minimum of a list of random variables
@@ -253,3 +253,12 @@ def Minimum(*argv):
             temp = MinimumRV(temp, rv)
         i += 1
     return temp
+
+
+# Backward-compatible aliases
+MaximumIID = maximum_iid
+MinimumIID = minimum_iid
+OrderStat = order_stat
+RangeStat = range_stat
+Maximum = maximum
+Minimum = minimum

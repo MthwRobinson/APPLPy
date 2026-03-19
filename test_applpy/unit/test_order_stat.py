@@ -2,6 +2,8 @@ import pytest
 from sympy import Integer, Rational
 
 from applpy import Maximum, MaximumIID, Minimum, MinimumIID, OrderStat, RangeStat
+import applpy.order_stat as order_stat_module
+from applpy.order_stat import maximum, maximum_iid, minimum, minimum_iid, order_stat, range_stat
 from applpy.rv import RV, RVError
 
 
@@ -62,3 +64,12 @@ def test_order_stat_error_paths():
 def test_order_stat_discrete_singleton_path():
     singleton = RV([1], [5], ["discrete", "pdf"])
     assert OrderStat(singleton, 1, 1, "w").ftype == ["discrete", "pdf"]
+
+
+def test_snake_case_names_match_compat_aliases():
+    assert maximum is order_stat_module.Maximum
+    assert maximum_iid is order_stat_module.MaximumIID
+    assert minimum is order_stat_module.Minimum
+    assert minimum_iid is order_stat_module.MinimumIID
+    assert order_stat is order_stat_module.OrderStat
+    assert range_stat is order_stat_module.RangeStat
