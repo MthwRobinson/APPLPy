@@ -953,10 +953,6 @@ def sf(random_variable, value=x, cache=False):
                 return random_variable
             else:
                 return 1 - cdf(random_variable, value)
-                # for i in range(len(random_variable.support)):
-                #    if value>=random_variable.support[i] and value<=random_variable.support[i+1]:
-                #        sfvalue=random_variable.func[i].subs(x,value)
-                #        return simplify(sfvalue)
         # If not, then use subtraction to find the sf
         else:
             X_dummy = cdf(random_variable)
@@ -971,11 +967,6 @@ def sf(random_variable, value=x, cache=False):
                 return sfrv
             if value != x:
                 return 1 - cdf(random_variable, value)
-                # for i in range(len(X_dummy.support)):
-                #    if value>=X_dummy.support[i]:
-                #       if value<=X_dummy.support[i+1]:
-                #           sfvalue=sflist[i].subs(x,value)
-                #           return simplify(sfvalue)
 
     # If the distribution is discrete, find and return the sf of the
     # random variable
@@ -990,10 +981,6 @@ def sf(random_variable, value=x, cache=False):
                 return random_variable
             else:
                 return 1 - cdf(random_variable, value)
-                # for i in range(len(random_variable.support)):
-                #    if value>=random_variable.support[i] and value<=random_variable.support[i+1]:
-                #        sfvalue=random_variable.func[i].subs(x,value)
-                #        return simplify(sfvalue)
         # If not, then use subtraction to find the sf
         else:
             X_dummy = cdf(random_variable)
@@ -1008,14 +995,7 @@ def sf(random_variable, value=x, cache=False):
                 return sfrv
             if value != x:
                 return 1 - cdf(random_variable, value)
-                # for i in range(len(X_dummy.support)):
-                #    if value>=X_dummy.support[i] and
-                #       value<=X_dummy.support[i+1]:
-                #           sfvalue=sflist[i].subs(x,value)
-                #           return simplify(sfvalue)
 
-    # If the distribution is a discrete function, find and return the sf of the
-    # random variable
     if random_variable.is_discrete_functional():
         # If the distribution is already a sf, nothing needs to be done
         if random_variable.is_sf():
