@@ -41,7 +41,7 @@ jobs:
           components: clippy, rustfmt
 
       - name: Run rust lint checks
-        run: make cargo-lint
+        run: make cargo-check
 
   test-python:
     name: Python Test Suite
