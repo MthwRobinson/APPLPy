@@ -60,7 +60,7 @@ pub fn discrete_mean(random_variable: &RandomVariable) -> Result<Number, String>
     Ok(mean)
 }
 
-/// Computers the variance of a discrete random variable using the relationships
+/// Computes the variance of a discrete random variable using the relationships
 /// Var(x) = E(X^2) - E(X)^2
 ///
 /// # Arguments
@@ -124,6 +124,25 @@ pub fn discrete_variance(random_variable: &RandomVariable) -> Result<Number, Str
     // Var(X) = E(X^2) - E(X)^2
     let variance = expected_x_squared - mean.pow(two)?;
     Ok(variance)
+}
+
+/// Computes the variance of a discrete random variable using the relationships
+/// Var(x) = E(X^2) - E(X)^2
+///
+/// # Arguments
+/// * `random_variable`: a discrete random variable
+///
+/// # Returns
+/// * `variance`: the variance of the random variable
+///
+/// # Examples
+pub fn discrete_coefficient_of_variance(
+    random_variable: &RandomVariable,
+) -> Result<Number, String> {
+    let mean = discrete_mean(random_variable)?;
+    let standard_deviation = discrete_variance(random_variable)?.sqrt()?;
+    let coefficient_of_variation = standard_deviation / mean;
+    Ok(coefficient_of_variation)
 }
 
 #[cfg(test)]
