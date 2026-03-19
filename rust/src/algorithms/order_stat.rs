@@ -119,6 +119,98 @@ pub fn discrete_order_stat_with_replacement(
     Ok(random_variable)
 }
 
+/// Computes the discrete `index`-th order statistic of i.i.d. samples drawn
+/// without replacement from a random variable.
+///
+/// # Arguments
+/// * `random_variable`- the random variable to compute the order state for
+/// * `num_items` - the number of items randomly drawn from the random variable
+/// * `index` - the 1-based index of the order statistic
+///
+/// # Returns
+/// * `random_variable` - the random variable for the desired order statistic
+///
+/// # Examples
+pub fn discrete_order_stat_without_replacement(
+    random_variable: &RandomVariable,
+    num_items: u64,
+    index: u64,
+) -> Result<RandomVariable, String> {
+    let pdf_random_variable = random_variable.to_pdf()?;
+    let function = pdf_random_variable.function;
+    let support = random_variable.support.clone();
+    let len_function = function.len();
+    let len_function_u64 = u64::try_from(len_function)
+        .map_err(|_| "support length is too large to process".to_string())?;
+
+    if function.is_empty() {
+        return Err("cannot compute the order. function is empty".to_string());
+    }
+    if num_items == 0 {
+        return Err("cannot compute the order with zero sampled items".to_string());
+    }
+    if num_items > len_function_u64 {
+        return Err("num_items cannot exceed support length without replacement".to_string());
+    }
+    if index == 0 || index > num_items {
+        return Err("index must be between 1 and num_items (inclusive)".to_string());
+    }
+
+    // Initialize all of the order stat probabilities as prob(x) = 0
+    let mut order_stat_probabilities: Vec<Number> =
+        function.iter().map(|_| Number::default()).collect();
+
+    let all_equal = match function.first() {
+        Some(first) => function.iter().all(|value| value == first),
+        None => true,
+    };
+
+    // If everything is equally likely, then it's just n choose m
+    if all_equal {
+        let max_term = len_function_u64 - num_items + index;
+        let binomial_denom = Number::Float(binomial(len_function_u64, num_items));
+
+        for i in index..=max_term {
+            let order_stat_index = usize::try_from(i - 1)
+                .map_err(|_| "order statistic index is too large to process".to_string())?;
+
+            let binomial_numer = Number::Float(binomial(i - 1, index - 1))
+                * Number::Float(binomial(1, 1))
+                * Number::Float(binomial(len_function_u64 - i, num_items - index));
+            let value = binomial_numer / binomial_denom;
+            order_stat_probabilities[order_stat_index] = value;
+        }
+        let order_stat_rv = RandomVariable {
+            function: order_stat_probabilities,
+            support: support.clone(),
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+        return Ok(order_stat_rv);
+    }
+
+    // If you are only choosing one item, the order stat simplifies to the PDF
+    if num_items == 1 {
+        return random_variable.to_pdf();
+    }
+
+    // If you choose all of the items without replacement, then everything gets chosen
+    if num_items == len_function_u64 {
+        let last_index = len_function - 1;
+        order_stat_probabilities[last_index] = Number::Integer(1);
+
+        let order_stat_rv = RandomVariable {
+            function: order_stat_probabilities,
+            support: support.clone(),
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+        return Ok(order_stat_rv);
+    }
+
+    Err("order stat not computed".to_string())
+}
+
 /// Given the previous combination, finds the next lexicographical combination.
 ///
 /// # Arguments
