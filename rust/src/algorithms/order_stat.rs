@@ -23,6 +23,37 @@ pub enum OrderStatVariant {
 /// * `random_variable` - the random variable for the desired order statistic
 ///
 /// # Examples
+/// ```
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::order_stat::{discrete_order_stat, OrderStatVariant};
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+///
+/// let rv = RandomVariable {
+///     function: vec![
+///         Number::Float(0.25),
+///         Number::Float(0.25),
+///         Number::Float(0.25),
+///         Number::Float(0.25),
+///     ],
+///     support: vec![
+///         Number::Integer(1),
+///         Number::Integer(2),
+///         Number::Integer(3),
+///         Number::Integer(4),
+///     ],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// // Minimum of two draws with replacement.
+/// let min_with_replacement = discrete_order_stat(&rv, 2, 1, OrderStatVariant::WithReplacement).unwrap();
+/// assert!((min_with_replacement.function[0].to_f64() - 0.4375).abs() < 1e-12);
+///
+/// // Minimum of two draws without replacement.
+/// let min_without_replacement =
+///     discrete_order_stat(&rv, 2, 1, OrderStatVariant::WithoutReplacement).unwrap();
+/// assert!((min_without_replacement.function[0].to_f64() - 0.5).abs() < 1e-12);
+/// ```
 pub fn discrete_order_stat(
     random_variable: &RandomVariable,
     num_items: u64,
@@ -497,8 +528,9 @@ fn divide_preserving_precision(lhs: Number, rhs: Number) -> Result<Number, Strin
 #[cfg(test)]
 mod tests {
     use super::{
-        discrete_order_stat_with_replacement, discrete_order_stat_without_replacement,
-        next_combination, next_permutation,
+        discrete_order_stat, discrete_order_stat_with_replacement,
+        discrete_order_stat_without_replacement, next_combination, next_permutation,
+        OrderStatVariant,
     };
     use crate::algorithms::number::Number;
     use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
@@ -523,6 +555,73 @@ mod tests {
         assert_eq!(result.support, rv.support);
         assert_eq!(result.functional_form, FunctionalForm::Pdf);
         assert_eq!(result.domain_type, DomainType::Discrete);
+    }
+
+    #[test]
+    fn order_stat_wrapper_dispatches_to_with_replacement() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.5), Number::Float(0.5)],
+            support: vec![Number::Integer(0), Number::Integer(1)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let from_wrapper =
+            discrete_order_stat(&rv, 2, 1, OrderStatVariant::WithReplacement).unwrap();
+        let direct = discrete_order_stat_with_replacement(&rv, 2, 1).unwrap();
+
+        assert_eq!(from_wrapper.function, direct.function);
+        assert_eq!(from_wrapper.support, direct.support);
+        assert_eq!(from_wrapper.functional_form, direct.functional_form);
+        assert_eq!(from_wrapper.domain_type, direct.domain_type);
+    }
+
+    #[test]
+    fn order_stat_wrapper_dispatches_to_without_replacement() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+            ],
+            support: vec![
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let from_wrapper =
+            discrete_order_stat(&rv, 2, 1, OrderStatVariant::WithoutReplacement).unwrap();
+        let direct = discrete_order_stat_without_replacement(&rv, 2, 1).unwrap();
+
+        assert_eq!(from_wrapper.function, direct.function);
+        assert_eq!(from_wrapper.support, direct.support);
+        assert_eq!(from_wrapper.functional_form, direct.functional_form);
+        assert_eq!(from_wrapper.domain_type, direct.domain_type);
+    }
+
+    #[test]
+    fn order_stat_wrapper_propagates_validation_errors() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.4), Number::Float(0.6)],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        assert_eq!(
+            discrete_order_stat(&rv, 2, 0, OrderStatVariant::WithReplacement).unwrap_err(),
+            "index must be between 1 and num_items (inclusive)"
+        );
+        assert_eq!(
+            discrete_order_stat(&rv, 3, 1, OrderStatVariant::WithoutReplacement).unwrap_err(),
+            "num_items cannot exceed support length without replacement"
+        );
     }
 
     #[test]
