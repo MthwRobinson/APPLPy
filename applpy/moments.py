@@ -5,7 +5,8 @@ Moment and summary statistics utilities for APPLPy random variables.
 from applpy_rust import FastRV
 from sympy import Sum, exp, integrate, log, simplify, sqrt, summation, symbols
 
-from applpy.rv import BootstrapRV, PDF
+from applpy.rv import BootstrapRV
+from applpy.conversion import PDF
 
 x, y, z, t = symbols("x y z t")
 
