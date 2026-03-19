@@ -21,11 +21,11 @@ def maximum_iid(random_variable, n=Symbol("n")):
     if isinstance(n, Symbol):
         return order_stat(random_variable, n, n)
 
-    x_dummy = random_variable
-    x_final = x_dummy
+    base_rv = random_variable
+    current_max_rv = base_rv
     for _ in range(n - 1):
-        x_final = maximum(x_final, x_dummy)
-    return pdf(x_final)
+        current_max_rv = maximum(current_max_rv, base_rv)
+    return pdf(current_max_rv)
 
 
 def minimum_iid(random_variable, n):
@@ -43,11 +43,11 @@ def minimum_iid(random_variable, n):
     if isinstance(n, Symbol):
         return order_stat(random_variable, 1, n)
 
-    x_dummy = random_variable
-    x_final = x_dummy
+    base_rv = random_variable
+    current_min_rv = base_rv
     for _ in range(n - 1):
-        x_final = minimum(x_final, x_dummy)
-    return pdf(x_final)
+        current_min_rv = minimum(current_min_rv, base_rv)
+    return pdf(current_min_rv)
 
 
 def order_stat(random_variable, n, r, replace="w"):
@@ -71,23 +71,25 @@ def order_stat(random_variable, n, r, replace="w"):
             err_string = "OrderStat without replacement not implemented "
             err_string += "for continuous random variables"
             raise RVError(err_string)
-        pdf_dummy = pdf(random_variable)
-        cdf_dummy = cdf(random_variable)
-        sf_dummy = sf(random_variable)
-        const = (factorial(n)) / (factorial(r - 1) * factorial(n - r))
-        ordstat_func = []
+        pdf_rv = pdf(random_variable)
+        cdf_rv = cdf(random_variable)
+        sf_rv = sf(random_variable)
+        normalization_const = (factorial(n)) / (factorial(r - 1) * factorial(n - r))
+        order_stat_func = []
         for i in range(len(random_variable.func)):
-            fx = pdf_dummy.func[i]
-            Fx = cdf_dummy.func[i]
-            Sx = sf_dummy.func[i]
-            ordfunc = const * (Fx ** (r - 1)) * (Sx ** (n - r)) * fx
-            ordstat_func.append(simplify(ordfunc))
-        return RV(ordstat_func, random_variable.support, ["continuous", "pdf"])
+            pdf_segment = pdf_rv.func[i]
+            cdf_segment = cdf_rv.func[i]
+            sf_segment = sf_rv.func[i]
+            order_stat_segment = (
+                normalization_const * (cdf_segment ** (r - 1)) * (sf_segment ** (n - r)) * pdf_segment
+            )
+            order_stat_func.append(simplify(order_stat_segment))
+        return RV(order_stat_func, random_variable.support, ["continuous", "pdf"])
 
     if random_variable.is_discrete_functional():
         if (-oo not in random_variable.support) and (oo not in random_variable.support):
-            x_dummy = Convert(random_variable)
-            return order_stat(x_dummy, n, r, replace)
+            converted_rv = Convert(random_variable)
+            return order_stat(converted_rv, n, r, replace)
         err_string = "OrderStat is not currently implemented for "
         err_string += "discrete RVs with infinite support"
         raise RVError(err_string)
@@ -116,108 +118,116 @@ def range_stat(random_variable, n, replace="w"):
         raise RVError(err_string)
     if replace not in ["w", "wo"]:
         raise RVError("Replace must be w or wo")
-    fX = pdf(random_variable)
-    z = Symbol("z")
-    if fX.is_continuous():
+    pdf_rv = pdf(random_variable)
+    integration_variable = Symbol("z")
+    if pdf_rv.is_continuous():
         if replace == "wo":
             err_string = "OrderStat without replacement not implemented "
             err_string += "for continuous random variables"
             raise RVError(err_string)
-        FX = cdf(random_variable)
-        nsegs = len(FX.func)
-        fXRange = []
-        for i in range(nsegs):
-            ffX = integrate(
+        cdf_rv = cdf(random_variable)
+        num_segments = len(cdf_rv.func)
+        range_pdf_segments = []
+        for i in range(num_segments):
+            range_pdf_segment = integrate(
                 n
                 * (n - 1)
-                * (FX.func[i].subs(x, z) - FX.func[i].subs(x, z - x)) ** (n - 2)
-                * fX.func[i].subs(x, z - x)
-                * fX.func[i].subs(x, z),
-                (z, x, fX.support[i + 1]),
+                * (
+                    cdf_rv.func[i].subs(x, integration_variable)
+                    - cdf_rv.func[i].subs(x, integration_variable - x)
+                )
+                ** (n - 2)
+                * pdf_rv.func[i].subs(x, integration_variable - x)
+                * pdf_rv.func[i].subs(x, integration_variable),
+                (integration_variable, x, pdf_rv.support[i + 1]),
             )
-            fXRange.append(ffX)
+            range_pdf_segments.append(range_pdf_segment)
         range_rv = RV(
-            fXRange,
-            fX.support,
-            functional_form=fX.functional_form,
-            domain_type=fX.domain_type,
+            range_pdf_segments,
+            pdf_rv.support,
+            functional_form=pdf_rv.functional_form,
+            domain_type=pdf_rv.domain_type,
         )
         return range_rv
-    if fX.is_discrete_functional():
-        if (-oo not in fX.support) and (oo not in fX.support):
-            x_dummy = Convert(random_variable)
-            return range_stat(x_dummy, n, replace)
-    if fX.is_discrete():
-        fX = pdf(random_variable)
-        FX = cdf(random_variable)
-        N = len(fX.support)
-        if N < 2:
+    if pdf_rv.is_discrete_functional():
+        if (-oo not in pdf_rv.support) and (oo not in pdf_rv.support):
+            converted_rv = Convert(random_variable)
+            return range_stat(converted_rv, n, replace)
+    if pdf_rv.is_discrete():
+        pdf_rv = pdf(random_variable)
+        cdf_rv = cdf(random_variable)
+        support_size = len(pdf_rv.support)
+        if support_size < 2:
             err_string = "The population only consists of 1 element"
             raise RVError(err_string)
         if replace == "w":
-            s = fX.support
-            p = fX.func
-            k = 0
-            sum(range(1, N + 1))
-            rs = [0 for i in range(N**2)]
-            rp = [0 for i in range(N**2)]
-            for i in range(N):
-                for j in range(N):
-                    rs[k] = s[j] - s[i]
-                    rp[k] = (
-                        sum(p[i : j + 1]) ** n
-                        - sum(p[i + 1 : j + 1]) ** n
-                        - sum(p[i:j]) ** n
-                        + sum(p[i + 1 : j]) ** n
+            support_values = pdf_rv.support
+            probability_values = pdf_rv.func
+            range_index = 0
+            sum(range(1, support_size + 1))
+            range_support_candidates = [0 for i in range(support_size**2)]
+            range_probability_candidates = [0 for i in range(support_size**2)]
+            for i in range(support_size):
+                for j in range(support_size):
+                    range_support_candidates[range_index] = support_values[j] - support_values[i]
+                    range_probability_candidates[range_index] = (
+                        sum(probability_values[i : j + 1]) ** n
+                        - sum(probability_values[i + 1 : j + 1]) ** n
+                        - sum(probability_values[i:j]) ** n
+                        + sum(probability_values[i + 1 : j]) ** n
                     )
-                    k += 1
-            sortedr = list(zip(*sorted(zip(rs, rp))))
-            sortrs = list(sortedr[0])
-            sortrp = list(sortedr[1])
-            sortrs2 = []
-            sortrp2 = []
-            for i in range(len(sortrs)):
-                if sortrs[i] not in sortrs2:
-                    if sortrp[i] > 0:
-                        sortrs2.append(sortrs[i])
-                        sortrp2.append(sortrp[i])
-                elif sortrs[i] in sortrs2:
-                    idx = sortrs2.index(sortrs[i])
-                    sortrp2[idx] += sortrp[i]
-            return RV(sortrp2, sortrs2, ["discrete", "pdf"])
+                    range_index += 1
+            sorted_candidates = list(
+                zip(*sorted(zip(range_support_candidates, range_probability_candidates)))
+            )
+            sorted_range_support = list(sorted_candidates[0])
+            sorted_range_probabilities = list(sorted_candidates[1])
+            merged_range_support = []
+            merged_range_probabilities = []
+            for i in range(len(sorted_range_support)):
+                if sorted_range_support[i] not in merged_range_support:
+                    if sorted_range_probabilities[i] > 0:
+                        merged_range_support.append(sorted_range_support[i])
+                        merged_range_probabilities.append(sorted_range_probabilities[i])
+                elif sorted_range_support[i] in merged_range_support:
+                    support_index = merged_range_support.index(sorted_range_support[i])
+                    merged_range_probabilities[support_index] += sorted_range_probabilities[i]
+            return RV(merged_range_probabilities, merged_range_support, ["discrete", "pdf"])
         if replace == "wo":
             err_string = "RangeStat current not implemented without "
             err_string += "replacement"
             raise RVError(err_string)
-            if n == N:
-                fXRange = [1]
-                fXSupport = [N - 1]
+            if n == support_size:
+                range_pdf_values = [1]
+                range_support_values = [support_size - 1]
             else:
-                fXRange = [0 for i in range(N)]
-                fXSupport = [value for value in fX.support]
-                combo = [value for value in range(1, n + 1)]
-                for _ in range(binomial(N, n)):
-                    perm = [elem for elem in combo]
+                range_pdf_values = [0 for i in range(support_size)]
+                range_support_values = [value for value in pdf_rv.support]
+                combination = [value for value in range(1, n + 1)]
+                for _ in range(binomial(support_size, n)):
+                    permutation = [elem for elem in combination]
                     for _ in range(factorial(n)):
-                        PermProb = fX.func[perm[0]]
-                        cumsum = fX.func[perm[0]]
+                        permutation_probability = pdf_rv.func[permutation[0]]
+                        cumulative_probability = pdf_rv.func[permutation[0]]
                         for m in range(1, n):
-                            PermProb *= fX.func[perm[m]] / (1 - cumsum)
-                            cumsum += fX.func[perm[m]]
-                        hi_val = max(perm)
-                        lo_val = min(perm)
+                            permutation_probability *= (
+                                pdf_rv.func[permutation[m]] / (1 - cumulative_probability)
+                            )
+                            cumulative_probability += pdf_rv.func[permutation[m]]
+                        hi_val = max(permutation)
+                        lo_val = min(permutation)
                         range_value = hi_val - lo_val
-                        for k in range(N - 1):
+                        for k in range(support_size - 1):
                             if range_value == k + 1:
-                                fXRange[k] += PermProb
-                        perm = rust_bindings.next_permutation(perm)
-                    combo = rust_bindings.next_combination(combo, N)
-                print(len(fXRange), len(fXSupport))
+                                range_pdf_values[k] += permutation_probability
+                        permutation = rust_bindings.next_permutation(permutation)
+                    combination = rust_bindings.next_combination(combination, support_size)
+                print(len(range_pdf_values), len(range_support_values))
                 return RV(
-                    fXRange,
-                    fXSupport,
-                    functional_form=fX.functional_form,
-                    domain_type=fX.domain_type,
+                    range_pdf_values,
+                    range_support_values,
+                    functional_form=pdf_rv.functional_form,
+                    domain_type=pdf_rv.domain_type,
                 )
 
 
@@ -228,14 +238,14 @@ def maximum(*argv):
     Arugments:  1. *argv: a series of random variables
     Output:     1. The maximum distribution
     """
-    i = 0
+    argument_index = 0
     for rv in argv:
-        if i == 0:
-            temp = rv
+        if argument_index == 0:
+            running_max_rv = rv
         else:
-            temp = MaximumRV(temp, rv)
-        i += 1
-    return temp
+            running_max_rv = MaximumRV(running_max_rv, rv)
+        argument_index += 1
+    return running_max_rv
 
 
 def minimum(*argv):
@@ -245,14 +255,14 @@ def minimum(*argv):
     Arugments:  1. *argv: a series of random variables
     Output:     1. The minimum distribution
     """
-    i = 0
+    argument_index = 0
     for rv in argv:
-        if i == 0:
-            temp = rv
+        if argument_index == 0:
+            running_min_rv = rv
         else:
-            temp = MinimumRV(temp, rv)
-        i += 1
-    return temp
+            running_min_rv = MinimumRV(running_min_rv, rv)
+        argument_index += 1
+    return running_min_rv
 
 
 # Backward-compatible aliases
