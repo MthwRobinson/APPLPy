@@ -18,8 +18,8 @@ def CoefOfVar(random_variable, cache=False):
     Output:     1. The coefficient of variation
     """
     if isinstance(random_variable, list):
-        Xstar = BootstrapRV(random_variable)
-        return CoefOfVar(Xstar)
+        bootstrap_rv = BootstrapRV(random_variable)
+        return CoefOfVar(bootstrap_rv)
 
     if random_variable.cache is not None and "cov" in random_variable.cache:
         return random_variable.cache["cov"]
@@ -43,8 +43,8 @@ def ExpectedValue(random_variable, gX=x):
     Output:     1. E(gX)
     """
     if isinstance(random_variable, list):
-        Xstar = BootstrapRV(random_variable)
-        return ExpectedValue(Xstar, gX)
+        bootstrap_rv = BootstrapRV(random_variable)
+        return ExpectedValue(bootstrap_rv, gX)
 
     fx = PDF(random_variable)
 
@@ -79,8 +79,8 @@ def Entropy(random_variable, cache=False):
     Output:     1. The entropy of a random variable
     """
     if isinstance(random_variable, list):
-        Xstar = BootstrapRV(random_variable)
-        return Entropy(Xstar)
+        bootstrap_rv = BootstrapRV(random_variable)
+        return Entropy(bootstrap_rv)
 
     if random_variable.cache is not None and "entropy" in random_variable.cache:
         return random_variable.cache["entropy"]
@@ -100,8 +100,8 @@ def Kurtosis(random_variable, cache=False):
     Output:     1. The kurtosis of a random variable
     """
     if isinstance(random_variable, list):
-        Xstar = BootstrapRV(random_variable)
-        return Kurtosis(Xstar)
+        bootstrap_rv = BootstrapRV(random_variable)
+        return Kurtosis(bootstrap_rv)
 
     if random_variable.cache is not None and "kurtosis" in random_variable.cache:
         return random_variable.cache["kurtosis"]
@@ -129,8 +129,8 @@ def Mean(random_variable, cache=False):
     Output:    1. The mean of a random variable
     """
     if isinstance(random_variable, list):
-        Xstar = BootstrapRV(random_variable)
-        return Mean(Xstar)
+        bootstrap_rv = BootstrapRV(random_variable)
+        return Mean(bootstrap_rv)
 
     if random_variable.cache is not None and "mean" in random_variable.cache:
         return random_variable.cache["mean"]
@@ -201,11 +201,9 @@ def Skewness(random_variable, cache=False):
     Arguments:  1. random_variable: A random variable
     Output:     1. The skewness of the random variable
     """
-    from .rv import BootstrapRV
-
     if isinstance(random_variable, list):
-        Xstar = BootstrapRV(random_variable)
-        return Skewness(Xstar)
+        bootstrap_rv = BootstrapRV(random_variable)
+        return Skewness(bootstrap_rv)
 
     if random_variable.cache is not None and "skewness" in random_variable.cache:
         return random_variable.cache["skewness"]
@@ -230,11 +228,9 @@ def Variance(random_variable, cache=False):
     Arguments: 1. random_variable: A random variable
     Output:    1. The variance of a random variable
     """
-    from .rv import BootstrapRV, PDF
-
     if isinstance(random_variable, list):
-        Xstar = BootstrapRV(random_variable)
-        return Variance(Xstar)
+        bootstrap_rv = BootstrapRV(random_variable)
+        return Variance(bootstrap_rv)
 
     if random_variable.cache is not None and "variance" in random_variable.cache:
         return random_variable.cache["variance"]
