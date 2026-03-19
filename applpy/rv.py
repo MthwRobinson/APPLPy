@@ -4075,10 +4075,7 @@ def PlotDist(random_variable, suplist=None, opt=None, color="r", display=True):
         #    plt.ion()
         # plt.mat_plot(plot_func,plotsupp,lab1,lab2,'continuous')
 
-    if (
-        random_variable.is_discrete()
-        or random_variable.is_discrete_functional()
-    ):
+    if random_variable.is_discrete() or random_variable.is_discrete_functional():
         if random_variable.is_discrete_functional():
             if random_variable.support[-1] != oo:
                 random_variable = Convert(random_variable)

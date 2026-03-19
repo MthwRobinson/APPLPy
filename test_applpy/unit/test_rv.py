@@ -340,6 +340,8 @@ def test_single_rv_error_paths():
         OrderStat(_uniform_continuous_pdf(), 3, 1, "invalid")
     with pytest.raises(RVError, match="without replacement not implemented"):
         OrderStat(_uniform_continuous_pdf(), 3, 1, "wo")
+
+
 def test_two_rv_operations_for_continuous_and_discrete():
     continuous = _uniform_continuous_pdf()
     piecewise = _piecewise_continuous_pdf()

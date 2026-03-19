@@ -5,6 +5,8 @@ Moment and summary statistics utilities for APPLPy random variables.
 from applpy_rust import FastRV
 from sympy import Sum, exp, integrate, log, simplify, sqrt, summation, symbols
 
+from applpy.rv import BootstrapRV, PDF
+
 x, y, z, t = symbols("x y z t")
 
 
@@ -15,16 +17,10 @@ def CoefOfVar(random_variable, cache=False):
     Arguments:  1. random_variable: A random variable
     Output:     1. The coefficient of variation
     """
-    from .rv import BootstrapRV
-
-    # If the input is a list of data, compute the CoefofVar
-    #   for the data set
     if isinstance(random_variable, list):
         Xstar = BootstrapRV(random_variable)
         return CoefOfVar(Xstar)
 
-    # If the COV of the random variable is already cached in memory,
-    #   retriew the value of the COV and return in.
     if random_variable.cache is not None and "cov" in random_variable.cache:
         return random_variable.cache["cov"]
 
@@ -46,26 +42,18 @@ def ExpectedValue(random_variable, gX=x):
                 2. gX: A transformation of x
     Output:     1. E(gX)
     """
-    from .rv import BootstrapRV, PDF
-
-    # If the input is a list of data, compute the Expected Value
-    #   for the data set
     if isinstance(random_variable, list):
         Xstar = BootstrapRV(random_variable)
         return ExpectedValue(Xstar, gX)
 
-    # Convert the random variable to its PDF form
     fx = PDF(random_variable)
-    # If the distribution is continuous, compute the expected
-    #   value
+
     if fx.is_continuous():
         Expect = 0
         for i in range(len(fx.func)):
             Expect += integrate(gX * fx.func[i], (x, fx.support[i], fx.support[i + 1]))
         return simplify(Expect)
 
-    # If the distribution is a discrete function, compute the expected
-    #   value
     if fx.is_discrete_functional():
         Expect = 0
         for i in range(len(fx.func)):
@@ -90,16 +78,10 @@ def Entropy(random_variable, cache=False):
     Arguments:  1. random_variable: A random variable
     Output:     1. The entropy of a random variable
     """
-    from .rv import BootstrapRV
-
-    # If the input is a list of data, compute the entropy
-    #   for the data set
     if isinstance(random_variable, list):
         Xstar = BootstrapRV(random_variable)
         return Entropy(Xstar)
 
-    # If the entropy of the random variable is already cached in memory,
-    #   retriew the value of the entropy and return in.
     if random_variable.cache is not None and "entropy" in random_variable.cache:
         return random_variable.cache["entropy"]
 
@@ -117,16 +99,10 @@ def Kurtosis(random_variable, cache=False):
     Arguments:  1. random_variable: A random variable
     Output:     1. The kurtosis of a random variable
     """
-    from .rv import BootstrapRV
-
-    # If the input is a list of data, compute the kurtosis
-    #   for the data set
     if isinstance(random_variable, list):
         Xstar = BootstrapRV(random_variable)
         return Kurtosis(Xstar)
 
-    # If the kurtosis of the random variable is already cached in memory,
-    #   retriew the value of the kurtosis and return in.
     if random_variable.cache is not None and "kurtosis" in random_variable.cache:
         return random_variable.cache["kurtosis"]
 
@@ -152,23 +128,15 @@ def Mean(random_variable, cache=False):
     Arguments: 1. random_variable: A random variable
     Output:    1. The mean of a random variable
     """
-    from .rv import BootstrapRV, PDF
-
-    # If the input is a list of data, compute the mean
-    #   for the data set
     if isinstance(random_variable, list):
         Xstar = BootstrapRV(random_variable)
         return Mean(Xstar)
 
-    # If the mean of the random variable is already cached in memory,
-    #   retriew the value of the mean and return in.
     if random_variable.cache is not None and "mean" in random_variable.cache:
         return random_variable.cache["mean"]
 
-    # Find the PDF of the random variable
-
-    # If the random variable is continuous, find and return the mean
     X_dummy = PDF(random_variable)
+
     if X_dummy.is_continuous():
         # Create list of x*f(x)
         meanfunc = []
@@ -184,7 +152,6 @@ def Mean(random_variable, cache=False):
             random_variable.add_to_cache("mean", meanval)
         return simplify(meanval)
 
-    # If the random variable is a discrete function, find and return the mean
     if X_dummy.is_discrete_functional():
         # Create list of x*f(x)
         meanfunc = []
@@ -200,7 +167,6 @@ def Mean(random_variable, cache=False):
             random_variable.add_to_cache("mean", meanval)
         return simplify(meanval)
 
-    # If the random variable is discrete, find and return the variance
     if X_dummy.is_discrete():
         fast_rv = FastRV(
             function=random_variable.func,
@@ -218,8 +184,6 @@ def MGF(random_variable, cache=False):
     Arguments:  1. random_variable: A random variable
     Output:     1. The moment generating function
     """
-    # If the MGF of the random variable is already cached in memory,
-    #   retriew the value of the MGF and return in.
     if random_variable.cache is not None and "mgf" in random_variable.cache:
         return random_variable.cache["mgf"]
 
@@ -239,14 +203,10 @@ def Skewness(random_variable, cache=False):
     """
     from .rv import BootstrapRV
 
-    # If the input is a list of data, compute the Skewness
-    #   for the data set
     if isinstance(random_variable, list):
         Xstar = BootstrapRV(random_variable)
         return Skewness(Xstar)
 
-    # If the skewness of the random variable is already cached in memory,
-    #   retriew the value of the skewness and return in.
     if random_variable.cache is not None and "skewness" in random_variable.cache:
         return random_variable.cache["skewness"]
 
@@ -272,20 +232,15 @@ def Variance(random_variable, cache=False):
     """
     from .rv import BootstrapRV, PDF
 
-    # If the input is a list of data, compute the variance
-    #   for the data set
     if isinstance(random_variable, list):
         Xstar = BootstrapRV(random_variable)
         return Variance(Xstar)
 
-    # If the variance of the random variable is already cached in memory,
-    #   retriew the value of the variance and return in.
     if random_variable.cache is not None and "variance" in random_variable.cache:
         return random_variable.cache["variance"]
 
-    # Find the PDF of the random variable
     X_dummy = PDF(random_variable)
-    # If the random variable is continuous, find and return the variance
+
     if X_dummy.is_continuous():
         # Find the mean of the random variable
         EX = Mean(X_dummy)
@@ -306,10 +261,7 @@ def Variance(random_variable, cache=False):
             random_variable.add_to_cache("variance", var)
         return simplify(var)
 
-    # If the random variable is a discrete function, find and return
-    # the variance
     if X_dummy.is_discrete_functional():
-        # Find the mean of the random variable
         EX = Mean(X_dummy)
         # Find E(X^2)
         # Create list of (x**2)*f(x)
