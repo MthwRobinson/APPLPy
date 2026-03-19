@@ -59,8 +59,8 @@ cargo-test: ## Run rust cargo tests with Python runtime paths derived from the a
 		PYTHONPATH="$${sitepkgs}$${PYTHONPATH:+:$${PYTHONPATH}}" \
 		cargo test --manifest-path rust/Cargo.toml
 
-.PHONY: cargo-lint
-cargo-lint: ## Run rust formatter check and clippy lint checks.
+.PHONY: cargo-check
+cargo-check: ## Run rust formatter check and clippy lint checks.
 	cargo fmt --manifest-path rust/Cargo.toml --check
 	cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
 

@@ -110,6 +110,57 @@ impl Number {
         }
     }
 
+    /// Computes the `n`th root of a `Number`.
+    ///
+    /// ```
+    /// use applpy_rust::algorithms::number::Number;
+    ///
+    /// let result = Number::Integer(27).root(3).unwrap();
+    /// assert_eq!(result, Number::Float(3.0));
+    /// ```
+    pub fn root(&self, n: i32) -> Result<Number, String> {
+        if n == 0 {
+            return Err("cannot take zeroth root".to_string());
+        }
+
+        if self.is_zero() && n < 0 {
+            return Err("0 cannot be raised to a negative power".to_string());
+        }
+
+        let abs_n = n.unsigned_abs();
+        let base = self.to_f64();
+
+        if base < 0.0 && abs_n.is_multiple_of(2) {
+            return Err(
+                "even roots of negative numbers are not supported in real arithmetic".to_string(),
+            );
+        }
+
+        let mut result = if base < 0.0 {
+            -(-base).powf(1.0 / abs_n as f64)
+        } else {
+            base.powf(1.0 / abs_n as f64)
+        };
+
+        if n < 0 {
+            result = 1.0 / result;
+        }
+
+        Ok(Number::Float(result))
+    }
+
+    /// Computes the square root of a `Number`.
+    ///
+    /// ```
+    /// use applpy_rust::algorithms::number::Number;
+    ///
+    /// let result = Number::Integer(9).sqrt().unwrap();
+    /// assert_eq!(result, Number::Float(3.0));
+    /// ```
+    pub fn sqrt(&self) -> Result<Number, String> {
+        self.root(2)
+    }
+
     fn promote(self, other: Self) -> (Self, Self) {
         match (&self, &other) {
             (Number::Float(_), _) | (_, Number::Float(_)) => {
@@ -293,5 +344,44 @@ mod tests {
             .pow(Number::Rational(Rational64::new(1, 2)))
             .unwrap();
         assert_eq!(result, Number::Float(3.0));
+    }
+
+    #[test]
+    fn square_root_works() {
+        let result = Number::Integer(9).root(2).unwrap();
+        assert_eq!(result, Number::Float(3.0));
+    }
+
+    #[test]
+    fn sqrt_delegates_to_second_root() {
+        let result = Number::Integer(16).sqrt().unwrap();
+        assert_eq!(result, Number::Float(4.0));
+    }
+
+    #[test]
+    fn cube_root_of_negative_number_works() {
+        let result = Number::Integer(-8).root(3).unwrap();
+        assert_eq!(result, Number::Float(-2.0));
+    }
+
+    #[test]
+    fn even_root_of_negative_number_errors() {
+        let err = Number::Integer(-8).root(2).unwrap_err();
+        assert_eq!(
+            err,
+            "even roots of negative numbers are not supported in real arithmetic"
+        );
+    }
+
+    #[test]
+    fn zeroth_root_errors() {
+        let err = Number::Integer(8).root(0).unwrap_err();
+        assert_eq!(err, "cannot take zeroth root");
+    }
+
+    #[test]
+    fn negative_root_returns_reciprocal() {
+        let result = Number::Integer(9).root(-2).unwrap();
+        assert_eq!(result, Number::Float(1.0 / 3.0));
     }
 }

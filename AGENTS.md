@@ -21,7 +21,7 @@ and the `main` branch, and should look at both the commit messages and the code 
 If you modify rust code, run the following commands from the `Makefile` to confirm everything
 is running as expected:
 
-- `make cargo-lint`: runs `cargo clippy` and `cargo fmt --check` linting.
+- `make cargo-check`: runs `cargo clippy` and `cargo fmt --check` linting.
     If `cargo fmt --check` fails, run `make cargo-tidy` to format the code
 - `make cargo-test`: runs the unit tests for the rust code
 
