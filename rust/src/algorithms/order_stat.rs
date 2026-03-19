@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use statrs::function::factorial::binomial;
+use num_rational::Rational64;
 
 use crate::algorithms::number::Number;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
@@ -12,6 +12,95 @@ pub fn factorial_number(n: i64) -> Number {
 
     let result: i64 = (1..=n).product();
     Number::Integer(result)
+}
+
+fn gcd_u128(mut a: u128, mut b: u128) -> u128 {
+    while b != 0 {
+        let t = a % b;
+        a = b;
+        b = t;
+    }
+    a
+}
+
+fn binomial_i64(n: u64, k: u64) -> Result<i64, String> {
+    if k > n {
+        return Ok(0);
+    }
+    if k == 0 || k == n {
+        return Ok(1);
+    }
+
+    let k = k.min(n - k);
+    let mut result: u128 = 1;
+
+    for i in 1..=k {
+        let mut numer = u128::from(n - k + i);
+        let mut denom = u128::from(i);
+
+        let g1 = gcd_u128(numer, denom);
+        numer /= g1;
+        denom /= g1;
+
+        let g2 = gcd_u128(result, denom);
+        result /= g2;
+        denom /= g2;
+
+        result = result
+            .checked_mul(numer)
+            .ok_or_else(|| "binomial coefficient overflowed u128".to_string())?;
+        if denom != 1 {
+            if !result.is_multiple_of(denom) {
+                return Err("binomial coefficient reduction failed".to_string());
+            }
+            result /= denom;
+        }
+    }
+
+    i64::try_from(result).map_err(|_| "binomial coefficient exceeds i64 range".to_string())
+}
+
+fn binomial_number(n: u64, k: u64) -> Result<Number, String> {
+    Ok(Number::Integer(binomial_i64(n, k)?))
+}
+
+fn number_from_rational(value: Rational64) -> Number {
+    if *value.denom() == 1 {
+        Number::Integer(*value.numer())
+    } else {
+        Number::Rational(value)
+    }
+}
+
+fn divide_preserving_precision(lhs: Number, rhs: Number) -> Result<Number, String> {
+    match (lhs, rhs) {
+        (Number::Float(a), b) => Ok(Number::Float(a / b.to_f64())),
+        (a, Number::Float(b)) => Ok(Number::Float(a.to_f64() / b)),
+        (Number::Integer(a), Number::Integer(b)) => {
+            if b == 0 {
+                return Err("division by zero".to_string());
+            }
+            Ok(number_from_rational(Rational64::new(a, b)))
+        }
+        (Number::Integer(a), Number::Rational(b)) => {
+            if *b.numer() == 0 {
+                return Err("division by zero".to_string());
+            }
+            Ok(number_from_rational(Rational64::from_integer(a) / b))
+        }
+        (Number::Rational(a), Number::Integer(b)) => {
+            if b == 0 {
+                return Err("division by zero".to_string());
+            }
+            Ok(number_from_rational(a / Rational64::from_integer(b)))
+        }
+        (Number::Rational(a), Number::Rational(b)) => {
+            if *b.numer() == 0 {
+                return Err("division by zero".to_string());
+            }
+            Ok(number_from_rational(a / b))
+        }
+    }
 }
 
 /// Computes the discrete `index`-th order statistic of i.i.d. samples drawn
@@ -86,7 +175,7 @@ pub fn discrete_order_stat_with_replacement(
         let one_minus_cdf = Number::one() - cdf_value_at_k;
         let mut cdf_sum = Number::default();
         for j in index..=num_items {
-            let choose = Number::Float(binomial(num_items, j));
+            let choose = binomial_number(num_items, j)?;
             let j_exp = Number::Integer(
                 i64::try_from(j)
                     .map_err(|_| "num_items is too large for integer exponent".to_string())?,
@@ -191,16 +280,15 @@ pub fn discrete_order_stat_without_replacement(
     // If everything is equally likely, then it's just n choose m
     if all_equal {
         let max_term = len_function_u64 - num_items + index;
-        let binomial_denom = Number::Float(binomial(len_function_u64, num_items));
+        let binomial_denom = binomial_number(len_function_u64, num_items)?;
 
         for i in index..=max_term {
             let order_stat_index = usize::try_from(i - 1)
                 .map_err(|_| "order statistic index is too large to process".to_string())?;
 
-            let binomial_numer = Number::Float(binomial(i - 1, index - 1))
-                * Number::Float(binomial(1, 1))
-                * Number::Float(binomial(len_function_u64 - i, num_items - index));
-            let value = binomial_numer / binomial_denom;
+            let binomial_numer = binomial_number(i - 1, index - 1)?
+                * binomial_number(len_function_u64 - i, num_items - index)?;
+            let value = divide_preserving_precision(binomial_numer, binomial_denom)?;
             order_stat_probabilities[order_stat_index] = value;
         }
         let order_stat_rv = RandomVariable {
@@ -246,7 +334,8 @@ pub fn discrete_order_stat_without_replacement(
                     perm_prob = Number::default();
                     break;
                 }
-                perm_prob = perm_prob * function[perm_index] / remaining_mass;
+                perm_prob =
+                    divide_preserving_precision(perm_prob * function[perm_index], remaining_mass)?;
                 cumsum += function[perm_index];
             }
 
