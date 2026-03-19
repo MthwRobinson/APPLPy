@@ -2,10 +2,33 @@ use pyo3::conversion::FromPyObject;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyModule};
 
+use crate::algorithms::api::FastRV;
 use crate::algorithms::number::Number;
 use crate::algorithms::order_stat::OrderStatVariant;
-use crate::algorithms::rv::{DomainType, FunctionalForm};
+use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 use num_rational::Rational64;
+
+impl<'py> FromPyObject<'py> for FastRV {
+    fn extract_bound(obj: &Bound<'py, PyAny>) -> PyResult<Self> {
+        let function = obj.getattr("func")?;
+        let support = obj.getattr("support")?;
+        let functional_form = obj.getattr("functional_form")?;
+        let domain_type = obj.getattr("domain_type")?;
+
+        let random_variable = RandomVariable {
+            function: function.clone(),
+            support: support.clone(),
+            functional_form,
+            domain_type,
+        };
+
+        let fast_rv = FastRV {
+            inner: random_variable,
+        };
+
+        Ok(fast_rv)
+    }
+}
 
 impl<'py> FromPyObject<'py> for Number {
     fn extract_bound(obj: &Bound<'py, PyAny>) -> PyResult<Self> {

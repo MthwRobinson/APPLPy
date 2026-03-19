@@ -1263,128 +1263,13 @@ def OrderStat(random_variable, n, r, replace="w"):
     # If the distribution is continuous, find and return the value of
     #   the order statistic
     if random_variable.is_discrete():
-        fx = pdf(random_variable)
-        Fx = cdf(random_variable)
-        Sx = sf(random_variable)
-        N = len(fx.support)
-        # With replacement
-        if replace == "w":
-            # Numeric PDF
-            if not isinstance(random_variable.func[0], Symbol):
-                # If N is one, return the order stat
-                if N == 1:
-                    return RV(1, random_variable.support, ["discrete", "pdf"])
-                # Add the first term
-                else:
-                    OSproblist = []
-                    os_sum = 0
-                    for w in range(n - r + 1):
-                        val = binomial(n, w) * (fx.func[0] ** (n - w)) * (Sx.func[1] ** (w))
-                        os_sum += val
-                    OSproblist.append(os_sum)
-                # Add term 2 through N-1
-                for k in range(2, N):
-                    os_sum = 0
-                    for w in range(n - r + 1):
-                        for u in range(r):
-                            val = (
-                                factorial(n)
-                                / (factorial(u) * factorial(n - u - w) * factorial(w))
-                                * (Fx.func[k - 2] ** u)
-                                * (fx.func[k - 1] ** (n - u - w))
-                                * (Sx.func[k] ** (w))
-                            )
-                            os_sum += val
-                    OSproblist.append(os_sum)
-                # Add term N
-                os_sum = 0
-                for u in range(r):
-                    val = binomial(n, u) * (Fx.func[N - 2] ** u) * (fx.func[N - 1] ** (n - u))
-                    os_sum += val
-                OSproblist.append(os_sum)
-                return RV(OSproblist, random_variable.support, ["discrete", "pdf"])
-
-        if replace == "wo":
-            """
-            if n>4:
-                err_string = 'When sampling without replacement, n must be '
-                err_string += 'less than 4'
-                raise RVError(err_string)
-            """
-            # Determine if the PDF has equally likely probabilities
-            EqLike = True
-            for i in range(len(fx.func)):
-                if fx.func[0] != fx.func[i]:
-                    EqLike = False
-                if not EqLike:
-                    break
-            # Create blank order stat function list
-            fxOS = []
-            for i in range(len(fx.func)):
-                fxOS.append(0)
-            # If the probabilities are equally likely
-            if EqLike:
-                # Need to add algorithm for symbolic 'r'
-                for i in range(r, (N - n + r + 1)):
-                    indx = i - 1
-                    val = (binomial(i - 1, r - 1) * binomial(1, 1) * binomial(N - i, n - r)) / (
-                        binomial(N, n)
-                    )
-                    fxOS[indx] = val
-                return RV(fxOS, fx.support, ["discrete", "pdf"])
-            # If the probabilities are not equally likely
-            elif not EqLike:
-                # If the sample size is 1
-                if n == 1:
-                    fxOS = []
-                    for i in range(len(fx.func)):
-                        fxOS.append(fx.func[i])
-                    return (fxOS, fx.support, ["discrete", "pdf"])
-                elif n == N:
-                    fxOS[n - 1] = 1
-                    return RV(fxOS, fx.support, ["discrete", "pdf"])
-                else:
-                    # Create null ProbStorage array of size nXN
-                    # Initialize to contain all zeroes
-                    print(n, N)
-                    ProbStorage = []
-                    for i in range(n):
-                        row_list = []
-                        for j in range(N):
-                            row_list.append(0)
-                        ProbStorage.append(row_list)
-                    # Create the first lexicographical combo of
-                    #   n items
-                    combo = list(range(1, n + 1))
-                    for i in range(1, (binomial(N, n) + 1)):
-                        # Assign perm as the current combo
-                        perm = []
-                        for j in range(len(combo)):
-                            perm.append(combo[j])
-                        # Compute the probability of obtaining the
-                        #   given permutation
-                        for j in range(1, factorial(n) + 1):
-                            PermProb = fx.func[perm[0]]
-                            cumsum = fx.func[perm[0]]
-                            for m in range(1, n):
-                                PermProb *= fx.func[perm[m]] / (1 - cumsum)
-                                cumsum += fx.func[perm[m]]
-                            print(perm, PermProb, cumsum)
-                            # Order each permutation and determine
-                            #   which value sits in the rth
-                            #   ordered position
-                            orderedperm = []
-                            for m in range(len(perm)):
-                                orderedperm.append(perm[m])
-                            orderedperm.sort()
-                            for m in range(n):
-                                for k in range(N):
-                                    if orderedperm[m] == k + 1:
-                                        ProbStorage[m][k] = PermProb + ProbStorage[m][k]
-                            # Find the next lexicographical permutation
-                            perm = rust_bindings.next_permutation(perm)
-                        # Find the next lexicographical combination
-                        combo = rust_bindings.next_combination(combo, N)
+        fast_rv = rust_bindings.discrete_order_stat(random_variable, n, r, replace)
+        return RV(
+            func=fast_rv.function,
+            support=fast_rv.support,
+            functional_form=fast_rv.functional_form,
+            domain_type=fast_rv.domain_type,
+        )
 
 
 def Pow(random_variable, n):

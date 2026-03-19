@@ -16,7 +16,10 @@ fn applpy_rust(_py: Python<'_>, module: &Bound<'_, PyModule>) -> PyResult<()> {
     // order stat functions
     module.add_function(wrap_pyfunction!(python::api::next_combination_py, module)?)?;
     module.add_function(wrap_pyfunction!(python::api::next_permutation_py, module)?)?;
-    module.add_function(wrap_pyfunction!(python::api::discrete_order_stat_py, module)?)?;
+    module.add_function(wrap_pyfunction!(
+        python::api::discrete_order_stat_py,
+        module
+    )?)?;
 
     // random variable class and related functions
     module.add_class::<FastRV>()?;

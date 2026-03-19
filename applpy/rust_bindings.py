@@ -20,6 +20,9 @@ def dummy_ping():
     """Return a constant string from the Rust extension."""
     return _extension_module().dummy_ping()
 
+def discrete_order_stat(random_variable, n, r, replace):
+    """Return the next lexicographical permutation."""
+    return _extension_module().discrete_order_stat(random_variable, n, r, replace)
 
 def next_combination(previous, n):
     """Return the next lexicographical combination."""
