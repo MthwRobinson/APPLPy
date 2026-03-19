@@ -1,3 +1,125 @@
+#![allow(dead_code)]
+
+use statrs::function::factorial::binomial;
+
+use crate::algorithms::number:Number;
+use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+
+pub fn factorial_number(n: i64) -> Number {
+	if n < 0 {
+		panic!("factorial undefined for negative numbers");
+	}
+
+	let result: i64 = (1..=n).product();
+	Number::Integer(result)
+}
+
+/// Computes the order statistic of the random variable without replacement
+///
+/// # Arguments
+/// * `random_variable`- the random variable to compute the order state for
+/// * `num_items` - the number of items randomly drawn from the random variable
+/// * `index` - the index of the order statistic
+///
+/// # Returns
+/// * `random_variable` - the random variable for the desired order statistic
+///
+/// # Examples
+pub fn discrete_order_stat_with_replacement(
+   random_variable: &RandomVariable,
+   num_items: u64,
+   index: u64,
+) -> Result<RandomVariable, String> {
+
+    let function = &random_variable.function;
+    let support = &random_variable.support;
+
+    if function.is_empty() {
+        return Err("cannot compute the order. function is empty".to_string());
+    }
+
+    let len_function = function.len();
+    if len_support == 1 {
+        let ones = Number::Integer(1);
+        return RandomVariable {
+            function: ones,
+            support: support.clone(),
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+    }
+
+    let pdf_random_variable = random_variable.to_pdf()?;
+    let pdf_function = pdf_random_variable.function;
+
+    let cdf_random_variable = random_variable.to_sdf()?;
+    let cdf_function = cdf_random_variable.function;
+
+    let sf_random_variable = random_variable.to_sdf()?;
+    let sf_function = sf_random_variable.function;
+
+
+    let order_stat_probabilities: Vec<Number> = Vec::new();
+    let max_term = num_items - index + 1;
+
+	// Add the first term
+    let mut first_order_stat_sum: Number = Number::default();
+    for w in (0..max_term) {
+        let binomial_value = Number::Integer(binomial(num_items, w) as i64)?;
+        let pdf_value = pdf_function[0].pow(num_items - w);
+        let sf_value = sf_function[1].pow(w);
+        order_stat_sum += binomial_value * pdf_value * sf_value;
+    }
+    order_stat_probabilities.push(first_order_stat_sum);
+
+	// Add term 2 through N - 1
+    for k in (2..len_support) {
+        let mut order_stat_sum: Number = Number::default();
+        for w in (0..max_term) {
+            for u in (0..index) {
+                let factorial_numer = factorial_number(num_items);
+                let factorial_denom = factorial_number(u)
+                    * factorial_number(num_items - u - w)
+                    * factorial_number(w);
+                let cdf_value = cdf_function[k-2].pow(u);
+                let pdf_value = pdf_function[k-1].pow(num_items - u - w);
+                let sf_value = sf_function[k].pow(w);
+
+                let value = factorial_numer
+                    / factorial_denom
+                    * cdf_value
+                    * pdf_value
+                    * sf_value;
+
+                order_stat_sum += value;
+            }
+            order_stat_probabilities.push(order_stat_sum);
+        }
+    }
+
+    // Add the final term
+    let mut final_order_stat_sum = Number::default();
+    for u in (0..index) {
+        let binomial_value = Number::Integer(binomial(num_items, u))?;
+        let cdf_value = cdf_function[len_function - 2].pow(u);
+        let pdf_value = pdf_function[len_function - 1].pow(num_items-u);
+
+        let value = binomial_value + cdf_value + pdf_value;
+        final_order_stat_sum += value;
+    }
+    order_stat_probabilities.push(order_stat_sum)
+
+    let random_variable = RandomVariable{
+        function: order_stat_probabilities,
+        support: support.clone(),
+        functional_form: FunctionalForm::Pdf,
+        domain_type: DomainType::Discrete,
+    }
+    Ok(random_variable)
+}
+
+
+
 /// Given the previous combination, finds the next lexicographical combination.
 ///
 /// # Arguments
@@ -58,7 +180,6 @@ pub fn next_combination(previous: &[usize], upper_bound: usize) -> Option<Vec<us
 ///
 /// # Returns
 /// * `next` - the next combination
-#[allow(dead_code)]
 pub fn next_permutation(previous: &[usize]) -> Option<Vec<usize>> {
     let vector_length = previous.len();
 
@@ -90,6 +211,7 @@ pub fn next_permutation(previous: &[usize]) -> Option<Vec<usize>> {
 
     None
 }
+
 
 #[cfg(test)]
 mod tests {
