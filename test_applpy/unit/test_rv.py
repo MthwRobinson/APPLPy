@@ -10,14 +10,9 @@ from applpy.rv import (
     ConvolutionIID,
     Histogram,
     LoadRV,
-    Maximum,
-    MaximumIID,
     MaximumRV,
-    Minimum,
-    MinimumIID,
     MinimumRV,
     Mixture,
-    OrderStat,
     PPPlot,
     PlotClear,
     PlotDist,
@@ -28,7 +23,6 @@ from applpy.rv import (
     ProductDiscrete,
     ProductIID,
     QQPlot,
-    RangeStat,
     Sqrt,
     Transform,
     Truncate,
@@ -208,23 +202,13 @@ def test_single_rv_transformative_operations():
     continuous = _uniform_continuous_pdf()
     piecewise = _piecewise_continuous_pdf()
     discrete = _discrete_pdf()
-    bernoulli = _discrete_pdf_bernoulli()
 
     assert isinstance(ConvolutionIID(continuous, 2), RV)
     assert isinstance(ConvolutionIID(discrete, 2), RV)
-    assert isinstance(MaximumIID(continuous, 2), RV)
-    assert isinstance(MaximumIID(discrete, 2), RV)
-    assert isinstance(MinimumIID(continuous, 2), RV)
-    assert isinstance(MinimumIID(discrete, 2), RV)
-    assert isinstance(OrderStat(continuous, 3, 2), RV)
-    assert isinstance(OrderStat(discrete, 3, 2, "w"), RV)
-    assert isinstance(OrderStat(bernoulli, 2, 1, "wo"), RV)
     assert isinstance(Pow(continuous, 2), RV)
     assert isinstance(Pow(discrete, 2), RV)
     assert isinstance(ProductIID(continuous, 2), RV)
     assert isinstance(ProductIID(discrete, 2), RV)
-    assert isinstance(RangeStat(continuous, 3), RV)
-    assert isinstance(RangeStat(discrete, 2), RV)
     assert isinstance(Sqrt(continuous), RV)
     assert isinstance(Sqrt(discrete), RV)
     assert isinstance(Transform(discrete, [[x + 1, x + 2], [0, 1, 2]]), RV)
@@ -240,12 +224,6 @@ def test_single_rv_error_paths():
         ConvolutionIID(_uniform_continuous_pdf(), Rational(3, 2))
     with pytest.raises(RVError, match="must be an integer"):
         Pow(_uniform_continuous_pdf(), Rational(3, 2))
-    with pytest.raises(RVError, match="greater than the sample size"):
-        OrderStat(_uniform_continuous_pdf(), 2, 3)
-    with pytest.raises(RVError, match="Replace must be w or wo"):
-        OrderStat(_uniform_continuous_pdf(), 3, 1, "invalid")
-    with pytest.raises(RVError, match="without replacement not implemented"):
-        OrderStat(_uniform_continuous_pdf(), 3, 1, "wo")
 
 
 def test_two_rv_operations_for_continuous_and_discrete():
@@ -258,12 +236,8 @@ def test_two_rv_operations_for_continuous_and_discrete():
     assert isinstance(Convolution(discrete, bernoulli), RV)
     assert isinstance(MaximumRV(continuous, continuous), RV)
     assert isinstance(MaximumRV(discrete, bernoulli), RV)
-    assert isinstance(Maximum(continuous, continuous), RV)
-    assert isinstance(Maximum(discrete, bernoulli), RV)
     assert isinstance(MinimumRV(continuous, continuous), RV)
     assert isinstance(MinimumRV(discrete, bernoulli), RV)
-    assert isinstance(Minimum(continuous, continuous), RV)
-    assert isinstance(Minimum(discrete, bernoulli), RV)
     assert isinstance(Mixture([Rational(1, 3), Rational(2, 3)], [continuous, piecewise]), RV)
     assert isinstance(Mixture([Rational(1, 2), Rational(1, 2)], [discrete, bernoulli]), RV)
     assert isinstance(Product(continuous, continuous), RV)
@@ -275,10 +249,6 @@ def test_two_rv_operations_error_paths():
     continuous = _uniform_continuous_pdf()
     discrete = _discrete_pdf()
 
-    with pytest.raises(RVError, match="must both be discrete or continuous"):
-        Maximum(continuous, discrete)
-    with pytest.raises(RVError, match="must both be discrete or continuous"):
-        Minimum(continuous, discrete)
     with pytest.raises(RVError, match="same length"):
         Mixture([Rational(1, 2)], [continuous, continuous])
     with pytest.raises(RVError, match="all continuous or discrete"):
@@ -349,18 +319,11 @@ def test_save_reuses_filename_when_already_known(tmp_path):
 
 def test_operations_on_symmetric_support_cover_additional_branches():
     symmetric = RV([Rational(1, 2), Rational(1, 2)], [-1, 0, 1], ["continuous", "pdf"])
-    positive = _uniform_continuous_pdf()
-    discrete = _discrete_pdf()
 
     assert isinstance(Convolution(symmetric, symmetric), RV)
     assert isinstance(Product(symmetric, symmetric), RV)
     assert isinstance(MaximumRV(symmetric, symmetric), RV)
     assert isinstance(MinimumRV(symmetric, symmetric), RV)
-
-    # Variable-arity paths recurse through previous results.
-    assert isinstance(Maximum(positive, positive, positive), RV)
-    assert isinstance(Minimum(discrete, discrete, discrete), RV)
-
 
 def test_lifetime_continuous_special_case_paths():
     lifetime = RV([exp(-x)], [0, oo], ["continuous", "pdf"])
@@ -417,13 +380,5 @@ def test_plot_display_requires_multiple_plots():
 
 
 def test_discrete_stat_and_convolution_edge_paths():
-    with pytest.raises(RVError, match="Only one item sampled"):
-        RangeStat(_discrete_pdf(), 1, "w")
-    with pytest.raises(RVError, match="current not implemented without"):
-        RangeStat(_discrete_pdf(), 2, "wo")
-
-    singleton = RV([1], [5], ["discrete", "pdf"])
-    assert OrderStat(singleton, 1, 1, "w").ftype == ["discrete", "pdf"]
-
     with pytest.raises(RVError, match="symbolic or infinite support"):
         Convolution(RV([x], [x, 3], ["discrete_functional", "pdf"]), _discrete_pdf())
