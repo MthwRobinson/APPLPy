@@ -110,13 +110,119 @@ impl Number {
         }
     }
 
+    fn number_from_rational(value: Rational64) -> Number {
+        if *value.denom() == 1 {
+            Number::Integer(*value.numer())
+        } else {
+            Number::Rational(value)
+        }
+    }
+
+    fn exact_nth_root_u64(value: u64, n: u32) -> Option<u64> {
+        if n == 0 {
+            return None;
+        }
+
+        if n == 1 || value <= 1 {
+            return Some(value);
+        }
+
+        let mut low = 0_u64;
+        let mut high = value;
+
+        while low <= high {
+            let mid = low + ((high - low) / 2);
+            match mid.checked_pow(n) {
+                Some(pow) if pow == value => return Some(mid),
+                Some(pow) if pow < value => low = mid + 1,
+                _ => {
+                    if mid == 0 {
+                        break;
+                    }
+                    high = mid - 1;
+                }
+            }
+        }
+
+        None
+    }
+
+    fn exact_positive_root(&self, n: u32) -> Option<Number> {
+        match *self {
+            Number::Float(_) => None,
+            Number::Integer(value) => {
+                let is_negative = value < 0;
+                if is_negative && n.is_multiple_of(2) {
+                    return None;
+                }
+
+                let abs_root = Number::exact_nth_root_u64(value.unsigned_abs(), n)?;
+                if is_negative {
+                    if abs_root == (i64::MAX as u64) + 1 {
+                        Some(Number::Integer(i64::MIN))
+                    } else {
+                        let root = i64::try_from(abs_root).ok()?;
+                        Some(Number::Integer(-root))
+                    }
+                } else {
+                    let root = i64::try_from(abs_root).ok()?;
+                    Some(Number::Integer(root))
+                }
+            }
+            Number::Rational(value) => {
+                if *value.numer() < 0 && n.is_multiple_of(2) {
+                    return None;
+                }
+
+                let numer_root = Number::exact_nth_root_u64(value.numer().unsigned_abs(), n)?;
+                let denom_root = Number::exact_nth_root_u64(value.denom().unsigned_abs(), n)?;
+
+                let denom = i64::try_from(denom_root).ok()?;
+                let numer = if *value.numer() < 0 {
+                    if numer_root == (i64::MAX as u64) + 1 {
+                        i64::MIN
+                    } else {
+                        let root = i64::try_from(numer_root).ok()?;
+                        -root
+                    }
+                } else {
+                    i64::try_from(numer_root).ok()?
+                };
+
+                Some(Number::number_from_rational(Rational64::new(numer, denom)))
+            }
+        }
+    }
+
+    fn reciprocal(number: Number) -> Result<Number, String> {
+        match number {
+            Number::Float(value) => Ok(Number::Float(1.0 / value)),
+            Number::Integer(value) => {
+                if value == 0 {
+                    Err("0 cannot be raised to a negative power".to_string())
+                } else if value == 1 || value == -1 {
+                    Ok(Number::Integer(1 / value))
+                } else {
+                    Ok(Number::Rational(Rational64::new(1, value)))
+                }
+            }
+            Number::Rational(value) => {
+                if *value.numer() == 0 {
+                    Err("0 cannot be raised to a negative power".to_string())
+                } else {
+                    Ok(Number::number_from_rational(value.recip()))
+                }
+            }
+        }
+    }
+
     /// Computes the `n`th root of a `Number`.
     ///
     /// ```
     /// use applpy_rust::algorithms::number::Number;
     ///
     /// let result = Number::Integer(27).root(3).unwrap();
-    /// assert_eq!(result, Number::Float(3.0));
+    /// assert_eq!(result, Number::Integer(3));
     /// ```
     pub fn root(&self, n: i32) -> Result<Number, String> {
         if n == 0 {
@@ -134,6 +240,13 @@ impl Number {
             return Err(
                 "even roots of negative numbers are not supported in real arithmetic".to_string(),
             );
+        }
+
+        if let Some(exact) = self.exact_positive_root(abs_n) {
+            if n < 0 {
+                return Number::reciprocal(exact);
+            }
+            return Ok(exact);
         }
 
         let mut result = if base < 0.0 {
@@ -155,7 +268,7 @@ impl Number {
     /// use applpy_rust::algorithms::number::Number;
     ///
     /// let result = Number::Integer(9).sqrt().unwrap();
-    /// assert_eq!(result, Number::Float(3.0));
+    /// assert_eq!(result, Number::Integer(3));
     /// ```
     pub fn sqrt(&self) -> Result<Number, String> {
         self.root(2)
@@ -349,19 +462,19 @@ mod tests {
     #[test]
     fn square_root_works() {
         let result = Number::Integer(9).root(2).unwrap();
-        assert_eq!(result, Number::Float(3.0));
+        assert_eq!(result, Number::Integer(3));
     }
 
     #[test]
     fn sqrt_delegates_to_second_root() {
         let result = Number::Integer(16).sqrt().unwrap();
-        assert_eq!(result, Number::Float(4.0));
+        assert_eq!(result, Number::Integer(4));
     }
 
     #[test]
     fn cube_root_of_negative_number_works() {
         let result = Number::Integer(-8).root(3).unwrap();
-        assert_eq!(result, Number::Float(-2.0));
+        assert_eq!(result, Number::Integer(-2));
     }
 
     #[test]
@@ -382,6 +495,24 @@ mod tests {
     #[test]
     fn negative_root_returns_reciprocal() {
         let result = Number::Integer(9).root(-2).unwrap();
-        assert_eq!(result, Number::Float(1.0 / 3.0));
+        assert_eq!(result, Number::Rational(Rational64::new(1, 3)));
+    }
+
+    #[test]
+    fn non_perfect_integer_root_falls_back_to_float() {
+        let result = Number::Integer(2).root(2).unwrap();
+        assert!(matches!(result, Number::Float(x) if x > 1.41 && x < 1.42));
+    }
+
+    #[test]
+    fn exact_rational_root_returns_rational() {
+        let result = Number::Rational(Rational64::new(1, 16)).root(2).unwrap();
+        assert_eq!(result, Number::Rational(Rational64::new(1, 4)));
+    }
+
+    #[test]
+    fn negative_exact_rational_root_returns_exact_reciprocal() {
+        let result = Number::Rational(Rational64::new(1, 16)).root(-2).unwrap();
+        assert_eq!(result, Number::Integer(4));
     }
 }
