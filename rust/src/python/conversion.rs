@@ -3,6 +3,7 @@ use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyModule};
 
 use crate::algorithms::number::Number;
+use crate::algorithms::order_stat::OrderStatVariant;
 use crate::algorithms::rv::{DomainType, FunctionalForm};
 use num_rational::Rational64;
 
@@ -147,6 +148,30 @@ impl IntoPy<PyObject> for DomainType {
             DomainType::Continuous => "continuous",
             DomainType::Discrete => "discrete",
             DomainType::DiscreteFunctional => "discrete_functional",
+        };
+
+        s.into_py(py)
+    }
+}
+
+impl<'py> FromPyObject<'py> for OrderStatVariant {
+    fn extract_bound(obj: &Bound<'py, PyAny>) -> PyResult<Self> {
+        let s: String = obj.extract()?;
+        match s.as_str() {
+            "wo" => Ok(OrderStatVariant::WithoutReplacement),
+            "w" => Ok(OrderStatVariant::WithReplacement),
+            _ => Err(pyo3::exceptions::PyValueError::new_err(
+                "Invalid OrderStatVariant",
+            )),
+        }
+    }
+}
+
+impl IntoPy<PyObject> for OrderStatVariant {
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        let s = match self {
+            OrderStatVariant::WithoutReplacement => "wo",
+            OrderStatVariant::WithReplacement => "w",
         };
 
         s.into_py(py)
