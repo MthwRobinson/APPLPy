@@ -13,7 +13,7 @@ from sympy import (
     symbols,
 )
 
-from ...rv import IDF, RV, RVError
+from ...rv import idf, RV, RVError
 from .param_check import param_check
 from .uniform import UniformRV
 
@@ -58,14 +58,14 @@ class NormalRV(RV):
             raise RVError(error_string)
 
         # If the inverse method is specified, compute variates using
-        #   the IDF function
+        #   the idf function
         if method == "inverse":
-            Xidf = IDF(self)
-            varlist = [IDF(Xidf, random()) for i in range(1, n + 1)]
+            Xidf = idf(self)
+            varlist = [idf(Xidf, random()) for i in range(1, n + 1)]
             return varlist
 
         if s is not None and n == 1:
-            return [IDF(self, s)]
+            return [idf(self, s)]
 
         # Otherwise, use the Box-Muller method to compute variates
         mean = self.parameter[0]

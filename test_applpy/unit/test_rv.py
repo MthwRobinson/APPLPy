@@ -2,18 +2,15 @@ import pytest
 from sympy import Integer, Rational, exp, oo
 
 from applpy import rust_bindings
+from applpy.conversion import cdf, chf, hf, idf, pdf, sf
 from applpy.rv import (
-    CHF,
     RV,
     RVError,
     BootstrapRV,
-    CDF,
     Convolution,
     ConvolutionIID,
     Convert,
-    HF,
     Histogram,
-    IDF,
     LoadRV,
     Maximum,
     MaximumIID,
@@ -23,7 +20,6 @@ from applpy.rv import (
     MinimumRV,
     Mixture,
     OrderStat,
-    PDF,
     PPPlot,
     PlotClear,
     PlotDist,
@@ -35,7 +31,6 @@ from applpy.rv import (
     ProductIID,
     QQPlot,
     RangeStat,
-    SF,
     Sqrt,
     Transform,
     Truncate,
@@ -142,15 +137,15 @@ def test_check_value_support_bounds():
 def test_cdf_for_simple_continuous_pdf_and_cache():
     rv = RV(1, [0, 1], ["continuous", "pdf"])
 
-    cdf_rv = CDF(rv, cache=True)
+    cdf_rv = cdf(rv, cache=True)
 
     assert cdf_rv.func == [x]
     assert cdf_rv.support == [0, 1]
-    assert CDF(rv, Rational(1, 4)) == Rational(1, 4)
-    assert CDF(rv, -1) == 0
-    assert CDF(rv, 2) == 1
+    assert cdf(rv, Rational(1, 4)) == Rational(1, 4)
+    assert cdf(rv, -1) == 0
+    assert cdf(rv, 2) == 1
     assert rv.cache["cdf"] is cdf_rv
-    assert CDF(rv) is cdf_rv
+    assert cdf(rv) is cdf_rv
 
 
 def test_bootstrap_rv_creates_discrete_pdf_with_frequencies():
@@ -258,44 +253,44 @@ def test_conversion_family_for_continuous_and_discrete_distributions():
     discrete = _discrete_pdf()
     functional_discrete = _functional_discrete_pdf()
 
-    assert CDF(continuous, Rational(1, 4)) == Rational(1, 4)
-    assert SF(continuous, Rational(1, 4)) == Rational(3, 4)
-    assert HF(continuous, Rational(1, 4)) == Rational(4, 3)
-    assert CHF(continuous).ftype == ["continuous", "chf"]
-    assert IDF(continuous, Rational(1, 2)) == Rational(1, 2)
-    assert PDF(CDF(continuous), Rational(1, 4)) == 1
+    assert cdf(continuous, Rational(1, 4)) == Rational(1, 4)
+    assert sf(continuous, Rational(1, 4)) == Rational(3, 4)
+    assert hf(continuous, Rational(1, 4)) == Rational(4, 3)
+    assert chf(continuous).ftype == ["continuous", "chf"]
+    assert idf(continuous, Rational(1, 2)) == Rational(1, 2)
+    assert pdf(cdf(continuous), Rational(1, 4)) == 1
 
-    assert CDF(discrete, 1) == Rational(1, 4)
-    assert CDF(discrete, 0) == 0
-    assert CDF(discrete, 3) == 1
-    assert SF(discrete, 1) == Rational(3, 4)
-    assert SF(discrete, 0) == 1
-    assert SF(discrete, 3) == 0
-    assert HF(discrete, 1) == Rational(1, 3)
-    assert HF(discrete, 0) == 0
-    assert HF(discrete, 3) == oo
-    assert CHF(discrete, 2) > 0
-    assert CHF(discrete, 0) == 0
-    assert CHF(discrete, 3) == oo
-    assert IDF(discrete, Rational(1, 2)) == 2
-    assert IDF(discrete, -1) is None
-    assert IDF(discrete, 2) is None
-    assert PDF(discrete, 0) == 0
-    assert PDF(discrete, 3) == 0
+    assert cdf(discrete, 1) == Rational(1, 4)
+    assert cdf(discrete, 0) == 0
+    assert cdf(discrete, 3) == 1
+    assert sf(discrete, 1) == Rational(3, 4)
+    assert sf(discrete, 0) == 1
+    assert sf(discrete, 3) == 0
+    assert hf(discrete, 1) == Rational(1, 3)
+    assert hf(discrete, 0) == 0
+    assert hf(discrete, 3) == oo
+    assert chf(discrete, 2) > 0
+    assert chf(discrete, 0) == 0
+    assert chf(discrete, 3) == oo
+    assert idf(discrete, Rational(1, 2)) == 2
+    assert idf(discrete, -1) is None
+    assert idf(discrete, 2) is None
+    assert pdf(discrete, 0) == 0
+    assert pdf(discrete, 3) == 0
 
     converted = Convert(functional_discrete)
-    assert CDF(functional_discrete) == CDF(converted)
-    assert isinstance(PDF(functional_discrete), RV)
-    assert PDF(converted).ftype == ["discrete", "pdf"]
-    assert SF(functional_discrete) == SF(converted)
+    assert cdf(functional_discrete) == cdf(converted)
+    assert isinstance(pdf(functional_discrete), RV)
+    assert pdf(converted).ftype == ["discrete", "pdf"]
+    assert sf(functional_discrete) == sf(converted)
 
 
 def test_conversion_out_of_support_errors():
     rv = _uniform_continuous_pdf()
-    for fn in [PDF, HF, CHF, IDF]:
+    for fn in [pdf, hf, chf, idf]:
         with pytest.raises(RVError, match="within the support"):
             fn(rv, 100)
-    assert SF(rv, 100) == 0
+    assert sf(rv, 100) == 0
 
 
 def test_single_rv_transformative_operations():
@@ -443,55 +438,55 @@ def test_save_reuses_filename_when_already_known(tmp_path):
 
 def test_conversion_roundtrips_across_precomputed_continuous_forms():
     continuous = _uniform_continuous_pdf()
-    cdf = CDF(continuous)
-    sf = SF(continuous)
-    hf = HF(continuous)
-    chf = CHF(continuous)
-    idf = IDF(continuous)
+    cdf_rv = cdf(continuous)
+    sf_rv = sf(continuous)
+    hf_rv = hf(continuous)
+    chf_rv = chf(continuous)
+    idf_rv = idf(continuous)
 
-    for source in [cdf, hf, chf]:
-        assert CDF(source).ftype == ["continuous", "cdf"]
-        assert SF(source).ftype == ["continuous", "sf"]
-        assert HF(source).ftype == ["continuous", "hf"]
-        assert CHF(source).ftype == ["continuous", "chf"]
-        assert IDF(source).ftype == ["continuous", "idf"]
-        assert PDF(source).ftype == ["continuous", "pdf"]
+    for source in [cdf_rv, hf_rv, chf_rv]:
+        assert cdf(source).ftype == ["continuous", "cdf"]
+        assert sf(source).ftype == ["continuous", "sf"]
+        assert hf(source).ftype == ["continuous", "hf"]
+        assert chf(source).ftype == ["continuous", "chf"]
+        assert idf(source).ftype == ["continuous", "idf"]
+        assert pdf(source).ftype == ["continuous", "pdf"]
 
-    for fn in [CDF, HF, IDF, PDF]:
+    for fn in [cdf, hf, idf, pdf]:
         with pytest.raises(RecursionError):
-            fn(sf)
-    assert SF(sf).ftype == ["continuous", "sf"]
-    assert CHF(sf).ftype == ["continuous", "chf"]
+            fn(sf_rv)
+    assert sf(sf_rv).ftype == ["continuous", "sf"]
+    assert chf(sf_rv).ftype == ["continuous", "chf"]
 
-    for fn in [CDF, SF, HF, CHF, PDF]:
+    for fn in [cdf, sf, hf, chf, pdf]:
         with pytest.raises(RecursionError):
-            fn(idf)
-    assert IDF(idf).ftype == ["continuous", "idf"]
+            fn(idf_rv)
+    assert idf(idf_rv).ftype == ["continuous", "idf"]
 
 
 def test_conversion_roundtrips_across_precomputed_discrete_forms():
     discrete = _discrete_pdf()
-    cdf = CDF(discrete)
-    sf = SF(discrete)
-    hf = HF(discrete)
-    chf = CHF(discrete)
-    idf = IDF(discrete)
+    cdf_rv = cdf(discrete)
+    sf_rv = sf(discrete)
+    hf_rv = hf(discrete)
+    chf_rv = chf(discrete)
+    idf_rv = idf(discrete)
 
-    for source in [cdf, sf, hf, chf]:
-        assert CDF(source).ftype == ["discrete", "cdf"]
-        assert SF(source).ftype == ["discrete", "sf"]
-        assert HF(source).ftype == ["discrete", "hf"]
-        assert CHF(source).ftype == ["discrete", "chf"]
-        assert IDF(source).ftype == ["discrete", "idf"]
-        assert PDF(source).ftype == ["discrete", "pdf"]
+    for source in [cdf_rv, sf_rv, hf_rv, chf_rv]:
+        assert cdf(source).ftype == ["discrete", "cdf"]
+        assert sf(source).ftype == ["discrete", "sf"]
+        assert hf(source).ftype == ["discrete", "hf"]
+        assert chf(source).ftype == ["discrete", "chf"]
+        assert idf(source).ftype == ["discrete", "idf"]
+        assert pdf(source).ftype == ["discrete", "pdf"]
 
-    # HF/CHF conversions should be idempotent when the source is already in that form.
-    assert HF(hf).func == hf.func
-    assert HF(hf).support == hf.support
-    assert CHF(chf).func == chf.func
-    assert CHF(chf).support == chf.support
+    # hf/chf conversions should be idempotent when the source is already in that form.
+    assert hf(hf_rv).func == hf_rv.func
+    assert hf(hf_rv).support == hf_rv.support
+    assert chf(chf_rv).func == chf_rv.func
+    assert chf(chf_rv).support == chf_rv.support
 
-    assert IDF(idf).ftype == ["discrete", "idf"]
+    assert idf(idf_rv).ftype == ["discrete", "idf"]
 
 
 def test_operations_on_symmetric_support_cover_additional_branches():
@@ -570,27 +565,27 @@ def test_functional_discrete_conversion_branches():
     functional_hf = RV([x / (4 - x)], [1, 3], ["discrete_functional", "hf"])
     functional_chf = RV([-x], [1, 3], ["discrete_functional", "chf"])
 
-    assert CDF(functional_cdf, 2) == Rational(2, 3)
-    assert CDF(functional_pdf).ftype == ["discrete", "cdf"]
-    assert SF(functional_pdf).ftype == ["discrete", "sf"]
-    assert HF(functional_pdf).ftype == ["discrete", "hf"]
-    assert CHF(functional_pdf).ftype == ["discrete", "chf"]
-    assert PDF(functional_cdf).ftype == ["discrete", "pdf"]
-    assert CHF(functional_chf, 2) == -2
-    assert HF(functional_hf, 2) == 1
-    assert SF(functional_sf).ftype == ["discrete", "sf"]
+    assert cdf(functional_cdf, 2) == Rational(2, 3)
+    assert cdf(functional_pdf).ftype == ["discrete", "cdf"]
+    assert sf(functional_pdf).ftype == ["discrete", "sf"]
+    assert hf(functional_pdf).ftype == ["discrete", "hf"]
+    assert chf(functional_pdf).ftype == ["discrete", "chf"]
+    assert pdf(functional_cdf).ftype == ["discrete", "pdf"]
+    assert chf(functional_chf, 2) == -2
+    assert hf(functional_hf, 2) == 1
+    assert sf(functional_sf).ftype == ["discrete", "sf"]
 
 
 def test_discrete_idf_sf_hf_cross_conversions_and_known_idf_bug():
     discrete = _discrete_pdf()
-    assert IDF(HF(discrete)).ftype == ["discrete", "idf"]
-    assert IDF(CHF(discrete)).ftype == ["discrete", "idf"]
-    assert SF(HF(discrete)).ftype == ["discrete", "sf"]
-    assert SF(CHF(discrete)).ftype == ["discrete", "sf"]
+    assert idf(hf(discrete)).ftype == ["discrete", "idf"]
+    assert idf(chf(discrete)).ftype == ["discrete", "idf"]
+    assert sf(hf(discrete)).ftype == ["discrete", "sf"]
+    assert sf(chf(discrete)).ftype == ["discrete", "sf"]
 
     functional_idf = RV([2 * x], [0, 1], ["discrete_functional", "idf"])
     with pytest.raises(UnboundLocalError):
-        IDF(functional_idf, Rational(1, 2))
+        idf(functional_idf, Rational(1, 2))
 
 
 def test_discrete_stat_and_convolution_edge_paths():

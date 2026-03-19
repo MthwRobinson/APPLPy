@@ -324,7 +324,7 @@ class BivariateRV:
                 eqn = solve(line1[0], y) - solve(line2[0], y)
                 area = integrate(eqn, (x, xinters[0], xinters[1]))
 
-                # PDF evaluated over the segment
+                # pdf evaluated over the segment
                 if area > 0:
                     yupper = line1[0]
                     ylower = line2[0]

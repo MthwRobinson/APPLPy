@@ -23,7 +23,7 @@ from sympy import (
     nsolve,
     log,
 )
-from .conversion import CDF, CHF, HF, PDF
+from .conversion import cdf, chf, hf, pdf
 from .rv import RVError, BootstrapRV, expected_value, mean, variance
 
 x, y, z, t = symbols("x y z t")
@@ -51,21 +51,21 @@ def KSTest(RVar, data):
     """
     Procedure Name: KSTest
     Purpose: Calculates the Kolmogorov-Smirnoff test statistic
-                for the empirical CDF of the sample data versus
-                the CDF of a fitted distribution with random
+                for the empirical cdf of the sample data versus
+                the cdf of a fitted distribution with random
                 variable X
     Arguments:  1. RVar: A random variable model
                 2. data: A data sample in list format
     Output:     1. The Kolmogorov-Smirnoff test statistics
     """
-    # Create an empirical CDF from the data sample
-    EmpCDF = CDF(BootstrapRV(data))
+    # Create an empirical cdf from the data sample
+    EmpCDF = cdf(BootstrapRV(data))
     m = len(EmpCDF.support)
-    # Compute fitted CDF values
-    FX = CDF(RVar)
+    # Compute fitted cdf values
+    FX = cdf(RVar)
     FittedCDFValue = []
     for i in EmpCDF.support:
-        FittedCDFValue.append(CDF(FX, i).evalf())
+        FittedCDFValue.append(cdf(FX, i).evalf())
     # Compute the KS test statistic
     KS = 0
     for i in range(m - 1):
@@ -92,7 +92,7 @@ def MOM(RVar, data, parameters, guess=None, numeric=False):
     """
 
     # Convert the random variable to pdf form
-    fx = PDF(RVar)
+    fx = pdf(RVar)
     # Creat a bootstrap random variable from the sample
     xstar = BootstrapRV(data)
     # Create a list of equations to solve
@@ -160,8 +160,8 @@ def MLE(RVar, data, parameters, guess=None, numeric=False, censor=None):
         return MLEWeibull(data, censor)
     if RVar.__class__.__name__ == "PoissonRV":
         return MLEPoisson(data)
-    # Convert the random variable to its PDF form
-    fx = PDF(RVar)
+    # Convert the random variable to its pdf form
+    fx = pdf(RVar)
     if censor is None:
         LogLike = 0
         for i in range(len(data)):
@@ -178,8 +178,8 @@ def MLE(RVar, data, parameters, guess=None, numeric=False, censor=None):
         #   length as the data list
         if len(censor) != len(data):
             return RVError("Data and censor must be the same length")
-        hx = HF(RVar)
-        chx = CHF(RVar)
+        hx = hf(RVar)
+        chx = chf(RVar)
         # Split up the sample data into two lists, censored
         #   and uncensored
         censored = []

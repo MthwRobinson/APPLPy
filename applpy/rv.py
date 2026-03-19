@@ -763,7 +763,7 @@ class RV:
                     err_string += " specified"
                     raise RVError(err_string)
             # Convert the random variable to PDF form
-            X_dummy = PDF(self)
+            X_dummy = pdf(self)
             # Check to ensure that the area under the PDF is 1
             print("Now checking for area...")
             area = 0
@@ -805,7 +805,7 @@ class RV:
         #   verify the PDF
         if self.is_discrete_functional():
             # Convert the random variable to PDF form
-            X_dummy = PDF(self)
+            X_dummy = pdf(self)
             # Check to ensure that the area under the PDF is 1
             print("Now checking for area...")
             area = 0
@@ -835,7 +835,7 @@ class RV:
                 return False
         # If the random variable is discrete, verify the PDF
         if self.is_discrete():
-            X_dummy = PDF(self)
+            X_dummy = pdf(self)
             is_valid = rust_bindings.verify_discrete_pdf(X_dummy.func)
             if is_valid:
                 print("is valid")
@@ -868,14 +868,14 @@ class RV:
         # If the inverse method is specified, compute variates using
         #   the IDF function
         if method == "inverse":
-            Xidf = IDF(self)
-            varlist = [IDF(Xidf, random()) for i in range(1, n + 1)]
+            Xidf = idf(self)
+            varlist = [idf(Xidf, random()) for i in range(1, n + 1)]
             return varlist
 
         # Find the cdf and pdf functions (to avoid integrating for
         # each variate
-        cdf = CDF(self)
-        pdf = PDF(self)
+        cdf_rv = cdf(self)
+        pdf_rv = pdf(self)
         mean_value = mean(self)
         if sensitivity is None:
             # If sensitivity is not specified, set the sensitivity to be
@@ -900,19 +900,19 @@ class RV:
                 try:
                     if len(self.func) == 1:
                         guess = guess - (
-                            (cdf.func[0].subs(x, guess) - val) / pdf.func[0].subs(x, guess)
+                            (cdf_rv.func[0].subs(x, guess) - val) / pdf_rv.func[0].subs(x, guess)
                         )
                         guess = guess.evalf()
                     else:
-                        guess = (guess - ((CDF(cdf, guess) - val) / PDF(pdf, guess))).evalf()
+                        guess = (guess - ((cdf(cdf_rv, guess) - val) / pdf(pdf_rv, guess))).evalf()
                 except Exception:
                     if guess > self.support[len(self.support) - 1]:
-                        cfunc = cdf.func[len(self.func) - 1].subs(x, guess)
-                        pfunc = pdf.func[len(self.func) - 1].subs(x, guess)
+                        cfunc = cdf_rv.func[len(self.func) - 1].subs(x, guess)
+                        pfunc = pdf_rv.func[len(self.func) - 1].subs(x, guess)
                         guess = (guess - ((cfunc - val) / pfunc)).evalf()
                     if guess < self.support[0]:
-                        cfunc = cdf.func[0].subs(x, guess)
-                        pfunc = pdf.func[0].subs(x, guess)
+                        cfunc = cdf_rv.func[0].subs(x, guess)
+                        pfunc = pdf_rv.func[0].subs(x, guess)
                         guess = (guess - ((cfunc - val) / pfunc)).evalf()
                 # print guess
             varlist.append(guess)
@@ -921,12 +921,12 @@ class RV:
 
 
 # Conversion Procedures:
-#     CDF(random_variable,value)
-#     CHF(random_variable,value)
-#     HF(random_variable,value)
-#     IDF(random_variable,value)
-#     PDF(random_variable,value)
-#     SF(random_variable,value)
+#     cdf(random_variable,value)
+#     chf(random_variable,value)
+#     hf(random_variable,value)
+#     idf(random_variable,value)
+#     pdf(random_variable,value)
+#     sf(random_variable,value)
 #     BootstrapRV(varlist)
 #     Convert(random_variable,inc)
 
@@ -952,41 +952,49 @@ def check_value(value, sup):
             return True
 
 
-def CDF(random_variable, value=x, cache=False):
-    from .conversion import CDF as _CDF
+def cdf(random_variable, value=x, cache=False):
+    from .conversion import cdf as _cdf
 
-    return _CDF(random_variable, value=value, cache=cache)
-
-
-def CHF(random_variable, value=x, cache=False):
-    from .conversion import CHF as _CHF
-
-    return _CHF(random_variable, value=value, cache=cache)
+    return _cdf(random_variable, value=value, cache=cache)
 
 
-def HF(random_variable, value=x, cache=False):
-    from .conversion import HF as _HF
+def chf(random_variable, value=x, cache=False):
+    from .conversion import chf as _chf
 
-    return _HF(random_variable, value=value, cache=cache)
-
-
-def IDF(random_variable, value=x, cache=False):
-    from .conversion import IDF as _IDF
-
-    return _IDF(random_variable, value=value, cache=cache)
+    return _chf(random_variable, value=value, cache=cache)
 
 
-def PDF(random_variable, value=x, cache=False):
-    from .conversion import PDF as _PDF
+def hf(random_variable, value=x, cache=False):
+    from .conversion import hf as _hf
 
-    return _PDF(random_variable, value=value, cache=cache)
+    return _hf(random_variable, value=value, cache=cache)
 
 
-def SF(random_variable, value=x, cache=False):
-    from .conversion import SF as _SF
+def idf(random_variable, value=x, cache=False):
+    from .conversion import idf as _idf
 
-    return _SF(random_variable, value=value, cache=cache)
+    return _idf(random_variable, value=value, cache=cache)
 
+
+def pdf(random_variable, value=x, cache=False):
+    from .conversion import pdf as _pdf
+
+    return _pdf(random_variable, value=value, cache=cache)
+
+
+def sf(random_variable, value=x, cache=False):
+    from .conversion import sf as _sf
+
+    return _sf(random_variable, value=value, cache=cache)
+
+
+# Backward-compatible aliases
+CDF = cdf
+CHF = chf
+HF = hf
+IDF = idf
+PDF = pdf
+SF = sf
 
 
 def BootstrapRV(varlist, symbolic=False):
@@ -1080,11 +1088,11 @@ def ConvolutionIID(random_variable, n):
         raise RVError("The second argument must be an integer")
 
     # Compute the iid convolution
-    X_dummy = PDF(random_variable)
+    X_dummy = pdf(random_variable)
     X_final = X_dummy
     for i in range(n - 1):
         X_final += X_dummy
-    return PDF(X_final)
+    return pdf(X_final)
 
 
 def coef_of_var(random_variable, cache=False):
@@ -1170,7 +1178,7 @@ def MaximumIID(random_variable, n=Symbol("n")):
         X_final = X_dummy
         for i in range(n - 1):
             X_final = Maximum(X_final, X_dummy)
-        return PDF(X_final)
+        return pdf(X_final)
 
 
 def MinimumIID(random_variable, n):
@@ -1197,7 +1205,7 @@ def MinimumIID(random_variable, n):
         X_final = X_dummy
         for i in range(n - 1):
             X_final = Minimum(X_final, X_dummy)
-        return PDF(X_final)
+        return pdf(X_final)
 
 
 def OrderStat(random_variable, n, r, replace="w"):
@@ -1224,9 +1232,9 @@ def OrderStat(random_variable, n, r, replace="w"):
             err_string += "for continuous random variables"
             raise RVError(err_string)
         # Compute the PDF, CDF and SF of the random variable
-        pdf_dummy = PDF(random_variable)
-        cdf_dummy = CDF(random_variable)
-        sf_dummy = SF(random_variable)
+        pdf_dummy = pdf(random_variable)
+        cdf_dummy = cdf(random_variable)
+        sf_dummy = sf(random_variable)
         # Compute the factorial constant
         const = (factorial(n)) / (factorial(r - 1) * factorial(n - r))
         # Compute the distribution of the order statistic for each
@@ -1255,9 +1263,9 @@ def OrderStat(random_variable, n, r, replace="w"):
     # If the distribution is continuous, find and return the value of
     #   the order statistic
     if random_variable.is_discrete():
-        fx = PDF(random_variable)
-        Fx = CDF(random_variable)
-        Sx = SF(random_variable)
+        fx = pdf(random_variable)
+        Fx = cdf(random_variable)
+        Sx = sf(random_variable)
         N = len(fx.support)
         # With replacement
         if replace == "w":
@@ -1412,11 +1420,11 @@ def ProductIID(random_variable, n):
         raise RVError("The second argument must be an integer")
 
     # Compute the iid convolution
-    X_dummy = PDF(random_variable)
+    X_dummy = pdf(random_variable)
     X_final = X_dummy
     for i in range(n - 1):
         X_final *= X_dummy
-    return PDF(X_final)
+    return pdf(X_final)
 
 
 def RangeStat(random_variable, n, replace="w"):
@@ -1435,7 +1443,7 @@ def RangeStat(random_variable, n, replace="w"):
     if replace not in ["w", "wo"]:
         raise RVError("Replace must be w or wo")
     # Convert the random variable to its PDF form
-    fX = PDF(random_variable)
+    fX = pdf(random_variable)
     # If the random variable is continuous and its CDF is tractable,
     #   find the PDF of the range statistic
     z = Symbol("z")
@@ -1444,7 +1452,7 @@ def RangeStat(random_variable, n, replace="w"):
             err_string = "OrderStat without replacement not implemented "
             err_string += "for continuous random variables"
             raise RVError(err_string)
-        FX = CDF(random_variable)
+        FX = cdf(random_variable)
         nsegs = len(FX.func)
         fXRange = []
         for i in range(nsegs):
@@ -1473,8 +1481,8 @@ def RangeStat(random_variable, n, replace="w"):
     # If the reandom variable is discrete explicit, find and return the
     #   range stat
     if fX.is_discrete():
-        fX = PDF(random_variable)
-        FX = CDF(random_variable)
+        fX = pdf(random_variable)
+        FX = cdf(random_variable)
         N = len(fX.support)
         if N < 2:
             err_string = "The population only consists of 1 element"
@@ -1591,7 +1599,7 @@ def Transform(random_variable, gXt):
             raise RVError("Transform support is not in ascending order")
 
     # Convert the RV to its PDF form
-    X_dummy = PDF(random_variable)
+    X_dummy = pdf(random_variable)
 
     # If the distribution is continuous, find and return the transformation
     if random_variable.is_continuous():
@@ -1818,14 +1826,14 @@ def Truncate(random_variable, supp):
         raise RVError("The support must be given in ascending order")
 
     # Conver the random variable to its pdf form
-    X_dummy = PDF(random_variable)
-    cdf_dummy = CDF(random_variable)
+    X_dummy = pdf(random_variable)
+    cdf_dummy = cdf(random_variable)
 
     # If the random variable is continuous, find and return
     #   the truncated random variable
     if random_variable.is_continuous():
         # Find the area of the truncated random variable
-        area = CDF(cdf_dummy, supp[1]) - CDF(cdf_dummy, supp[0])
+        area = cdf(cdf_dummy, supp[1]) - cdf(cdf_dummy, supp[0])
         # area=0
         # for i in range(len(X_dummy.func)):
         #    val=integrate(X_dummy.func[i],(x,X_dummy.support[i],
@@ -1858,7 +1866,7 @@ def Truncate(random_variable, supp):
     #   the truncated random variable
     if random_variable.is_discrete_functional():
         # Find the area of the truncated random variable
-        area = CDF(cdf_dummy, supp[1]) - CDF(cdf_dummy, supp[0])
+        area = cdf(cdf_dummy, supp[1]) - cdf(cdf_dummy, supp[0])
         # Cut out parts of the distribution that don't fall
         #   within the new limits
         for i in range(len(X_dummy.func)):
@@ -1943,8 +1951,8 @@ def Convolution(random_variable_1, random_variable_2):
             raise RVError("Both random variables must have the same type")
 
     # Convert both random variables to their PDF form
-    X1_dummy = PDF(random_variable_1)
-    X2_dummy = PDF(random_variable_2)
+    X1_dummy = pdf(random_variable_1)
+    X2_dummy = pdf(random_variable_2)
 
     # If the distributions are continuous, find and return the convolution
     #   of the two random variables
@@ -2008,8 +2016,8 @@ def Convolution(random_variable_1, random_variable_2):
     #   of the two random variables.
     if random_variable_1.is_discrete():
         # Convert each random variable to its pdf form
-        X1_dummy = PDF(random_variable_1)
-        X2_dummy = PDF(random_variable_2)
+        X1_dummy = pdf(random_variable_1)
+        X2_dummy = pdf(random_variable_2)
         # Create function and support lists for the convolution of the
         #   two random variables
         convlist = []
@@ -2082,16 +2090,16 @@ def MaximumRV(random_variable_1, random_variable_2):
         # X2_dummy.drop_assumptions()
         # Special case for lifetime distributions
         if random_variable_1.support == [0, oo] and random_variable_2.support == [0, oo]:
-            cdf_dummy1 = CDF(random_variable_1)
-            cdf_dummy2 = CDF(random_variable_2)
+            cdf_dummy1 = cdf(random_variable_1)
+            cdf_dummy2 = cdf(random_variable_2)
             cdf1 = cdf_dummy1.func[0]
             cdf2 = cdf_dummy2.func[0]
             maxfunc = cdf1 * cdf2
-            return PDF(RV(simplify(maxfunc), [0, oo], ["continuous", "cdf"]))
+            return pdf(RV(simplify(maxfunc), [0, oo], ["continuous", "cdf"]))
         # Otherwise, compute the max using the full algorithm
         # Set up the support for X
-        Fx = CDF(random_variable_1)
-        Fy = CDF(random_variable_2)
+        Fx = cdf(random_variable_1)
+        Fy = cdf(random_variable_2)
         # Create a support list for the
         max_supp = []
         for i in range(len(Fx.support)):
@@ -2122,7 +2130,7 @@ def MaximumRV(random_variable_1, random_variable_2):
                     currFy = Fy.func[j]
             Fmax = currFx * currFy
             max_func.append(simplify(Fmax))
-        return PDF(RV(max_func, max_supp2, ["continuous", "cdf"]))
+        return pdf(RV(max_func, max_supp2, ["continuous", "cdf"]))
 
     # If the two random variables are discrete in functinonal form,
     #   find and return the maximum of the two random variables
@@ -2145,8 +2153,8 @@ def MaximumRV(random_variable_1, random_variable_2):
     #   the maximum of the two rv's
     if random_variable_1.is_discrete():
         # Convert X and Y to their PDF representations
-        fx = PDF(random_variable_1)
-        fy = PDF(random_variable_2)
+        fx = pdf(random_variable_1)
+        fy = pdf(random_variable_2)
         # Make a list of possible combinations of X and Y
         combo_list = []
         prob_list = []
@@ -2160,7 +2168,7 @@ def MaximumRV(random_variable_1, random_variable_2):
         # as being in the support
         # prob_list=[]
         # for i in range(len(combo_list)):
-        #    val=PDF(fx,combo_list[i][0])*PDF(fy,combo_list[j][1])
+        #    val=pdf(fx,combo_list[i][0])*pdf(fy,combo_list[j][1])
         #    prob_list.append(val)
 
         # Find the max value for each combo
@@ -2186,7 +2194,7 @@ def MaximumRV(random_variable_1, random_variable_2):
             max_supp.append(zip_list[i][0])
             max_func.append(zip_list[i][1])
         # Return the minimum random variable
-        return PDF(RV(max_func, max_supp, ["discrete", "pdf"]))
+        return pdf(RV(max_func, max_supp, ["discrete", "pdf"]))
 
 
 def Minimum(*argv):
@@ -2232,15 +2240,15 @@ def MinimumRV(random_variable_1, random_variable_2):
         # X2_dummy.drop_assumptions()
         # Special case for lifetime distributions
         if random_variable_1.support == [0, oo] and random_variable_2.support == [0, oo]:
-            sf_dummy1 = SF(random_variable_1)
-            sf_dummy2 = SF(random_variable_2)
+            sf_dummy1 = sf(random_variable_1)
+            sf_dummy2 = sf(random_variable_2)
             sf1 = sf_dummy1.func[0]
             sf2 = sf_dummy2.func[0]
             minfunc = 1 - (sf1 * sf2)
-            return PDF(RV(simplify(minfunc), [0, oo], ["continuous", "cdf"]))
+            return pdf(RV(simplify(minfunc), [0, oo], ["continuous", "cdf"]))
         # Otherwise, compute the min using the full algorithm
-        Fx = CDF(random_variable_1)
-        Fy = CDF(random_variable_2)
+        Fx = cdf(random_variable_1)
+        Fy = cdf(random_variable_2)
         # Create a support list for the
         min_supp = []
         for i in range(len(Fx.support)):
@@ -2275,7 +2283,7 @@ def MinimumRV(random_variable_1, random_variable_2):
             min_func.append(simplify(Fmin))
 
         # Return the random variable
-        return PDF(RV(min_func, min_supp2, ["continuous", "cdf"]))
+        return pdf(RV(min_func, min_supp2, ["continuous", "cdf"]))
 
     # If the two random variables are discrete in functinonal form,
     #   find and return the minimum of the two random variables
@@ -2298,8 +2306,8 @@ def MinimumRV(random_variable_1, random_variable_2):
     #   the minimum of the two rv's
     if random_variable_1.is_discrete():
         # Convert X and Y to their PDF representations
-        fx = PDF(random_variable_1)
-        fy = PDF(random_variable_2)
+        fx = pdf(random_variable_1)
+        fy = pdf(random_variable_2)
         # Make a list of possible combinations of X and Y
         combo_list = []
         prob_list = []
@@ -2313,7 +2321,7 @@ def MinimumRV(random_variable_1, random_variable_2):
         # as being in the support
         # prob_list=[]
         # for i in range(len(combo_list)):
-        #    val=PDF(fx,combo_list[i][0])*PDF(fy,combo_list[j][1])
+        #    val=pdf(fx,combo_list[i][0])*pdf(fy,combo_list[j][1])
         #    prob_list.append(val)
         # Find the min value for each combo
 
@@ -2339,7 +2347,7 @@ def MinimumRV(random_variable_1, random_variable_2):
             min_supp.append(zip_list[i][0])
             min_func.append(zip_list[i][1])
         # Return the minimum random variable
-        return PDF(RV(min_func, min_supp, ["discrete", "pdf"]))
+        return pdf(RV(min_func, min_supp, ["discrete", "pdf"]))
 
 
 def Mixture(MixParameters, MixRVs):
@@ -2376,7 +2384,7 @@ def Mixture(MixParameters, MixRVs):
     # Convert the Mix RVs to their PDF form
     Mixfx = []
     for i in range(len(MixRVs)):
-        Mixfx.append(PDF(MixRVs[i]))
+        Mixfx.append(pdf(MixRVs[i]))
 
     # If the distributions are continuous, find and return the
     #   mixture pdf
@@ -2460,7 +2468,7 @@ def Product(random_variable_1, random_variable_2):
         # X2_dummy.drop_assumptions()
         v = Symbol("v", positive=True)
         # Place zero in the support of X if it is not there already
-        X1 = PDF(random_variable_1)
+        X1 = pdf(random_variable_1)
         xfunc = []
         xsupp = []
         for i in range(len(X1.func)):
@@ -2473,7 +2481,7 @@ def Product(random_variable_1, random_variable_2):
         xsupp.append(X1.support[len(X1.support) - 1])
         X_dummy = RV(xfunc, xsupp, ["continuous", "pdf"])
         # Place zero in the support of Y if it is not already there
-        Y1 = PDF(random_variable_2)
+        Y1 = pdf(random_variable_2)
         yfunc = []
         ysupp = []
         for i in range(len(Y1.func)):
@@ -2785,8 +2793,8 @@ def Product(random_variable_1, random_variable_2):
     #   of the two random variables.
     if random_variable_1.is_discrete():
         # Convert each random variable to its pdf form
-        X1_dummy = PDF(random_variable_1)
-        X2_dummy = PDF(random_variable_2)
+        X1_dummy = pdf(random_variable_1)
+        X2_dummy = pdf(random_variable_2)
         # Create function and support lists for the product of the
         #   two random variables
         prodlist = []
@@ -2829,8 +2837,8 @@ def ProductDiscrete(random_variable_1, random_variable_2):
     if not random_variable_1.is_discrete() or not random_variable_2.is_discrete():
         raise RVError("both random variables must be discrete")
     # Convert both random variables to pdf form
-    X_dummy1 = PDF(random_variable_1)
-    X_dummy2 = PDF(random_variable_2)
+    X_dummy1 = pdf(random_variable_1)
+    X_dummy2 = pdf(random_variable_2)
     # Convert the support and the value of each random variable
     #   into numpy arrays
     support1 = np.asarray(X_dummy1.support, dtype=object)
@@ -3084,7 +3092,7 @@ def PlotDist(random_variable, suplist=None, opt=None, color="r", display=True):
                 p = 1
                 i = random_variable.support[0]
                 while p > 0.00001:
-                    p = PDF(random_variable, i).evalf()
+                    p = pdf(random_variable, i).evalf()
                     i += 1
                 newsupport = random_variable.support
                 newsupport[-1] = i
@@ -3126,7 +3134,7 @@ def PlotEmpCDF(data):
 
     # Create a bootstrap random variable from the data
     Xstar = BootstrapRV(data)
-    PlotDist(CDF(Xstar), opt="EMPCDF")
+    PlotDist(cdf(Xstar), opt="EMPCDF")
 
 
 def PPPlot(random_variable, sample):
@@ -3154,15 +3162,15 @@ def PPPlot(random_variable, sample):
 
     # Create a list of CDF values for the sample and the
     # theoretical model
-    FX = CDF(random_variable)
+    FX = cdf(random_variable)
     fxstar = BootstrapRV(sample)
-    FXstar = CDF(fxstar)
+    FXstar = cdf(fxstar)
 
     FittedCDF = []
     ObservedCDF = []
     for i in range(len(plist)):
-        FittedCDF.append(CDF(FX, sample[i]))
-        ObservedCDF.append(CDF(FXstar, sample[i]))
+        FittedCDF.append(cdf(FX, sample[i]))
+        ObservedCDF.append(cdf(FXstar, sample[i]))
 
     # Plot the results
     plt.ion()

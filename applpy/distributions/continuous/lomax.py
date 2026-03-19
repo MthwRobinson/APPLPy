@@ -8,7 +8,7 @@ from sympy import (
     symbols,
 )
 
-from ...rv import IDF, RV, RVError
+from ...rv import idf, RV, RVError
 from .param_check import param_check
 
 x, y, z, t, v = symbols("x y z t v")
@@ -53,10 +53,10 @@ class LomaxRV(RV):
             raise RVError(error_string)
 
         # If the inverse method is specified, compute variates using
-        #   the IDF function
+        #   the idf function
         if method == "inverse":
-            Xidf = IDF(self)
-            varlist = [IDF(Xidf, random()) for i in range(1, n + 1)]
+            Xidf = idf(self)
+            varlist = [idf(Xidf, random()) for i in range(1, n + 1)]
             return varlist
 
         idf_func = ((1 - t) ** (1 / self.parameter[0]) - 1) / self.parameter[1]

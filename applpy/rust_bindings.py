@@ -32,5 +32,5 @@ def next_permutation(previous):
 
 
 def verify_discrete_pdf(function, tolerance=1e-6):
-    """Verify that the area under a discrete PDF sums to 1"""
+    """Verify that the area under a discrete pdf sums to 1"""
     return _extension_module().verify_discrete_pdf(function, tolerance)

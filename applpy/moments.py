@@ -6,7 +6,7 @@ from applpy_rust import FastRV
 from sympy import Sum, exp, integrate, log, simplify, sqrt, summation, symbols
 
 from applpy.rv import BootstrapRV
-from applpy.conversion import PDF
+from applpy.conversion import pdf
 
 x, y, z, t = symbols("x y z t")
 
@@ -47,7 +47,7 @@ def expected_value(random_variable, gX=x):
         bootstrap_rv = BootstrapRV(random_variable)
         return expected_value(bootstrap_rv, gX)
 
-    fx = PDF(random_variable)
+    fx = pdf(random_variable)
 
     if fx.is_continuous():
         Expect = 0
@@ -136,7 +136,7 @@ def mean(random_variable, cache=False):
     if random_variable.cache is not None and "mean" in random_variable.cache:
         return random_variable.cache["mean"]
 
-    X_dummy = PDF(random_variable)
+    X_dummy = pdf(random_variable)
 
     if X_dummy.is_continuous():
         # Create list of x*f(x)
@@ -236,7 +236,7 @@ def variance(random_variable, cache=False):
     if random_variable.cache is not None and "variance" in random_variable.cache:
         return random_variable.cache["variance"]
 
-    X_dummy = PDF(random_variable)
+    X_dummy = pdf(random_variable)
 
     if X_dummy.is_continuous():
         # Find the mean of the random variable

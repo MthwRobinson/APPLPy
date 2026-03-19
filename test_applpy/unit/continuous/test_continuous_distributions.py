@@ -40,7 +40,8 @@ from applpy.distributions.continuous import (
     WeibullRV,
     param_check,
 )
-from applpy.rv import CDF, RVError, x
+from applpy.conversion import cdf
+from applpy.rv import RVError, x
 
 
 def test_param_check_detects_unspecified_symbol_parameters():
@@ -146,7 +147,7 @@ def test_bivariate_normal_parameter_validation_and_shape():
 
 def test_weibull_cdf_shortcut_is_consistent():
     rv = WeibullRV(2, 3)
-    assert CDF(rv, Rational(1, 2)) == 1 - exp(-1)
+    assert cdf(rv, Rational(1, 2)) == 1 - exp(-1)
 
 
 @pytest.mark.parametrize(

@@ -4,19 +4,19 @@ from sympy import Rational, exp
 from applpy import (
     BetaRV,
     BootstrapRV,
-    CDF,
+    cdf,
     Convolution,
     ConvolutionIID,
     expected_value,
     ExponentialRV,
-    HF,
+    hf,
     kurtosis,
     Maximum,
     MaximumIID,
     mean,
     Mixture,
     Minimum,
-    PDF,
+    pdf,
     skewness,
     Transform,
     TriangularRV,
@@ -58,9 +58,9 @@ def test_exponential_examples_from_notebook():
     x_rv = ExponentialRV(Rational(1, 100))
 
     assert mean(x_rv) == 100
-    assert CDF(x_rv, 0) == 0
-    assert HF(x_rv, 0) == Rational(1, 100)
-    assert CDF(x_rv, 10) == 1 - exp(Rational(-1, 10))
+    assert cdf(x_rv, 0) == 0
+    assert hf(x_rv, 0) == Rational(1, 100)
+    assert cdf(x_rv, 10) == 1 - exp(Rational(-1, 10))
 
 
 def test_maximum_and_minimum_compositions_from_notebook():
@@ -79,7 +79,7 @@ def test_bootstrap_examples_from_notebook():
     conv_3 = ConvolutionIID(bootstrap_rv, 3)
 
     assert float(mean(bootstrap_rv).evalf()) == pytest.approx(72.2243478260870)
-    assert PDF(bootstrap_rv, 68.64) == Rational(2, 23)
+    assert pdf(bootstrap_rv, 68.64) == Rational(2, 23)
     assert float(mean(max_2).evalf()) == pytest.approx(92.1683931947070)
     assert float(mean(conv_3).evalf()) == pytest.approx(216.673043478261)
 
@@ -106,10 +106,10 @@ def test_triangular_distribution_examples_from_notebook():
     inv_2 = TriangularRV(-10, 3, 20)
     portfolio = inv_1 + inv_2
 
-    assert CDF(inv_1, 0) == Rational(4, 15)
+    assert cdf(inv_1, 0) == Rational(4, 15)
     assert variance(inv_1) == Rational(19, 18)
     assert mean(portfolio) == 5
-    assert float(CDF(portfolio, 0).evalf()) == pytest.approx(0.226068376068376)
+    assert float(cdf(portfolio, 0).evalf()) == pytest.approx(0.226068376068376)
 
 
 def test_examples_py_expected_value_and_moment_cases():
@@ -125,7 +125,7 @@ def test_examples_py_mixture_and_algebra_cases():
         [TriangularRV(2, 4, 6), TriangularRV(3, 5, 7), TriangularRV(1, 5, 9)],
     )
     assert mean(mixture_rv) == Rational(19, 4)
-    assert float(CDF(mixture_rv, 4).evalf()) == pytest.approx(0.296875)
+    assert float(cdf(mixture_rv, 4).evalf()) == pytest.approx(0.296875)
 
     assert float(mean(Convolution(UniformRV(1, 2), UniformRV(3, 4))).evalf()) == pytest.approx(5.0)
     assert float(mean(ConvolutionIID(UniformRV(1, 2), 3)).evalf()) == pytest.approx(4.5)
