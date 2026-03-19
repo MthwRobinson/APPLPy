@@ -22,9 +22,14 @@ impl<'py> FromPyObject<'py> for FastRV {
             domain_type: domain_type.extract()?,
         };
 
-        Ok(FastRV {
-            inner: random_variable,
-        })
+        let fast_rv = FastRV::new(
+            random_variable.function,
+            random_variable.support,
+            random_variable.functional_form,
+            random_variable.domain_type,
+        );
+
+        Ok(fast_rv)
     }
 }
 

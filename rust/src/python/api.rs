@@ -32,9 +32,14 @@ pub fn discrete_order_stat_py(
     let order_stat_rv = order_stat::discrete_order_stat(&random_variable.inner, n, r, variant)
         .map_err(PyValueError::new_err)?;
 
-    Ok(FastRV {
-        inner: order_stat_rv,
-    })
+    let fast_rv = FastRV::new(
+        order_stat_rv.function,
+        order_stat_rv.support,
+        order_stat_rv.functional_form,
+        order_stat_rv.domain_type,
+    );
+
+    Ok(fast_rv)
 }
 
 #[pyfunction(name = "next_combination", signature = (previous, n))]
@@ -66,7 +71,7 @@ pub fn verify_discrete_pdf_py(function: Vec<Number>, tolerance: Option<f64>) -> 
 
 #[pyclass]
 pub struct FastRV {
-    pub(crate) inner: RandomVariable,
+    inner: RandomVariable,
 }
 
 fn format_number_list(values: &[Number]) -> String {
@@ -80,7 +85,7 @@ fn format_number_list(values: &[Number]) -> String {
 #[pymethods]
 impl FastRV {
     #[new]
-    fn new(
+    pub fn new(
         function: Vec<Number>,
         support: Vec<Number>,
         functional_form: FunctionalForm,
