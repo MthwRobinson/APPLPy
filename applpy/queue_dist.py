@@ -24,7 +24,7 @@ from mpmath import nsum, nprod
 import numpy as np
 from .rv import (
     RVError,
-    Mean,
+    mean,
     Convolution,
     Mixture,
 )
@@ -87,7 +87,7 @@ def Queue(X, Y, n, k=0, s=1):
     Output:     1. Probability distribution for an M/M/s queue
     """
     rho = Symbol("rho")
-    rho_subs = (1 / Mean(X)) / (s * (1 / Mean(Y)))
+    rho_subs = (1 / mean(X)) / (s * (1 / mean(Y)))
     lst = BuildDist(X, Y, n, k, s)
     probs = MMSQprob(n, k, s)
     # Substitute the value of rho into the probability list
@@ -143,7 +143,7 @@ def BuildDist(X, Y, n, k, s):
         raise RVError(err_string)
 
     # Pre-compute the mean of y to avoid multiple integrations
-    meany = Mean(Y)
+    meany = mean(Y)
     # Place positive assumptions on x to simplify output
     Symbol("x", positive=True)
 

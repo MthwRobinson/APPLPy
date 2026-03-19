@@ -1,7 +1,7 @@
 import pytest
 from sympy import Rational
 
-from applpy import ExponentialRV, MaximumIID, Mean, Minimum, MinimumIID
+from applpy import ExponentialRV, MaximumIID, mean, Minimum, MinimumIID
 
 
 def _reliability_block_diagram_system_mean(scale_parameter_n):
@@ -9,14 +9,14 @@ def _reliability_block_diagram_system_mean(scale_parameter_n):
     series_subsystem = MinimumIID(component_lifetime, 3)
     parallel_subsystem = MaximumIID(component_lifetime, scale_parameter_n)
     reliability_block_diagram_system = Minimum(series_subsystem, parallel_subsystem)
-    return Mean(reliability_block_diagram_system)
+    return mean(reliability_block_diagram_system)
 
 
 def test_reliability_block_diagram_minimum_iid_mean_from_notebook():
     component_lifetime = ExponentialRV(Rational(1, 7))
     reliability_block_diagram_system = MinimumIID(component_lifetime, 4)
 
-    assert Mean(reliability_block_diagram_system) == Rational(7, 4)
+    assert mean(reliability_block_diagram_system) == Rational(7, 4)
 
 
 def test_reliability_block_diagram_mean_by_parallel_size_from_notebook():

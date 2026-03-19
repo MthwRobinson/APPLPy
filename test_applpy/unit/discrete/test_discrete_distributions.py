@@ -9,7 +9,7 @@ from applpy.distributions.discrete import (
     PoissonRV,
     UniformDiscreteRV,
 )
-from applpy.rv import Mean, RVError
+from applpy.rv import mean, RVError
 
 
 def test_discrete_distribution_constructors_have_expected_structure():
@@ -60,4 +60,4 @@ def test_uniform_discrete_validation_for_step_divisibility():
 
 
 def test_binomial_mean_is_consistent():
-    assert Mean(BinomialRV(4, Rational(1, 2))) == 2
+    assert mean(BinomialRV(4, Rational(1, 2))) == 2

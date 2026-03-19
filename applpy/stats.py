@@ -23,7 +23,7 @@ from sympy import (
     nsolve,
     log,
 )
-from .rv import RVError, CDF, PDF, HF, CHF, BootstrapRV, ExpectedValue, Mean, Variance
+from .rv import RVError, CDF, PDF, HF, CHF, BootstrapRV, expected_value, mean, variance
 
 x, y, z, t = symbols("x y z t")
 
@@ -97,8 +97,8 @@ def MOM(RVar, data, parameters, guess=None, numeric=False):
     # Create a list of equations to solve
     soln_eqn = []
     for i in range(len(parameters)):
-        val = ExpectedValue(xstar, x ** (i + 1))
-        expect = ExpectedValue(fx, x ** (i + 1))
+        val = expected_value(xstar, x ** (i + 1))
+        expect = expected_value(fx, x ** (i + 1))
         soln_eqn.append(val - expect)
     # Create a list of solutions
     if not numeric:
@@ -233,7 +233,7 @@ def MLEExponential(data):
     Output: 1. soln: an estimation for the unknown parameter
     """
     Xstar = BootstrapRV(data)
-    theta = 1 / Mean(Xstar)
+    theta = 1 / mean(Xstar)
     soln = [theta]
     return soln
 
@@ -253,9 +253,9 @@ def MLENormal(data, mu=None, sigma=None):
     """
     Xstar = BootstrapRV(data)
     if mu is None:
-        mu = Mean(Xstar)
+        mu = mean(Xstar)
     if sigma is None:
-        sigma = sqrt(Variance(Xstar))
+        sigma = sqrt(variance(Xstar))
     soln = [mu, sigma]
     return soln
 
@@ -270,7 +270,7 @@ def MLEPoisson(data):
                 in the form [theta]
     """
     Xstar = BootstrapRV(data)
-    meanX = Mean(Xstar)
+    meanX = mean(Xstar)
     soln = [meanX]
     return soln
 

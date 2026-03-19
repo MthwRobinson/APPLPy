@@ -10,23 +10,23 @@ from applpy.rv import BootstrapRV, PDF
 x, y, z, t = symbols("x y z t")
 
 
-def CoefOfVar(random_variable, cache=False):
+def coef_of_var(random_variable, cache=False):
     """
-    Procedure Name: CoefOfVar
+    Procedure Name: coef_of_var
     Purpose: Compute the coefficient of variation of a random variable
     Arguments:  1. random_variable: A random variable
     Output:     1. The coefficient of variation
     """
     if isinstance(random_variable, list):
         bootstrap_rv = BootstrapRV(random_variable)
-        return CoefOfVar(bootstrap_rv)
+        return coef_of_var(bootstrap_rv)
 
     if random_variable.cache is not None and "cov" in random_variable.cache:
         return random_variable.cache["cov"]
 
     # Compute the coefficient of varation
-    expect = Mean(random_variable)
-    sig = Variance(random_variable)
+    expect = mean(random_variable)
+    sig = variance(random_variable)
     cov = (sqrt(sig)) / expect
     cov = simplify(cov)
     if cache:
@@ -34,9 +34,9 @@ def CoefOfVar(random_variable, cache=False):
     return cov
 
 
-def ExpectedValue(random_variable, gX=x):
+def expected_value(random_variable, gX=x):
     """
-    Procedure Name: ExpectedValue
+    Procedure Name: expected_value
     Purpose: Computes the expected value of X
     Arguments:  1. random_variable: A random variable
                 2. gX: A transformation of x
@@ -44,7 +44,7 @@ def ExpectedValue(random_variable, gX=x):
     """
     if isinstance(random_variable, list):
         bootstrap_rv = BootstrapRV(random_variable)
-        return ExpectedValue(bootstrap_rv, gX)
+        return expected_value(bootstrap_rv, gX)
 
     fx = PDF(random_variable)
 
@@ -71,47 +71,47 @@ def ExpectedValue(random_variable, gX=x):
         return fx_trans.mean()
 
 
-def Entropy(random_variable, cache=False):
+def entropy(random_variable, cache=False):
     """
-    Procedure Name: Entropy
+    Procedure Name: entropy
     Purpose: Compute the entory of a random variable
     Arguments:  1. random_variable: A random variable
     Output:     1. The entropy of a random variable
     """
     if isinstance(random_variable, list):
         bootstrap_rv = BootstrapRV(random_variable)
-        return Entropy(bootstrap_rv)
+        return entropy(bootstrap_rv)
 
     if random_variable.cache is not None and "entropy" in random_variable.cache:
         return random_variable.cache["entropy"]
 
-    entropy = ExpectedValue(random_variable, log(x, 2))
+    entropy = expected_value(random_variable, log(x, 2))
     entropy = simplify(entropy)
     if cache:
         random_variable.add_to_cache("entropy", entropy)
     return simplify(entropy)
 
 
-def Kurtosis(random_variable, cache=False):
+def kurtosis(random_variable, cache=False):
     """
-    Procedure Name: Kurtosis
-    Purpose: Compute the Kurtosis of a random variable
+    Procedure Name: kurtosis
+    Purpose: Compute the kurtosis of a random variable
     Arguments:  1. random_variable: A random variable
     Output:     1. The kurtosis of a random variable
     """
     if isinstance(random_variable, list):
         bootstrap_rv = BootstrapRV(random_variable)
-        return Kurtosis(bootstrap_rv)
+        return kurtosis(bootstrap_rv)
 
     if random_variable.cache is not None and "kurtosis" in random_variable.cache:
         return random_variable.cache["kurtosis"]
 
     # Compute the kurtosis
-    expect = Mean(random_variable)
-    sig = sqrt(Variance(random_variable))
-    Term1 = ExpectedValue(random_variable, x**4)
-    Term2 = 4 * expect * ExpectedValue(random_variable, x**3)
-    Term3 = 6 * (expect**2) * ExpectedValue(random_variable, x**2)
+    expect = mean(random_variable)
+    sig = sqrt(variance(random_variable))
+    Term1 = expected_value(random_variable, x**4)
+    Term2 = 4 * expect * expected_value(random_variable, x**3)
+    Term3 = 6 * (expect**2) * expected_value(random_variable, x**2)
     Term4 = 3 * expect**4
     kurt = (Term1 - Term2 + Term3 - Term4) / (sig**4)
     kurt = simplify(kurt)
@@ -121,16 +121,16 @@ def Kurtosis(random_variable, cache=False):
     return simplify(kurt)
 
 
-def Mean(random_variable, cache=False):
+def mean(random_variable, cache=False):
     """
-    Procedure Name: Mean
+    Procedure Name: mean
     Purpose: Compute the mean of a random variable
     Arguments: 1. random_variable: A random variable
     Output:    1. The mean of a random variable
     """
     if isinstance(random_variable, list):
         bootstrap_rv = BootstrapRV(random_variable)
-        return Mean(bootstrap_rv)
+        return mean(bootstrap_rv)
 
     if random_variable.cache is not None and "mean" in random_variable.cache:
         return random_variable.cache["mean"]
@@ -177,9 +177,9 @@ def Mean(random_variable, cache=False):
         return fast_rv.mean()
 
 
-def MGF(random_variable, cache=False):
+def mgf(random_variable, cache=False):
     """
-    Procedure Name: MGF
+    Procedure Name: mgf
     Purpose: Compute the moment generating function of a random variable
     Arguments:  1. random_variable: A random variable
     Output:     1. The moment generating function
@@ -187,32 +187,32 @@ def MGF(random_variable, cache=False):
     if random_variable.cache is not None and "mgf" in random_variable.cache:
         return random_variable.cache["mgf"]
 
-    mgf = ExpectedValue(random_variable, exp(t * x))
+    mgf = expected_value(random_variable, exp(t * x))
     mgf = simplify(mgf)
     if cache:
         random_variable.add_to_cache("mgf", mgf)
     return mgf
 
 
-def Skewness(random_variable, cache=False):
+def skewness(random_variable, cache=False):
     """
-    Procedure Name: Skewness
+    Procedure Name: skewness
     Purpose: Compute the skewness of a random variable
     Arguments:  1. random_variable: A random variable
     Output:     1. The skewness of the random variable
     """
     if isinstance(random_variable, list):
         bootstrap_rv = BootstrapRV(random_variable)
-        return Skewness(bootstrap_rv)
+        return skewness(bootstrap_rv)
 
     if random_variable.cache is not None and "skewness" in random_variable.cache:
         return random_variable.cache["skewness"]
 
     # Compute the skewness
-    expect = Mean(random_variable)
-    sig = sqrt(Variance(random_variable))
-    Term1 = ExpectedValue(random_variable, x**3)
-    Term2 = 3 * expect * ExpectedValue(random_variable, x**2)
+    expect = mean(random_variable)
+    sig = sqrt(variance(random_variable))
+    Term1 = expected_value(random_variable, x**3)
+    Term2 = 3 * expect * expected_value(random_variable, x**2)
     Term3 = 2 * expect**3
     skew = (Term1 - Term2 + Term3) / (sig**3)
     skew = simplify(skew)
@@ -221,16 +221,16 @@ def Skewness(random_variable, cache=False):
     return simplify(skew)
 
 
-def Variance(random_variable, cache=False):
+def variance(random_variable, cache=False):
     """
-    Procedure Name: Variance
+    Procedure Name: variance
     Purpose: Compute the variance of a random variable
     Arguments: 1. random_variable: A random variable
     Output:    1. The variance of a random variable
     """
     if isinstance(random_variable, list):
         bootstrap_rv = BootstrapRV(random_variable)
-        return Variance(bootstrap_rv)
+        return variance(bootstrap_rv)
 
     if random_variable.cache is not None and "variance" in random_variable.cache:
         return random_variable.cache["variance"]
@@ -239,7 +239,7 @@ def Variance(random_variable, cache=False):
 
     if X_dummy.is_continuous():
         # Find the mean of the random variable
-        EX = Mean(X_dummy)
+        EX = mean(X_dummy)
         # Find E(X^2)
         # Create list of (x**2)*f(x)
         varfunc = []
@@ -258,7 +258,7 @@ def Variance(random_variable, cache=False):
         return simplify(var)
 
     if X_dummy.is_discrete_functional():
-        EX = Mean(X_dummy)
+        EX = mean(X_dummy)
         # Find E(X^2)
         # Create list of (x**2)*f(x)
         varfunc = []
@@ -284,3 +284,14 @@ def Variance(random_variable, cache=False):
             domain_type=random_variable.domain_type,
         )
         return fast_rv.variance()
+
+
+# Backward-compatible aliases
+CoefOfVar = coef_of_var
+ExpectedValue = expected_value
+Entropy = entropy
+Kurtosis = kurtosis
+Mean = mean
+MGF = mgf
+Skewness = skewness
+Variance = variance

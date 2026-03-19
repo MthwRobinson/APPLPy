@@ -24,21 +24,21 @@ Functional Form Conversion:
 
 Procedures On One Random Variable:
     ConvolutionIID(random_variable,n)
-    CoefOfVar(random_variable)
-    ExpectedValue(random_variable,gX)
-    Entropy(random_variable)
-    Kurtosis(random_variable)
+    coef_of_var(random_variable)
+    expected_value(random_variable,gX)
+    entropy(random_variable)
+    kurtosis(random_variable)
     MaximumIID(random_variable,n)
-    Mean(random_variable)
-    MGF(random_variable)
+    mean(random_variable)
+    mgf(random_variable)
     MinimumIID(random_variable,n)
     OrderStat(random_variable,n,r)
     ProductIID(random_variable,n)
     RangeStat(random_variable,n)
-    Skewness(random_variable)
+    skewness(random_variable)
     Transform(random_variable,gX)
     Truncate(random_variable,[lw,up])
-    Variance(random_variable)
+    variance(random_variable)
     VerifyPDF(random_variable)
 
 Procedures On Two Random Variables:
@@ -900,21 +900,21 @@ class RV:
         # each variate
         cdf = CDF(self)
         pdf = PDF(self)
-        mean = Mean(self)
+        mean_value = mean(self)
         if sensitivity is None:
             # If sensitivity is not specified, set the sensitivity to be
             #   .1% of the mean value for random variates
             if s is None:
-                sensitivity = abs(0000.1 * mean)
+                sensitivity = abs(0000.1 * mean_value)
             # If a percentile is specified, set sensitivity to be .01%
             #   of the mean value
             else:
-                sensitivity = abs(0000.1 * mean)
+                sensitivity = abs(0000.1 * mean_value)
         # Create a list of variates
         varlist = []
         for i in range(n):
             guess_last = oo
-            guess = mean
+            guess = mean_value
             if s is None:
                 val = random()
             else:
@@ -2059,22 +2059,22 @@ def Convert(random_variable, inc=1):
 #
 # Procedures:
 #     ConvolutionIID(random_variable,n)
-#     CoefOfVar(random_variable)
-#     ExpectedValue(random_variable,gX)
-#     Entropy(random_variable)
-#     Kurtosis(random_variable)
+#     coef_of_var(random_variable)
+#     expected_value(random_variable,gX)
+#     entropy(random_variable)
+#     kurtosis(random_variable)
 #     MaximumIID(random_variable,n)
-#     Mean(random_variable)
-#     MGF(random_variable)
+#     mean(random_variable)
+#     mgf(random_variable)
 #     MinimumIID(random_variable,n)
 #     OrderStat(random_variable,n,r)
 #     Power(Rvar,n)
 #     ProductIID(random_variable,n)
-#     Skewness(random_variable)
+#     skewness(random_variable)
 #     SqRt(random_variable)
 #     Transform(random_variable,gX)
 #     Truncate(random_variable,[lw,up])
-#     Variance(random_variable)
+#     variance(random_variable)
 
 
 def ConvolutionIID(random_variable, n):
@@ -2097,52 +2097,63 @@ def ConvolutionIID(random_variable, n):
     return PDF(X_final)
 
 
-def CoefOfVar(random_variable, cache=False):
-    from .moments import CoefOfVar as _CoefOfVar
+def coef_of_var(random_variable, cache=False):
+    from .moments import coef_of_var as _CoefOfVar
 
     return _CoefOfVar(random_variable, cache=cache)
 
 
-def ExpectedValue(random_variable, gX=x):
-    from .moments import ExpectedValue as _ExpectedValue
+def expected_value(random_variable, gX=x):
+    from .moments import expected_value as _ExpectedValue
 
     return _ExpectedValue(random_variable, gX=gX)
 
 
-def Entropy(random_variable, cache=False):
-    from .moments import Entropy as _Entropy
+def entropy(random_variable, cache=False):
+    from .moments import entropy as _Entropy
 
     return _Entropy(random_variable, cache=cache)
 
 
-def Kurtosis(random_variable, cache=False):
-    from .moments import Kurtosis as _Kurtosis
+def kurtosis(random_variable, cache=False):
+    from .moments import kurtosis as _Kurtosis
 
     return _Kurtosis(random_variable, cache=cache)
 
 
-def Mean(random_variable, cache=False):
-    from .moments import Mean as _Mean
+def mean(random_variable, cache=False):
+    from .moments import mean as _Mean
 
     return _Mean(random_variable, cache=cache)
 
 
-def MGF(random_variable, cache=False):
-    from .moments import MGF as _MGF
+def mgf(random_variable, cache=False):
+    from .moments import mgf as _MGF
 
     return _MGF(random_variable, cache=cache)
 
 
-def Skewness(random_variable, cache=False):
-    from .moments import Skewness as _Skewness
+def skewness(random_variable, cache=False):
+    from .moments import skewness as _Skewness
 
     return _Skewness(random_variable, cache=cache)
 
 
-def Variance(random_variable, cache=False):
-    from .moments import Variance as _Variance
+def variance(random_variable, cache=False):
+    from .moments import variance as _Variance
 
     return _Variance(random_variable, cache=cache)
+
+
+# Backward-compatible aliases
+CoefOfVar = coef_of_var
+ExpectedValue = expected_value
+Entropy = entropy
+Kurtosis = kurtosis
+Mean = mean
+MGF = mgf
+Skewness = skewness
+Variance = variance
 
 
 def MaximumIID(random_variable, n=Symbol("n")):

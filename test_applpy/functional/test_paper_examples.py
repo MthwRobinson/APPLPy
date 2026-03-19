@@ -6,14 +6,14 @@ from applpy import (
     ChiRV,
     ConvolutionIID,
     ExponentialRV,
-    Kurtosis,
+    kurtosis,
     MarkovChain,
     MaximumIID,
-    Mean,
+    mean,
     Minimum,
     RV,
-    Skewness,
-    Variance,
+    skewness,
+    variance,
 )
 
 
@@ -22,7 +22,7 @@ def test_exponential_sum_example_from_paper():
     y_rv = ExponentialRV(Rational(1, 3))
     z_rv = x_rv + y_rv
 
-    assert Mean(z_rv) == 5
+    assert mean(z_rv) == 5
 
 
 def test_discrete_convolution_moments_from_paper():
@@ -30,10 +30,10 @@ def test_discrete_convolution_moments_from_paper():
     x_rv = RV([x / 21], [1, 6], ["Discrete", "pdf"])
     y_rv = ConvolutionIID(x_rv, 5)
 
-    assert Mean(y_rv) == Rational(65, 3)
-    assert Variance(y_rv) == Rational(100, 9)
-    assert Skewness(y_rv) == Rational(-13, 50)
-    assert Kurtosis(y_rv) == Rational(1431, 500)
+    assert mean(y_rv) == Rational(65, 3)
+    assert variance(y_rv) == Rational(100, 9)
+    assert skewness(y_rv) == Rational(-13, 50)
+    assert kurtosis(y_rv) == Rational(1431, 500)
 
 
 def test_markov_chain_probability_from_paper():
@@ -51,8 +51,8 @@ def test_markov_chain_probability_from_paper():
 
 
 def test_chi_distribution_ratios_from_paper():
-    assert float((Mean(ChiRV(3)) / sqrt(3)).evalf()) == pytest.approx(0.921317731923561)
-    assert float((Mean(ChiRV(99)) / sqrt(99)).evalf()) == pytest.approx(0.997477976071264)
+    assert float((mean(ChiRV(3)) / sqrt(3)).evalf()) == pytest.approx(0.921317731923561)
+    assert float((mean(ChiRV(99)) / sqrt(99)).evalf()) == pytest.approx(0.997477976071264)
 
 
 def test_bootstrap_system_means_from_paper():
@@ -99,6 +99,6 @@ def test_bootstrap_system_means_from_paper():
     s_star_1 = Minimum(MaximumIID(a_rv, 3), MaximumIID(b_rv, 3), MaximumIID(c_rv, 3))
     s = Minimum(MaximumIID(a_rv, 2), MaximumIID(b_rv, 2), MaximumIID(c_rv, 2))
 
-    assert float(Mean(s_star).evalf()) == pytest.approx(0.37544247308727413)
-    assert float(Mean(s_star_1).evalf()) == pytest.approx(0.438389764206852)
-    assert float(Mean(s).evalf()) == pytest.approx(0.37544247308727413)
+    assert float(mean(s_star).evalf()) == pytest.approx(0.37544247308727413)
+    assert float(mean(s_star_1).evalf()) == pytest.approx(0.438389764206852)
+    assert float(mean(s).evalf()) == pytest.approx(0.37544247308727413)

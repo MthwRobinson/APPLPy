@@ -1,7 +1,7 @@
 import pytest
 from sympy import Symbol, sqrt
 
-from applpy import ConvolutionIID, ExponentialRV, Mean, NormalRV, Transform, Variance
+from applpy import ConvolutionIID, ExponentialRV, mean, NormalRV, Transform, variance
 
 
 def _sample_mean_exact_rv(n):
@@ -14,8 +14,8 @@ def _sample_mean_exact_rv(n):
 def test_exact_sample_mean_moments_from_clt_notebook():
     for n in (1, 3, 10):
         exact_rv = _sample_mean_exact_rv(n)
-        assert Mean(exact_rv) == 1
-        assert float(Variance(exact_rv).evalf()) == pytest.approx(1 / n)
+        assert mean(exact_rv) == 1
+        assert float(variance(exact_rv).evalf()) == pytest.approx(1 / n)
 
 
 def test_clt_90th_percentile_for_n3_from_notebook_workflow():

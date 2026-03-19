@@ -67,11 +67,11 @@ def Menu():
     print("")
 
     print("Procedures on One Random Variable")
-    print("ConvolutionIID(X,n),CoefOfVar(X),ExpectedValue(X,gx)")
-    print("Kurtosis(X),MaximumIID(X,n),Mean(X),MGF(X)")
+    print("ConvolutionIID(X,n),coef_of_var(X),expected_value(X,gx)")
+    print("kurtosis(X),MaximumIID(X,n),mean(X),mgf(X)")
     print("MinimumIID(X,n),OrderStat(X,n,r),ProductIID(X,n)")
-    print("Skewness(X),Transform(X,gX),Truncate(X,[x1,x2])")
-    print("Variance(X)")
+    print("skewness(X),Transform(X,gX),Truncate(X,[x1,x2])")
+    print("variance(X)")
     print("")
 
     print("Procedures on Two Random Variables")

@@ -1,16 +1,16 @@
 import pytest
 from sympy import Integer, Rational, Symbol
 
-from applpy import Mean as TopLevelMean
+from applpy import mean as TopLevelMean
 from applpy.moments import (
-    CoefOfVar,
-    Entropy,
-    ExpectedValue,
-    Kurtosis,
-    Mean,
-    MGF,
-    Skewness,
-    Variance,
+    coef_of_var,
+    entropy,
+    expected_value,
+    kurtosis,
+    mean,
+    mgf,
+    skewness,
+    variance,
 )
 from applpy.rv import RV, x
 
@@ -32,34 +32,34 @@ def test_moments_and_summary_statistics_for_multiple_ftypes():
     discrete = _discrete_pdf()
     functional_discrete = _functional_discrete_pdf()
 
-    assert Mean(continuous) == Rational(1, 2)
-    assert Variance(continuous) == Rational(1, 12)
-    assert ExpectedValue(continuous, x**2) == Rational(1, 3)
-    assert Entropy(continuous) < 0
-    assert MGF(continuous).subs(Symbol("t"), 0) == 1
-    assert CoefOfVar(continuous) > 0
-    assert Skewness(continuous) == 0
-    assert Kurtosis(continuous) == Rational(9, 5)
+    assert mean(continuous) == Rational(1, 2)
+    assert variance(continuous) == Rational(1, 12)
+    assert expected_value(continuous, x**2) == Rational(1, 3)
+    assert entropy(continuous) < 0
+    assert mgf(continuous).subs(Symbol("t"), 0) == 1
+    assert coef_of_var(continuous) > 0
+    assert skewness(continuous) == 0
+    assert kurtosis(continuous) == Rational(9, 5)
 
-    assert Mean(discrete) == Rational(7, 4)
-    assert Variance(discrete) == Rational(3, 16)
-    assert ExpectedValue(discrete, x**2) == Rational(13, 4)
-    assert Entropy(discrete) > 0
-    assert CoefOfVar(discrete) > 0
-    assert Skewness(discrete) < 0
-    assert Kurtosis(discrete) > 0
+    assert mean(discrete) == Rational(7, 4)
+    assert variance(discrete) == Rational(3, 16)
+    assert expected_value(discrete, x**2) == Rational(13, 4)
+    assert entropy(discrete) > 0
+    assert coef_of_var(discrete) > 0
+    assert skewness(discrete) < 0
+    assert kurtosis(discrete) > 0
 
-    assert Mean(functional_discrete) == 14
-    assert Variance(functional_discrete) == -160
+    assert mean(functional_discrete) == 14
+    assert variance(functional_discrete) == -160
 
 
 def test_expected_value_error_path():
     with pytest.raises(AttributeError, match="cache"):
-        ExpectedValue("not-an-rv")
+        expected_value("not-an-rv")
 
 
 def test_variance_list_input():
-    assert Variance([1, 2, 3]) == Rational(2, 3)
+    assert variance([1, 2, 3]) == Rational(2, 3)
 
 
 def test_top_level_mean_export():
