@@ -2,10 +2,10 @@ use pyo3::conversion::FromPyObject;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyModule};
 
-use crate::algorithms::api::FastRV;
 use crate::algorithms::number::Number;
 use crate::algorithms::order_stat::OrderStatVariant;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+use crate::python::api::FastRV;
 use num_rational::Rational64;
 
 impl<'py> FromPyObject<'py> for FastRV {
@@ -16,24 +16,22 @@ impl<'py> FromPyObject<'py> for FastRV {
         let domain_type = obj.getattr("domain_type")?;
 
         let random_variable = RandomVariable {
-            function: function.clone(),
-            support: support.clone(),
-            functional_form,
-            domain_type,
+            function: function.extract()?,
+            support: support.extract()?,
+            functional_form: functional_form.extract()?,
+            domain_type: domain_type.extract()?,
         };
 
-        let fast_rv = FastRV {
+        Ok(FastRV {
             inner: random_variable,
-        };
-
-        Ok(fast_rv)
+        })
     }
 }
 
 impl<'py> FromPyObject<'py> for Number {
     fn extract_bound(obj: &Bound<'py, PyAny>) -> PyResult<Self> {
         // the p and q attributes are associated with the sympy Rtaional class
-        if obj.hasattr("p")? & obj.hasattr("q")? {
+        if obj.hasattr("p")? && obj.hasattr("q")? {
             let numerator: i64 = obj.getattr("p")?.extract()?;
             let denominator: i64 = obj.getattr("q")?.extract()?;
             if denominator == 0 {
@@ -72,7 +70,7 @@ impl<'py> FromPyObject<'py> for Number {
 
 impl IntoPy<PyObject> for Number {
     fn into_py(self, py: Python<'_>) -> PyObject {
-        let s = match self {
+        match self {
             Number::Rational(r) => {
                 let sympy = PyModule::import_bound(py, "sympy").expect("unable to import sympy");
 
@@ -111,9 +109,7 @@ impl IntoPy<PyObject> for Number {
                     .into_py(py)
             }
             Number::Integer(i) => i.into_py(py),
-        };
-
-        s
+        }
     }
 }
 

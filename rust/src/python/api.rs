@@ -3,6 +3,7 @@
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::types::PyAny;
 
 use crate::algorithms::number::Number;
 use crate::algorithms::order_stat;
@@ -11,11 +12,13 @@ use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 
 #[pyfunction(name = "discrete_order_stat", signature = (random_variable, n, r, replace="w"))]
 pub fn discrete_order_stat_py(
-    random_variable: &FastRV,
+    random_variable: &Bound<'_, PyAny>,
     n: u64,
     r: u64,
     replace: &str,
 ) -> PyResult<FastRV> {
+    let random_variable: FastRV = random_variable.extract()?;
+
     let variant = match replace {
         "w" => order_stat::OrderStatVariant::WithReplacement,
         "wo" => order_stat::OrderStatVariant::WithoutReplacement,
@@ -63,7 +66,7 @@ pub fn verify_discrete_pdf_py(function: Vec<Number>, tolerance: Option<f64>) -> 
 
 #[pyclass]
 pub struct FastRV {
-    inner: RandomVariable,
+    pub(crate) inner: RandomVariable,
 }
 
 fn format_number_list(values: &[Number]) -> String {
