@@ -15,6 +15,8 @@ This section should contain instructions for how to validate the changes in the 
 Each pull request should have a title that uses conventional commit format.
 The pull request description should the full diff between the feature branch
 and the `main` branch, and should look at both the commit messages and the code changes.
+The PR message should not just give a list of commit messages. It should give a brief,
+human readable summary of the change in the PR.
 
 ## Testing
 

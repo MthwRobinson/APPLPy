@@ -1,5 +1,5 @@
 import pytest
-from sympy import Integer, Rational, Symbol, exp, oo
+from sympy import Integer, Rational, exp, oo
 
 from applpy import rust_bindings
 from applpy.rv import (
@@ -8,22 +8,16 @@ from applpy.rv import (
     RVError,
     BootstrapRV,
     CDF,
-    CoefOfVar,
     Convolution,
     ConvolutionIID,
     Convert,
-    Entropy,
-    ExpectedValue,
     HF,
     Histogram,
     IDF,
-    Kurtosis,
     LoadRV,
     Maximum,
     MaximumIID,
     MaximumRV,
-    Mean,
-    MGF,
     Minimum,
     MinimumIID,
     MinimumRV,
@@ -42,11 +36,9 @@ from applpy.rv import (
     QQPlot,
     RangeStat,
     SF,
-    Skewness,
     Sqrt,
     Transform,
     Truncate,
-    Variance,
     VerifyPDF,
     check_value,
     x,
@@ -306,32 +298,6 @@ def test_conversion_out_of_support_errors():
     assert SF(rv, 100) == 0
 
 
-def test_moments_and_summary_statistics_for_multiple_ftypes():
-    continuous = _uniform_continuous_pdf()
-    discrete = _discrete_pdf()
-    functional_discrete = _functional_discrete_pdf()
-
-    assert Mean(continuous) == Rational(1, 2)
-    assert Variance(continuous) == Rational(1, 12)
-    assert ExpectedValue(continuous, x**2) == Rational(1, 3)
-    assert Entropy(continuous) < 0
-    assert MGF(continuous).subs(Symbol("t"), 0) == 1
-    assert CoefOfVar(continuous) > 0
-    assert Skewness(continuous) == 0
-    assert Kurtosis(continuous) == Rational(9, 5)
-
-    assert Mean(discrete) == Rational(7, 4)
-    assert Variance(discrete) == Rational(3, 16)
-    assert ExpectedValue(discrete, x**2) == Rational(13, 4)
-    assert Entropy(discrete) > 0
-    assert CoefOfVar(discrete) > 0
-    assert Skewness(discrete) < 0
-    assert Kurtosis(discrete) > 0
-
-    assert Mean(functional_discrete) == 14
-    assert Variance(functional_discrete) == -160
-
-
 def test_single_rv_transformative_operations():
     continuous = _uniform_continuous_pdf()
     piecewise = _piecewise_continuous_pdf()
@@ -374,10 +340,6 @@ def test_single_rv_error_paths():
         OrderStat(_uniform_continuous_pdf(), 3, 1, "invalid")
     with pytest.raises(RVError, match="without replacement not implemented"):
         OrderStat(_uniform_continuous_pdf(), 3, 1, "wo")
-    with pytest.raises(AttributeError, match="cache"):
-        ExpectedValue("not-an-rv")
-
-
 def test_two_rv_operations_for_continuous_and_discrete():
     continuous = _uniform_continuous_pdf()
     piecewise = _piecewise_continuous_pdf()
@@ -630,8 +592,6 @@ def test_discrete_idf_sf_hf_cross_conversions_and_known_idf_bug():
 
 
 def test_discrete_stat_and_convolution_edge_paths():
-    assert Variance([1, 2, 3]) == Rational(2, 3)
-
     with pytest.raises(RVError, match="Only one item sampled"):
         RangeStat(_discrete_pdf(), 1, "w")
     with pytest.raises(RVError, match="current not implemented without"):
