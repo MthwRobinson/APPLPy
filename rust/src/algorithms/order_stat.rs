@@ -131,6 +131,25 @@ pub fn discrete_order_stat_with_replacement(
 /// * `random_variable` - the random variable for the desired order statistic
 ///
 /// # Examples
+/// ```
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::order_stat::discrete_order_stat_without_replacement;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+///
+/// let rv = RandomVariable {
+///     function: vec![Number::Float(0.25), Number::Float(0.25), Number::Float(0.25), Number::Float(0.25)],
+///     support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3), Number::Integer(4)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// // Minimum of two draws without replacement from {1,2,3,4}.
+/// let min_of_two = discrete_order_stat_without_replacement(&rv, 2, 1).unwrap();
+/// assert!((min_of_two.function[0].to_f64() - 0.5).abs() < 1e-12);
+/// assert!((min_of_two.function[1].to_f64() - (1.0 / 3.0)).abs() < 1e-12);
+/// assert!((min_of_two.function[2].to_f64() - (1.0 / 6.0)).abs() < 1e-12);
+/// assert!(min_of_two.function[3].to_f64().abs() < 1e-12);
+/// ```
 pub fn discrete_order_stat_without_replacement(
     random_variable: &RandomVariable,
     num_items: u64,
@@ -155,6 +174,10 @@ pub fn discrete_order_stat_without_replacement(
     if index == 0 || index > num_items {
         return Err("index must be between 1 and num_items (inclusive)".to_string());
     }
+    let n =
+        usize::try_from(num_items).map_err(|_| "num_items is too large to process".to_string())?;
+    let order_stat_position =
+        usize::try_from(index - 1).map_err(|_| "index is too large to process".to_string())?;
 
     // Initialize all of the order stat probabilities as prob(x) = 0
     let mut order_stat_probabilities: Vec<Number> =
@@ -196,8 +219,7 @@ pub fn discrete_order_stat_without_replacement(
 
     // If you choose all of the items without replacement, then everything gets chosen
     if num_items == len_function_u64 {
-        let last_index = len_function - 1;
-        order_stat_probabilities[last_index] = Number::Integer(1);
+        order_stat_probabilities[order_stat_position] = Number::Integer(1);
 
         let order_stat_rv = RandomVariable {
             function: order_stat_probabilities,
@@ -208,7 +230,53 @@ pub fn discrete_order_stat_without_replacement(
         return Ok(order_stat_rv);
     }
 
-    Err("order stat not computed".to_string())
+    let mut prob_storage = vec![vec![Number::default(); len_function]; n];
+    let mut combo: Vec<usize> = (0..n).collect();
+
+    loop {
+        let mut perm = combo.clone();
+
+        loop {
+            let mut perm_prob = function[perm[0]];
+            let mut cumsum = function[perm[0]];
+
+            for &perm_index in perm.iter().skip(1) {
+                let remaining_mass = Number::one() - cumsum;
+                if remaining_mass.to_f64() <= f64::EPSILON {
+                    perm_prob = Number::default();
+                    break;
+                }
+                perm_prob = perm_prob * function[perm_index] / remaining_mass;
+                cumsum += function[perm_index];
+            }
+
+            let mut ordered_perm = perm.clone();
+            ordered_perm.sort_unstable();
+
+            for (order_position, &value_index) in ordered_perm.iter().enumerate() {
+                prob_storage[order_position][value_index] += perm_prob;
+            }
+
+            match next_permutation(&perm) {
+                Some(next_perm) => perm = next_perm,
+                None => break,
+            }
+        }
+
+        match next_combination(&combo, len_function - 1) {
+            Some(next_combo) => combo = next_combo,
+            None => break,
+        }
+    }
+
+    let order_stat_rv = RandomVariable {
+        function: prob_storage[order_stat_position].clone(),
+        support: support.clone(),
+        functional_form: FunctionalForm::Pdf,
+        domain_type: DomainType::Discrete,
+    };
+
+    Ok(order_stat_rv)
 }
 
 /// Given the previous combination, finds the next lexicographical combination.
@@ -305,7 +373,10 @@ pub fn next_permutation(previous: &[usize]) -> Option<Vec<usize>> {
 
 #[cfg(test)]
 mod tests {
-    use super::{discrete_order_stat_with_replacement, next_combination, next_permutation};
+    use super::{
+        discrete_order_stat_with_replacement, discrete_order_stat_without_replacement,
+        next_combination, next_permutation,
+    };
     use crate::algorithms::number::Number;
     use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 
@@ -382,6 +453,98 @@ mod tests {
             discrete_order_stat_with_replacement(&rv, 2, 3).unwrap_err(),
             "index must be between 1 and num_items (inclusive)"
         );
+    }
+
+    #[test]
+    fn order_stat_without_replacement_matches_known_min_max_probabilities() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.2), Number::Float(0.3), Number::Float(0.5)],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let min_of_two = discrete_order_stat_without_replacement(&rv, 2, 1).unwrap();
+        assert_close(min_of_two.function[0], 0.485_714_285_714_285_7, 1e-12);
+        assert_close(min_of_two.function[1], 0.514_285_714_285_714_2, 1e-12);
+        assert_close(min_of_two.function[2], 0.0, 1e-12);
+
+        let max_of_two = discrete_order_stat_without_replacement(&rv, 2, 2).unwrap();
+        assert_close(max_of_two.function[0], 0.0, 1e-12);
+        assert_close(max_of_two.function[1], 0.160_714_285_714_285_7, 1e-12);
+        assert_close(max_of_two.function[2], 0.839_285_714_285_714_3, 1e-12);
+    }
+
+    #[test]
+    fn order_stat_without_replacement_is_deterministic_when_sampling_all_items() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.2), Number::Float(0.3), Number::Float(0.5)],
+            support: vec![
+                Number::Integer(10),
+                Number::Integer(20),
+                Number::Integer(30),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let second_of_three = discrete_order_stat_without_replacement(&rv, 3, 2).unwrap();
+        assert_close(second_of_three.function[0], 0.0, 1e-12);
+        assert_close(second_of_three.function[1], 1.0, 1e-12);
+        assert_close(second_of_three.function[2], 0.0, 1e-12);
+    }
+
+    #[test]
+    fn order_stat_without_replacement_rejects_invalid_inputs() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.4), Number::Float(0.6)],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        assert_eq!(
+            discrete_order_stat_without_replacement(&rv, 0, 1).unwrap_err(),
+            "cannot compute the order with zero sampled items"
+        );
+        assert_eq!(
+            discrete_order_stat_without_replacement(&rv, 3, 1).unwrap_err(),
+            "num_items cannot exceed support length without replacement"
+        );
+        assert_eq!(
+            discrete_order_stat_without_replacement(&rv, 2, 0).unwrap_err(),
+            "index must be between 1 and num_items (inclusive)"
+        );
+        assert_eq!(
+            discrete_order_stat_without_replacement(&rv, 2, 3).unwrap_err(),
+            "index must be between 1 and num_items (inclusive)"
+        );
+    }
+
+    #[test]
+    fn order_stat_without_replacement_matches_uniform_fast_path() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+            ],
+            support: vec![
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let min_of_two = discrete_order_stat_without_replacement(&rv, 2, 1).unwrap();
+        assert_close(min_of_two.function[0], 0.5, 1e-12);
+        assert_close(min_of_two.function[1], 1.0 / 3.0, 1e-12);
+        assert_close(min_of_two.function[2], 1.0 / 6.0, 1e-12);
+        assert_close(min_of_two.function[3], 0.0, 1e-12);
     }
 
     #[test]
