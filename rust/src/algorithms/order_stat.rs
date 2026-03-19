@@ -70,6 +70,149 @@ pub fn discrete_order_stat(
     }
 }
 
+/// Computes the discrete range statistic (`max - min`) of `num_items` samples.
+///
+/// # Arguments
+/// * `random_variable` - the random variable to compute the range statistic for
+/// * `num_items` - the number of items randomly drawn from the random variable
+/// * `variant` - one of the OrderStatVariant enum types
+///
+/// # Returns
+/// * `random_variable` - the random variable for the desired range statistic
+pub fn discrete_range_stat(
+    random_variable: &RandomVariable,
+    num_items: u64,
+    variant: OrderStatVariant,
+) -> Result<RandomVariable, String> {
+    match variant {
+        OrderStatVariant::WithReplacement => {
+            discrete_range_stat_with_replacement(random_variable, num_items)
+        }
+        OrderStatVariant::WithoutReplacement => {
+            discrete_range_stat_without_replacement(random_variable, num_items)
+        }
+    }
+}
+
+/// Computes the discrete range statistic (`max - min`) of `num_items` samples
+/// drawn with replacement.
+pub fn discrete_range_stat_with_replacement(
+    random_variable: &RandomVariable,
+    num_items: u64,
+) -> Result<RandomVariable, String> {
+    let pdf_random_variable = random_variable.to_pdf()?;
+    let function = pdf_random_variable.function;
+    let support = random_variable.support.clone();
+
+    validate_range_inputs(&function, &support, num_items, false)?;
+
+    let cdf_random_variable = random_variable.to_cdf()?;
+    let cdf_function = cdf_random_variable.function;
+    let len_support = support.len();
+    let exponent = Number::Integer(
+        i64::try_from(num_items)
+            .map_err(|_| "num_items is too large for integer exponent".to_string())?,
+    );
+
+    let mut range_candidates: Vec<(Number, Number)> = Vec::with_capacity(len_support * len_support);
+
+    for i in 0..len_support {
+        for j in i..len_support {
+            let full_mass = cumulative_between(&cdf_function, i, j);
+            let no_min_mass = cumulative_between(&cdf_function, i + 1, j);
+            let no_max_mass = if j == 0 {
+                Number::default()
+            } else {
+                cumulative_between(&cdf_function, i, j - 1)
+            };
+            let no_min_no_max_mass = if j == 0 {
+                Number::default()
+            } else {
+                cumulative_between(&cdf_function, i + 1, j - 1)
+            };
+
+            let probability = full_mass.pow(exponent)?
+                - no_min_mass.pow(exponent)?
+                - no_max_mass.pow(exponent)?
+                + no_min_no_max_mass.pow(exponent)?;
+            let range_value = support[j] - support[i];
+
+            range_candidates.push((range_value, probability));
+        }
+    }
+
+    let (range_support, range_probabilities) = normalize_range_candidates(range_candidates);
+
+    Ok(RandomVariable {
+        function: range_probabilities,
+        support: range_support,
+        functional_form: FunctionalForm::Pdf,
+        domain_type: DomainType::Discrete,
+    })
+}
+
+/// Computes the discrete range statistic (`max - min`) of `num_items` samples
+/// drawn without replacement.
+pub fn discrete_range_stat_without_replacement(
+    random_variable: &RandomVariable,
+    num_items: u64,
+) -> Result<RandomVariable, String> {
+    let pdf_random_variable = random_variable.to_pdf()?;
+    let function = pdf_random_variable.function;
+    let support = random_variable.support.clone();
+    let len_function = function.len();
+    validate_range_inputs(&function, &support, num_items, true)?;
+
+    let n =
+        usize::try_from(num_items).map_err(|_| "num_items is too large to process".to_string())?;
+    let mut range_candidates: Vec<(Number, Number)> = Vec::new();
+    let mut combo: Vec<usize> = (0..n).collect();
+
+    loop {
+        let mut perm = combo.clone();
+
+        loop {
+            let mut perm_prob = function[perm[0]];
+            let mut cumsum = function[perm[0]];
+
+            for &perm_index in perm.iter().skip(1) {
+                let remaining_mass = Number::one() - cumsum;
+                if remaining_mass.to_f64() <= f64::EPSILON {
+                    perm_prob = Number::default();
+                    break;
+                }
+                perm_prob =
+                    divide_preserving_precision(perm_prob * function[perm_index], remaining_mass)?;
+                cumsum += function[perm_index];
+            }
+
+            let min_index = perm.iter().min().copied().unwrap_or(0);
+            let max_index = perm.iter().max().copied().unwrap_or(0);
+            let range_value = support[max_index] - support[min_index];
+            range_candidates.push((range_value, perm_prob));
+
+            match next_permutation(&perm) {
+                Some(next_perm) => perm = next_perm,
+                None => break,
+            }
+        }
+
+        match next_combination(&combo, len_function - 1) {
+            Some(next_combo) => combo = next_combo,
+            None => break,
+        }
+    }
+
+    let (range_support, range_probabilities) = normalize_range_candidates(range_candidates);
+
+    Ok(RandomVariable {
+        function: range_probabilities,
+        support: range_support,
+        functional_form: FunctionalForm::Pdf,
+        domain_type: DomainType::Discrete,
+    })
+}
+
 /// Computes the discrete `index`-th order statistic of i.i.d. samples drawn
 /// with replacement from a random variable.
 ///
@@ -486,6 +629,77 @@ fn binomial_number(n: u64, k: u64) -> Result<Number, String> {
     Ok(Number::Integer(binomial_i64(n, k)?))
 }
 
+fn validate_range_inputs(
+    function: &[Number],
+    support: &[Number],
+    num_items: u64,
+    without_replacement: bool,
+) -> Result<(), String> {
+    if function.is_empty() {
+        return Err("cannot compute the range. function is empty".to_string());
+    }
+    if num_items < 2 {
+        return Err("cannot compute the range with fewer than two sampled items".to_string());
+    }
+    if support.len() < 2 {
+        return Err("the population must contain at least two support values".to_string());
+    }
+    if without_replacement {
+        let support_len_u64 = u64::try_from(support.len())
+            .map_err(|_| "support length is too large to process".to_string())?;
+        if num_items > support_len_u64 {
+            return Err("num_items cannot exceed support length without replacement".to_string());
+        }
+    }
+    Ok(())
+}
+
+fn cumulative_between(cdf_function: &[Number], start: usize, end: usize) -> Number {
+    if start > end || start >= cdf_function.len() || end >= cdf_function.len() {
+        return Number::default();
+    }
+
+    if start == 0 {
+        cdf_function[end]
+    } else {
+        cdf_function[end] - cdf_function[start - 1]
+    }
+}
+
+fn normalize_range_candidates(
+    range_candidates: Vec<(Number, Number)>,
+) -> (Vec<Number>, Vec<Number>) {
+    let mut sorted_candidates = range_candidates;
+    sorted_candidates.sort_by(|left, right| {
+        left.0
+            .partial_cmp(&right.0)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    let mut merged_support: Vec<Number> = Vec::new();
+    let mut merged_probabilities: Vec<Number> = Vec::new();
+
+    for (support_value, probability) in sorted_candidates {
+        if probability.to_f64() <= f64::EPSILON {
+            continue;
+        }
+
+        match merged_support.last() {
+            Some(last_support) if *last_support == support_value => {
+                if let Some(last_probability) = merged_probabilities.last_mut() {
+                    *last_probability += probability;
+                }
+            }
+            _ => {
+                merged_support.push(support_value);
+                merged_probabilities.push(probability);
+            }
+        }
+    }
+
+    (merged_support, merged_probabilities)
+}
+
 fn number_from_rational(value: Rational64) -> Number {
     if *value.denom() == 1 {
         Number::Integer(*value.numer())
@@ -529,8 +743,9 @@ fn divide_preserving_precision(lhs: Number, rhs: Number) -> Result<Number, Strin
 mod tests {
     use super::{
         discrete_order_stat, discrete_order_stat_with_replacement,
-        discrete_order_stat_without_replacement, next_combination, next_permutation,
-        OrderStatVariant,
+        discrete_order_stat_without_replacement, discrete_range_stat,
+        discrete_range_stat_with_replacement, discrete_range_stat_without_replacement,
+        next_combination, next_permutation, OrderStatVariant,
     };
     use crate::algorithms::number::Number;
     use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
@@ -767,6 +982,148 @@ mod tests {
         assert_close(min_of_two.function[1], 1.0 / 3.0, 1e-12);
         assert_close(min_of_two.function[2], 1.0 / 6.0, 1e-12);
         assert_close(min_of_two.function[3], 0.0, 1e-12);
+    }
+
+    #[test]
+    fn range_stat_wrapper_dispatches_to_with_replacement() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+            ],
+            support: vec![
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let from_wrapper = discrete_range_stat(&rv, 2, OrderStatVariant::WithReplacement).unwrap();
+        let direct = discrete_range_stat_with_replacement(&rv, 2).unwrap();
+
+        assert_eq!(from_wrapper.function, direct.function);
+        assert_eq!(from_wrapper.support, direct.support);
+        assert_eq!(from_wrapper.functional_form, direct.functional_form);
+        assert_eq!(from_wrapper.domain_type, direct.domain_type);
+    }
+
+    #[test]
+    fn range_stat_wrapper_dispatches_to_without_replacement() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+            ],
+            support: vec![
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let from_wrapper =
+            discrete_range_stat(&rv, 2, OrderStatVariant::WithoutReplacement).unwrap();
+        let direct = discrete_range_stat_without_replacement(&rv, 2).unwrap();
+
+        assert_eq!(from_wrapper.function, direct.function);
+        assert_eq!(from_wrapper.support, direct.support);
+        assert_eq!(from_wrapper.functional_form, direct.functional_form);
+        assert_eq!(from_wrapper.domain_type, direct.domain_type);
+    }
+
+    #[test]
+    fn range_stat_with_replacement_matches_known_distribution() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+            ],
+            support: vec![
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = discrete_range_stat_with_replacement(&rv, 2).unwrap();
+
+        assert_eq!(
+            result.support,
+            vec![
+                Number::Integer(0),
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3)
+            ]
+        );
+        assert_close(result.function[0], 0.25, 1e-12);
+        assert_close(result.function[1], 0.375, 1e-12);
+        assert_close(result.function[2], 0.25, 1e-12);
+        assert_close(result.function[3], 0.125, 1e-12);
+    }
+
+    #[test]
+    fn range_stat_without_replacement_matches_known_distribution() {
+        let rv = RandomVariable {
+            function: vec![
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+                Number::Float(0.25),
+            ],
+            support: vec![
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = discrete_range_stat_without_replacement(&rv, 2).unwrap();
+
+        assert_eq!(
+            result.support,
+            vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)]
+        );
+        assert_close(result.function[0], 0.5, 1e-12);
+        assert_close(result.function[1], 1.0 / 3.0, 1e-12);
+        assert_close(result.function[2], 1.0 / 6.0, 1e-12);
+    }
+
+    #[test]
+    fn range_stat_rejects_invalid_inputs() {
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.4), Number::Float(0.6)],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        assert_eq!(
+            discrete_range_stat(&rv, 1, OrderStatVariant::WithReplacement).unwrap_err(),
+            "cannot compute the range with fewer than two sampled items"
+        );
+        assert_eq!(
+            discrete_range_stat_without_replacement(&rv, 3).unwrap_err(),
+            "num_items cannot exceed support length without replacement"
+        );
     }
 
     #[test]
