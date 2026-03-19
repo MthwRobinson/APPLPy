@@ -46,7 +46,6 @@ from applpy.rv import (
     Sqrt,
     Transform,
     Truncate,
-    VarDiscrete,
     Variance,
     VerifyPDF,
     check_value,
@@ -323,7 +322,6 @@ def test_moments_and_summary_statistics_for_multiple_ftypes():
 
     assert Mean(discrete) == Rational(7, 4)
     assert Variance(discrete) == Rational(3, 16)
-    assert VarDiscrete(discrete) == Rational(3, 16)
     assert ExpectedValue(discrete, x**2) == Rational(13, 4)
     assert Entropy(discrete) > 0
     assert CoefOfVar(discrete) > 0

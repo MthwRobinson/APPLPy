@@ -3128,68 +3128,14 @@ def Variance(random_variable, cache=False):
             random_variable.add_to_cache("variance", var)
         return simplify(var)
 
-    # If the random variable is discrete, find and return the variance
     if X_dummy.domain_type == "discrete":
-        var = VarDiscrete(random_variable)
-        if cache:
-            random_variable.add_to_cache("variance", var)
-        return simplify(var)
-        #
-        # Legacy variance code ... update uses faster numpy implementation
-        #
-        # Find the mean of the random variable
-        # EX=Mean(X_dummy)
-        # Find E(X^2)
-        # Create a list of (x**2)*f(x)
-        # exxlist=[]
-        # for i in range(len(X_dummy.func)):
-        #    exxlist.append(X_dummy.func[i]*(X_dummy.support[i])**2)
-        # Sum to find E(X^2)
-        # exxval=0
-        # for i in range(len(exxlist)):
-        #    exxval+=exxlist[i]
-        # Find Var(X)=E(X^2)-E(X)^2
-        # var=exxval-(EX**2)
-        # return simplify(var)
-
-
-def VarDiscrete(random_variable):
-    """
-    Procedure Name: VarDiscrete
-    Purpose: Compute the variance of a discrete random variable
-    Arguments:  1. random_variable: a discrete random variable
-    Output:     1. The variance of the random variable
-    """
-    # Check the random variable to make sure it is discrete
-    if random_variable.domain_type == "continuous":
-        raise RVError("the random variable must be continuous")
-    elif random_variable.domain_type == "discrete_functional":
-        try:
-            random_variable = Convert(random_variable)
-        except Exception:
-            err_string = "the support of the random variable"
-            err_string += " must be finite"
-            raise RVError(err_string)
-
-    fast_rv = FastRV(
-        function=random_variable.func,
-        support=random_variable.support,
-        functional_form=random_variable.functional_form,
-        domain_type=random_variable.domain_type,
-    )
-    EX = fast_rv.mean()
-    # Convert the values and support of the random variable
-    #   to vector form
-    support = np.asarray(random_variable.support, dtype=object)
-    pdf = np.asarray(random_variable.func, dtype=object)
-    # Find E(X^2) by creating a vector containing the values
-    #   of f(x)*x**2 and summing the result
-    supportsqr = np.multiply(support, support)
-    EXXvals = np.multiply(supportsqr, pdf)
-    EXX = EXXvals.sum()
-    # Find Var(X)=E(X^2)-E(X)^2
-    var = EXX - (EX**2)
-    return var
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type=random_variable.domain_type,
+        )
+        return fast_rv.variance()
 
 
 def VerifyPDF(random_variable):

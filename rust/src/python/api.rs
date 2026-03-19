@@ -195,6 +195,16 @@ impl FastRV {
             "failed to compute the mean of the random variable",
         ))
     }
+
+    pub fn variance(&self) -> PyResult<Number> {
+        if let Ok(variance) = self.inner.variance() {
+            return Ok(variance);
+        }
+
+        Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "failed to compute the variance of the random variable",
+        ))
+    }
 }
 
 #[cfg(test)]

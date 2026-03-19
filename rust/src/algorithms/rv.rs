@@ -161,6 +161,10 @@ impl RandomVariable {
     pub fn mean(&self) -> Result<Number, String> {
         moments::discrete_mean(self)
     }
+
+    pub fn variance(&self) -> Result<Number, String> {
+        moments::discrete_variance(self)
+    }
 }
 
 /// Verifies that the area under the PDF of random variable sums to 1
