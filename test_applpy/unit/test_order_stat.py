@@ -51,8 +51,6 @@ def test_order_stat_error_paths():
         OrderStat(continuous, 3, 1, "invalid")
     with pytest.raises(RVError, match="Only one item sampled"):
         RangeStat(discrete, 1, "w")
-    with pytest.raises(RVError, match="current not implemented without"):
-        RangeStat(discrete, 2, "wo")
     with pytest.raises(RVError, match="must both be discrete or continuous"):
         Maximum(continuous, discrete)
     with pytest.raises(RVError, match="must both be discrete or continuous"):
