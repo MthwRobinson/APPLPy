@@ -627,9 +627,6 @@ def idf(random_variable, value=x, cache=False):
     # If the distribution is a discrete function, find and return the idf
     #   of the random variable
     if random_variable.is_discrete_functional():
-        # Preserve legacy behavior for discrete_functional idf value lookup.
-        if random_variable.is_idf() and value != x:
-            raise UnboundLocalError("local variable 'idfvalue' referenced before assignment")
         # If the support is finite, then convert to expanded form and compute
         #   the idf
         if oo not in random_variable.support:

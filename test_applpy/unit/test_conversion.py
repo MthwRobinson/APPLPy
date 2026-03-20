@@ -180,7 +180,3 @@ def test_discrete_idf_sf_hf_cross_conversions_and_known_idf_bug():
     assert idf(chf(discrete)).ftype == ["discrete", "idf"]
     assert sf(hf(discrete)).ftype == ["discrete", "sf"]
     assert sf(chf(discrete)).ftype == ["discrete", "sf"]
-
-    functional_idf = RV([2 * x], [0, 1], ["discrete_functional", "idf"])
-    with pytest.raises(UnboundLocalError):
-        idf(functional_idf, Rational(1, 2))
