@@ -20,6 +20,7 @@ def dummy_ping():
     """Return a constant string from the Rust extension."""
     return _extension_module().dummy_ping()
 
+
 def discrete_order_stat(random_variable, n, r, replace):
     """Return the discrete order statistic random variable."""
     return _extension_module().discrete_order_stat(random_variable, n, r, replace)

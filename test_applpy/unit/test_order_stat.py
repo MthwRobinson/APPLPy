@@ -97,3 +97,5 @@ def test_snake_case_names_match_compat_aliases():
     assert minimum_iid is order_stat_module.MinimumIID
     assert order_stat is order_stat_module.OrderStat
     assert range_stat is order_stat_module.RangeStat
+    assert order_stat_module.maximum_rv is order_stat_module.MaximumRV
+    assert order_stat_module.minimum_rv is order_stat_module.MinimumRV

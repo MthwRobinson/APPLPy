@@ -9,11 +9,7 @@ Main Random Variable Module
 
 Procedures On One Random Variable:
     ConvolutionIID(random_variable,n)
-    MaximumIID(random_variable,n)
-    MinimumIID(random_variable,n)
-    OrderStat(random_variable,n,r)
     ProductIID(random_variable,n)
-    RangeStat(random_variable,n)
     Transform(random_variable,gX)
     Truncate(random_variable,[lw,up])
     variance(random_variable)
@@ -21,8 +17,6 @@ Procedures On One Random Variable:
 
 Procedures On Two Random Variables:
     Convolution(random_variable_1,random_variable_2)
-    Maximum(random_variable_1,random_variable_2)
-    Minimum(random_variable_1,random_variable_2)
     Mixture(MixParameters,MixRVs)
     Product(random_variable_1,random_variable_2)
 
@@ -1059,11 +1053,8 @@ def Convert(random_variable, inc=1):
 #     expected_value(random_variable,gX)
 #     entropy(random_variable)
 #     kurtosis(random_variable)
-#     MaximumIID(random_variable,n)
 #     mean(random_variable)
 #     mgf(random_variable)
-#     MinimumIID(random_variable,n)
-#     OrderStat(random_variable,n,r)
 #     Power(Rvar,n)
 #     ProductIID(random_variable,n)
 #     skewness(random_variable)
@@ -1150,24 +1141,6 @@ Mean = mean
 MGF = mgf
 Skewness = skewness
 Variance = variance
-
-
-def MaximumIID(random_variable, n=Symbol("n")):
-    from .order_stat import MaximumIID as _MaximumIID
-
-    return _MaximumIID(random_variable, n)
-
-
-def MinimumIID(random_variable, n):
-    from .order_stat import MinimumIID as _MinimumIID
-
-    return _MinimumIID(random_variable, n)
-
-
-def OrderStat(random_variable, n, r, replace="w"):
-    from .order_stat import OrderStat as _OrderStat
-
-    return _OrderStat(random_variable, n, r, replace)
 
 
 def Pow(random_variable, n):
@@ -1576,8 +1549,6 @@ def VerifyPDF(random_variable):
 #
 # Procedures:
 #     Convolution(random_variable_1,random_variable_2)
-#     Maximum(random_variable_1,random_variable_2)
-#     Minimum(random_variable_1,random_variable_2)
 #     Mixture(MixParameters,MixRVs)
 #     Product(random_variable_1,random_variable_2)
 
@@ -1695,275 +1666,6 @@ def Convolution(random_variable_1, random_variable_2):
                 funclist3[convlist3.index(convlist2[i])] += funclist2[i]
         # Create and return the new random variable
         return RV(funclist3, convlist3, ["discrete", "pdf"])
-
-
-def Maximum(*argv):
-    from .order_stat import Maximum as _Maximum
-
-    return _Maximum(*argv)
-
-
-def MaximumRV(random_variable_1, random_variable_2):
-    """
-    Procedure Name: MaximumRV
-    Purpose: Compute cdf of the maximum of random_variable_1 and random_variable_2
-    Arguments:  1. random_variable_1: A random variable
-                2. random_variable_2: A random variable
-    Output:     1. The cdf of the maximum distribution
-    """
-
-    # If the two random variables are not of the same type
-    #   raise an error
-    if random_variable_1.domain_type != random_variable_2.domain_type:
-        raise RVError("The RVs must both be discrete or continuous")
-
-    # If the distributions are continuous, find and return the max
-    if random_variable_1.is_continuous():
-        # X1_dummy.drop_assumptions()
-        # X2_dummy.drop_assumptions()
-        # Special case for lifetime distributions
-        if random_variable_1.support == [0, oo] and random_variable_2.support == [0, oo]:
-            cdf_dummy1 = cdf(random_variable_1)
-            cdf_dummy2 = cdf(random_variable_2)
-            cdf1 = cdf_dummy1.func[0]
-            cdf2 = cdf_dummy2.func[0]
-            maxfunc = cdf1 * cdf2
-            return pdf(RV(simplify(maxfunc), [0, oo], ["continuous", "cdf"]))
-        # Otherwise, compute the max using the full algorithm
-        # Set up the support for X
-        Fx = cdf(random_variable_1)
-        Fy = cdf(random_variable_2)
-        # Create a support list for the
-        max_supp = []
-        for i in range(len(Fx.support)):
-            if Fx.support[i] not in max_supp:
-                max_supp.append(Fx.support[i])
-        for i in range(len(Fy.support)):
-            if Fy.support[i] not in max_supp:
-                max_supp.append(Fy.support[i])
-        max_supp.sort()
-        # Remove any elements that are above the lower support max
-        lowval = max(min(Fx.support), min(Fy.support))
-        max_supp2 = []
-        for i in range(len(max_supp)):
-            if max_supp[i] >= lowval:
-                max_supp2.append(max_supp[i])
-        # Compute the maximum function for each segment
-        max_func = []
-        for i in range(len(max_supp2) - 1):
-            value = max_supp2[i]
-            currFx = 1
-            for j in range(len(Fx.func)):
-                if value >= Fx.support[j] and value < Fx.support[j + 1]:
-                    currFx = Fx.func[j]
-                    break
-            currFy = 1
-            for j in range(len(Fy.func)):
-                if value >= Fy.support[j] and value < Fy.support[j + 1]:
-                    currFy = Fy.func[j]
-            Fmax = currFx * currFy
-            max_func.append(simplify(Fmax))
-        return pdf(RV(max_func, max_supp2, ["continuous", "cdf"]))
-
-    # If the two random variables are discrete in functinonal form,
-    #   find and return the maximum of the two random variables
-    if random_variable_1.is_discrete_functional():
-        for num in random_variable_1.support:
-            if not isinstance(num, (int, float)):
-                err_string = "Maximum does not currently work with"
-                err_string = " RVs that have symbolic or infinite support"
-                raise RVError(err_string)
-        random_variable_1 = Convert(random_variable_1)
-    if random_variable_2.is_discrete_functional():
-        for num in random_variable_1.support:
-            if not isinstance(num, (int, float)):
-                err_string = "Maximum does not currently work with"
-                err_string = " RVs that have symbolic or infinite support"
-                raise RVError(err_string)
-        random_variable_2 = Convert(random_variable_2)
-
-    # If the distributions are discrete, find and return
-    #   the maximum of the two rv's
-    if random_variable_1.is_discrete():
-        # Convert X and Y to their PDF representations
-        fx = pdf(random_variable_1)
-        fy = pdf(random_variable_2)
-        # Make a list of possible combinations of X and Y
-        combo_list = []
-        prob_list = []
-        for i in range(len(fx.support)):
-            for j in range(len(fy.support)):
-                combo_list.append([fx.support[i], fy.support[j]])
-                prob_list.append(fx.func[i] * fy.func[j])
-
-        # Old code for computing probability for each pair, had
-        # floating point issues, PDF wouldn't recognize a number
-        # as being in the support
-        # prob_list=[]
-        # for i in range(len(combo_list)):
-        #    val=pdf(fx,combo_list[i][0])*pdf(fy,combo_list[j][1])
-        #    prob_list.append(val)
-
-        # Find the max value for each combo
-        max_list = []
-        for i in range(len(combo_list)):
-            max_list.append(max(combo_list[i][0], combo_list[i][1]))
-        # Compute the probability for each possible max
-        max_supp = []
-        max_func = []
-        for i in range(len(max_list)):
-            if max_list[i] not in max_supp:
-                max_supp.append(max_list[i])
-                max_func.append(prob_list[i])
-            else:
-                indx = max_supp.index(max_list[i])
-                max_func[indx] += prob_list[i]
-        # Sort the elements of the rv
-        zip_list = list(zip(max_supp, max_func))
-        zip_list.sort()
-        max_supp = []
-        max_func = []
-        for i in range(len(zip_list)):
-            max_supp.append(zip_list[i][0])
-            max_func.append(zip_list[i][1])
-        # Return the minimum random variable
-        return pdf(RV(max_func, max_supp, ["discrete", "pdf"]))
-
-
-def Minimum(*argv):
-    from .order_stat import Minimum as _Minimum
-
-    return _Minimum(*argv)
-
-
-def MinimumRV(random_variable_1, random_variable_2):
-    """
-    Procedure Name: MinimumRV
-    Purpose: Compute the distribution of the minimum of random_variable_1 and random_variable_2
-    Arguments:  1. random_variable_1: A random variable
-                2. random_variable_2: A random variable
-    Output:     1. The minimum of the two random variables
-    """
-
-    # If the two random variables are not of the same type
-    #   raise an error
-    if random_variable_1.domain_type != random_variable_2.domain_type:
-        raise RVError("The RVs must both be discrete or continuous")
-
-    # If the distributions are continuous, find and return the min
-    if random_variable_1.is_continuous():
-        # X1_dummy.drop_assumptions()
-        # X2_dummy.drop_assumptions()
-        # Special case for lifetime distributions
-        if random_variable_1.support == [0, oo] and random_variable_2.support == [0, oo]:
-            sf_dummy1 = sf(random_variable_1)
-            sf_dummy2 = sf(random_variable_2)
-            sf1 = sf_dummy1.func[0]
-            sf2 = sf_dummy2.func[0]
-            minfunc = 1 - (sf1 * sf2)
-            return pdf(RV(simplify(minfunc), [0, oo], ["continuous", "cdf"]))
-        # Otherwise, compute the min using the full algorithm
-        Fx = cdf(random_variable_1)
-        Fy = cdf(random_variable_2)
-        # Create a support list for the
-        min_supp = []
-        for i in range(len(Fx.support)):
-            if Fx.support[i] not in min_supp:
-                min_supp.append(Fx.support[i])
-        for i in range(len(Fy.support)):
-            if Fy.support[i] not in min_supp:
-                min_supp.append(Fy.support[i])
-        min_supp.sort()
-
-        # Remove any elements that are above the lower support max
-        highval = min(max(Fx.support), max(Fy.support))
-        min_supp2 = []
-        for i in range(len(min_supp)):
-            if min_supp[i] <= highval:
-                min_supp2.append(min_supp[i])
-
-        # Compute the minimum function for each segment
-        min_func = []
-        for i in range(len(min_supp2) - 1):
-            value = min_supp2[i]
-            currFx = 0
-            for j in range(len(Fx.func)):
-                if value >= Fx.support[j] and value <= Fx.support[j + 1]:
-                    currFx = Fx.func[j]
-                    break
-            currFy = 0
-            for j in range(len(Fy.func)):
-                if value >= Fy.support[j] and value <= Fy.support[j + 1]:
-                    currFy = Fy.func[j]
-            Fmin = 1 - ((1 - currFx) * (1 - currFy))
-            min_func.append(simplify(Fmin))
-
-        # Return the random variable
-        return pdf(RV(min_func, min_supp2, ["continuous", "cdf"]))
-
-    # If the two random variables are discrete in functinonal form,
-    #   find and return the minimum of the two random variables
-    if random_variable_1.is_discrete_functional():
-        for num in random_variable_1.support:
-            if not isinstance(num, (int, float)):
-                err_string = "Minimum does not currently work with"
-                err_string = " RVs that have symbolic or infinite support"
-                raise RVError(err_string)
-        random_variable_1 = Convert(random_variable_1)
-    if random_variable_2.is_discrete_functional():
-        for num in random_variable_1.support:
-            if not isinstance(num, (int, float)):
-                err_string = "Minimum does not currently work with"
-                err_string = " RVs that have symbolic or infinite support"
-                raise RVError(err_string)
-        random_variable_2 = Convert(random_variable_2)
-
-    # If the distributions are discrete, find and return
-    #   the minimum of the two rv's
-    if random_variable_1.is_discrete():
-        # Convert X and Y to their PDF representations
-        fx = pdf(random_variable_1)
-        fy = pdf(random_variable_2)
-        # Make a list of possible combinations of X and Y
-        combo_list = []
-        prob_list = []
-        for i in range(len(fx.support)):
-            for j in range(len(fy.support)):
-                combo_list.append([fx.support[i], fy.support[j]])
-                prob_list.append(fx.func[i] * fy.func[j])
-
-        # Old code for computing probability for each pair, had
-        # floating point issues, PDF wouldn't recognize a number
-        # as being in the support
-        # prob_list=[]
-        # for i in range(len(combo_list)):
-        #    val=pdf(fx,combo_list[i][0])*pdf(fy,combo_list[j][1])
-        #    prob_list.append(val)
-        # Find the min value for each combo
-
-        min_list = []
-        for i in range(len(combo_list)):
-            min_list.append(min(combo_list[i][0], combo_list[i][1]))
-        # Compute the probability for each possible min
-        min_supp = []
-        min_func = []
-        for i in range(len(min_list)):
-            if min_list[i] not in min_supp:
-                min_supp.append(min_list[i])
-                min_func.append(prob_list[i])
-            else:
-                indx = min_supp.index(min_list[i])
-                min_func[indx] += prob_list[i]
-        # Sort the elements of the rv
-        zip_list = list(zip(min_supp, min_func))
-        zip_list.sort()
-        min_supp = []
-        min_func = []
-        for i in range(len(zip_list)):
-            min_supp.append(zip_list[i][0])
-            min_func.append(zip_list[i][1])
-        # Return the minimum random variable
-        return pdf(RV(min_func, min_supp, ["discrete", "pdf"]))
 
 
 def Mixture(MixParameters, MixRVs):

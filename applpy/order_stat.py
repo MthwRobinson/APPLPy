@@ -3,7 +3,7 @@
 from sympy import Symbol, factorial, integrate, oo, simplify
 
 from . import rust_bindings
-from .rv import Convert, RV, RVError, MaximumRV, MinimumRV, cdf, pdf, sf, x
+from .rv import Convert, RV, RVError, cdf, pdf, sf, x
 
 
 def maximum_iid(random_variable, n=Symbol("n")):
@@ -81,7 +81,10 @@ def order_stat(random_variable, n, r, replace="w"):
             cdf_segment = cdf_rv.func[i]
             sf_segment = sf_rv.func[i]
             order_stat_segment = (
-                normalization_const * (cdf_segment ** (r - 1)) * (sf_segment ** (n - r)) * pdf_segment
+                normalization_const
+                * (cdf_segment ** (r - 1))
+                * (sf_segment ** (n - r))
+                * pdf_segment
             )
             order_stat_func.append(simplify(order_stat_segment))
         return RV(order_stat_func, random_variable.support, ["continuous", "pdf"])
@@ -163,6 +166,213 @@ def range_stat(random_variable, n, replace="w"):
         )
 
 
+def maximum_rv(random_variable_1, random_variable_2):
+    """
+    Procedure Name: MaximumRV
+    Purpose: Compute cdf of the maximum of random_variable_1 and random_variable_2
+    Arguments:  1. random_variable_1: A random variable
+                2. random_variable_2: A random variable
+    Output:     1. The cdf of the maximum distribution
+    """
+
+    if random_variable_1.domain_type != random_variable_2.domain_type:
+        raise RVError("The RVs must both be discrete or continuous")
+
+    if random_variable_1.is_continuous():
+        if random_variable_1.support == [0, oo] and random_variable_2.support == [0, oo]:
+            cdf_dummy1 = cdf(random_variable_1)
+            cdf_dummy2 = cdf(random_variable_2)
+            cdf1 = cdf_dummy1.func[0]
+            cdf2 = cdf_dummy2.func[0]
+            maxfunc = cdf1 * cdf2
+            return pdf(RV(simplify(maxfunc), [0, oo], ["continuous", "cdf"]))
+
+        Fx = cdf(random_variable_1)
+        Fy = cdf(random_variable_2)
+        max_supp = []
+        for i in range(len(Fx.support)):
+            if Fx.support[i] not in max_supp:
+                max_supp.append(Fx.support[i])
+        for i in range(len(Fy.support)):
+            if Fy.support[i] not in max_supp:
+                max_supp.append(Fy.support[i])
+        max_supp.sort()
+
+        lowval = max(min(Fx.support), min(Fy.support))
+        max_supp2 = []
+        for i in range(len(max_supp)):
+            if max_supp[i] >= lowval:
+                max_supp2.append(max_supp[i])
+
+        max_func = []
+        for i in range(len(max_supp2) - 1):
+            value = max_supp2[i]
+            currFx = 1
+            for j in range(len(Fx.func)):
+                if value >= Fx.support[j] and value < Fx.support[j + 1]:
+                    currFx = Fx.func[j]
+                    break
+            currFy = 1
+            for j in range(len(Fy.func)):
+                if value >= Fy.support[j] and value < Fy.support[j + 1]:
+                    currFy = Fy.func[j]
+            Fmax = currFx * currFy
+            max_func.append(simplify(Fmax))
+        return pdf(RV(max_func, max_supp2, ["continuous", "cdf"]))
+
+    if random_variable_1.is_discrete_functional():
+        for num in random_variable_1.support:
+            if not isinstance(num, (int, float)):
+                err_string = "Maximum does not currently work with"
+                err_string = " RVs that have symbolic or infinite support"
+                raise RVError(err_string)
+        random_variable_1 = Convert(random_variable_1)
+    if random_variable_2.is_discrete_functional():
+        for num in random_variable_1.support:
+            if not isinstance(num, (int, float)):
+                err_string = "Maximum does not currently work with"
+                err_string = " RVs that have symbolic or infinite support"
+                raise RVError(err_string)
+        random_variable_2 = Convert(random_variable_2)
+
+    if random_variable_1.is_discrete():
+        fx = pdf(random_variable_1)
+        fy = pdf(random_variable_2)
+        combo_list = []
+        prob_list = []
+        for i in range(len(fx.support)):
+            for j in range(len(fy.support)):
+                combo_list.append([fx.support[i], fy.support[j]])
+                prob_list.append(fx.func[i] * fy.func[j])
+
+        max_list = []
+        for i in range(len(combo_list)):
+            max_list.append(max(combo_list[i][0], combo_list[i][1]))
+
+        max_supp = []
+        max_func = []
+        for i in range(len(max_list)):
+            if max_list[i] not in max_supp:
+                max_supp.append(max_list[i])
+                max_func.append(prob_list[i])
+            else:
+                indx = max_supp.index(max_list[i])
+                max_func[indx] += prob_list[i]
+
+        zip_list = list(zip(max_supp, max_func))
+        zip_list.sort()
+        max_supp = []
+        max_func = []
+        for i in range(len(zip_list)):
+            max_supp.append(zip_list[i][0])
+            max_func.append(zip_list[i][1])
+        return pdf(RV(max_func, max_supp, ["discrete", "pdf"]))
+
+
+def minimum_rv(random_variable_1, random_variable_2):
+    """
+    Procedure Name: MinimumRV
+    Purpose: Compute the distribution of the minimum of random_variable_1 and random_variable_2
+    Arguments:  1. random_variable_1: A random variable
+                2. random_variable_2: A random variable
+    Output:     1. The minimum of the two random variables
+    """
+
+    if random_variable_1.domain_type != random_variable_2.domain_type:
+        raise RVError("The RVs must both be discrete or continuous")
+
+    if random_variable_1.is_continuous():
+        if random_variable_1.support == [0, oo] and random_variable_2.support == [0, oo]:
+            sf_dummy1 = sf(random_variable_1)
+            sf_dummy2 = sf(random_variable_2)
+            sf1 = sf_dummy1.func[0]
+            sf2 = sf_dummy2.func[0]
+            minfunc = 1 - (sf1 * sf2)
+            return pdf(RV(simplify(minfunc), [0, oo], ["continuous", "cdf"]))
+
+        Fx = cdf(random_variable_1)
+        Fy = cdf(random_variable_2)
+        min_supp = []
+        for i in range(len(Fx.support)):
+            if Fx.support[i] not in min_supp:
+                min_supp.append(Fx.support[i])
+        for i in range(len(Fy.support)):
+            if Fy.support[i] not in min_supp:
+                min_supp.append(Fy.support[i])
+        min_supp.sort()
+
+        highval = min(max(Fx.support), max(Fy.support))
+        min_supp2 = []
+        for i in range(len(min_supp)):
+            if min_supp[i] <= highval:
+                min_supp2.append(min_supp[i])
+
+        min_func = []
+        for i in range(len(min_supp2) - 1):
+            value = min_supp2[i]
+            currFx = 0
+            for j in range(len(Fx.func)):
+                if value >= Fx.support[j] and value <= Fx.support[j + 1]:
+                    currFx = Fx.func[j]
+                    break
+            currFy = 0
+            for j in range(len(Fy.func)):
+                if value >= Fy.support[j] and value <= Fy.support[j + 1]:
+                    currFy = Fy.func[j]
+            Fmin = 1 - ((1 - currFx) * (1 - currFy))
+            min_func.append(simplify(Fmin))
+
+        return pdf(RV(min_func, min_supp2, ["continuous", "cdf"]))
+
+    if random_variable_1.is_discrete_functional():
+        for num in random_variable_1.support:
+            if not isinstance(num, (int, float)):
+                err_string = "Minimum does not currently work with"
+                err_string = " RVs that have symbolic or infinite support"
+                raise RVError(err_string)
+        random_variable_1 = Convert(random_variable_1)
+    if random_variable_2.is_discrete_functional():
+        for num in random_variable_1.support:
+            if not isinstance(num, (int, float)):
+                err_string = "Minimum does not currently work with"
+                err_string = " RVs that have symbolic or infinite support"
+                raise RVError(err_string)
+        random_variable_2 = Convert(random_variable_2)
+
+    if random_variable_1.is_discrete():
+        fx = pdf(random_variable_1)
+        fy = pdf(random_variable_2)
+        combo_list = []
+        prob_list = []
+        for i in range(len(fx.support)):
+            for j in range(len(fy.support)):
+                combo_list.append([fx.support[i], fy.support[j]])
+                prob_list.append(fx.func[i] * fy.func[j])
+
+        min_list = []
+        for i in range(len(combo_list)):
+            min_list.append(min(combo_list[i][0], combo_list[i][1]))
+
+        min_supp = []
+        min_func = []
+        for i in range(len(min_list)):
+            if min_list[i] not in min_supp:
+                min_supp.append(min_list[i])
+                min_func.append(prob_list[i])
+            else:
+                indx = min_supp.index(min_list[i])
+                min_func[indx] += prob_list[i]
+
+        zip_list = list(zip(min_supp, min_func))
+        zip_list.sort()
+        min_supp = []
+        min_func = []
+        for i in range(len(zip_list)):
+            min_supp.append(zip_list[i][0])
+            min_func.append(zip_list[i][1])
+        return pdf(RV(min_func, min_supp, ["discrete", "pdf"]))
+
+
 def maximum(*argv):
     """
     Procedure Name: Maximum
@@ -175,7 +385,7 @@ def maximum(*argv):
         if argument_index == 0:
             running_max_rv = rv
         else:
-            running_max_rv = MaximumRV(running_max_rv, rv)
+            running_max_rv = maximum_rv(running_max_rv, rv)
         argument_index += 1
     return running_max_rv
 
@@ -192,7 +402,7 @@ def minimum(*argv):
         if argument_index == 0:
             running_min_rv = rv
         else:
-            running_min_rv = MinimumRV(running_min_rv, rv)
+            running_min_rv = minimum_rv(running_min_rv, rv)
         argument_index += 1
     return running_min_rv
 
@@ -202,5 +412,7 @@ MaximumIID = maximum_iid
 MinimumIID = minimum_iid
 OrderStat = order_stat
 RangeStat = range_stat
+MaximumRV = maximum_rv
+MinimumRV = minimum_rv
 Maximum = maximum
 Minimum = minimum

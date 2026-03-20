@@ -20,6 +20,7 @@ from sympy import *
 
 from .rv import *
 from .conversion import *
+from .order_stat import *
 from .moments import *
 from .stoch import *
 from .appl_plot import *

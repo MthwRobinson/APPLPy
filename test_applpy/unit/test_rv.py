@@ -10,8 +10,6 @@ from applpy.rv import (
     ConvolutionIID,
     Histogram,
     LoadRV,
-    MaximumRV,
-    MinimumRV,
     Mixture,
     PPPlot,
     PlotClear,
@@ -234,10 +232,6 @@ def test_two_rv_operations_for_continuous_and_discrete():
 
     assert isinstance(Convolution(continuous, continuous), RV)
     assert isinstance(Convolution(discrete, bernoulli), RV)
-    assert isinstance(MaximumRV(continuous, continuous), RV)
-    assert isinstance(MaximumRV(discrete, bernoulli), RV)
-    assert isinstance(MinimumRV(continuous, continuous), RV)
-    assert isinstance(MinimumRV(discrete, bernoulli), RV)
     assert isinstance(Mixture([Rational(1, 3), Rational(2, 3)], [continuous, piecewise]), RV)
     assert isinstance(Mixture([Rational(1, 2), Rational(1, 2)], [discrete, bernoulli]), RV)
     assert isinstance(Product(continuous, continuous), RV)
@@ -322,15 +316,12 @@ def test_operations_on_symmetric_support_cover_additional_branches():
 
     assert isinstance(Convolution(symmetric, symmetric), RV)
     assert isinstance(Product(symmetric, symmetric), RV)
-    assert isinstance(MaximumRV(symmetric, symmetric), RV)
-    assert isinstance(MinimumRV(symmetric, symmetric), RV)
+
 
 def test_lifetime_continuous_special_case_paths():
     lifetime = RV([exp(-x)], [0, oo], ["continuous", "pdf"])
 
     assert isinstance(Convolution(lifetime, lifetime), RV)
-    assert isinstance(MaximumRV(lifetime, lifetime), RV)
-    assert isinstance(MinimumRV(lifetime, lifetime), RV)
 
 
 def test_product_continuous_quadrant_case_coverage():
