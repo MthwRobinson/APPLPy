@@ -1,10 +1,13 @@
+import importlib
+
 import pytest
 from sympy import Integer, Rational
 
 from applpy import Maximum, MaximumIID, Minimum, MinimumIID, OrderStat, RangeStat
-import applpy.order_stat as order_stat_module
-from applpy.order_stat import maximum, maximum_iid, minimum, minimum_iid, order_stat, range_stat
+from applpy.order_stat import maximum_iid, minimum_iid, order_stat, range_stat
 from applpy.rv import RV, RVError
+
+order_stat_module = importlib.import_module("applpy.order_stat")
 
 
 def _uniform_continuous_pdf():
@@ -91,9 +94,9 @@ def test_range_stat_discrete_without_replacement_distribution():
 
 
 def test_snake_case_names_match_compat_aliases():
-    assert maximum is order_stat_module.Maximum
+    assert order_stat_module.maximum is order_stat_module.Maximum
     assert maximum_iid is order_stat_module.MaximumIID
-    assert minimum is order_stat_module.Minimum
+    assert order_stat_module.minimum is order_stat_module.Minimum
     assert minimum_iid is order_stat_module.MinimumIID
     assert order_stat is order_stat_module.OrderStat
     assert range_stat is order_stat_module.RangeStat
