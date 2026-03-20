@@ -42,6 +42,37 @@ pub fn discrete_order_stat_py(
     Ok(fast_rv)
 }
 
+#[pyfunction(name = "discrete_range_stat", signature = (random_variable, n, replace="w"))]
+pub fn discrete_range_stat_py(
+    random_variable: &Bound<'_, PyAny>,
+    n: u64,
+    replace: &str,
+) -> PyResult<FastRV> {
+    let random_variable: FastRV = random_variable.extract()?;
+
+    let variant = match replace {
+        "w" => order_stat::OrderStatVariant::WithReplacement,
+        "wo" => order_stat::OrderStatVariant::WithoutReplacement,
+        _ => {
+            return Err(PyValueError::new_err(
+                "Invalid OrderStatVariant: expected 'w' or 'wo'",
+            ));
+        }
+    };
+
+    let range_stat_rv = order_stat::discrete_range_stat(&random_variable.inner, n, variant)
+        .map_err(PyValueError::new_err)?;
+
+    let fast_rv = FastRV::new(
+        range_stat_rv.function,
+        range_stat_rv.support,
+        range_stat_rv.functional_form,
+        range_stat_rv.domain_type,
+    );
+
+    Ok(fast_rv)
+}
+
 #[pyfunction(name = "next_combination", signature = (previous, n))]
 pub fn next_combination_py(previous: Vec<usize>, n: usize) -> PyResult<Option<Vec<usize>>> {
     if previous.is_empty() {
