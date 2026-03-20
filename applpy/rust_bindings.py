@@ -21,8 +21,14 @@ def dummy_ping():
     return _extension_module().dummy_ping()
 
 def discrete_order_stat(random_variable, n, r, replace):
-    """Return the next lexicographical permutation."""
+    """Return the discrete order statistic random variable."""
     return _extension_module().discrete_order_stat(random_variable, n, r, replace)
+
+
+def discrete_range_stat(random_variable, n, replace):
+    """Return the discrete range statistic random variable."""
+    return _extension_module().discrete_range_stat(random_variable, n, replace)
+
 
 def next_combination(previous, n):
     """Return the next lexicographical combination."""

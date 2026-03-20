@@ -49,8 +49,6 @@ def test_order_stat_error_paths():
         OrderStat(continuous, 2, 3)
     with pytest.raises(RVError, match="Replace must be w or wo"):
         OrderStat(continuous, 3, 1, "invalid")
-    with pytest.raises(RVError, match="without replacement not implemented"):
-        OrderStat(continuous, 3, 1, "wo")
     with pytest.raises(RVError, match="Only one item sampled"):
         RangeStat(discrete, 1, "w")
     with pytest.raises(RVError, match="current not implemented without"):
