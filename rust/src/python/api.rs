@@ -73,15 +73,15 @@ pub fn discrete_range_stat_py(
     Ok(fast_rv)
 }
 
-#[pyfunction(name = "maximum_rv", signature = (random_variable_1, random_variable_2))]
-pub fn maximum_rv_py(
+#[pyfunction(name = "discrete_maximum", signature = (random_variable_1, random_variable_2))]
+pub fn discrete_maximum_py(
     random_variable_1: &Bound<'_, PyAny>,
     random_variable_2: &Bound<'_, PyAny>,
 ) -> PyResult<FastRV> {
     let random_variable_1: FastRV = random_variable_1.extract()?;
     let random_variable_2: FastRV = random_variable_2.extract()?;
 
-    let max_rv = order_stat::maximum_rv(&random_variable_1.inner, &random_variable_2.inner)
+    let max_rv = order_stat::discrete_maximum(&random_variable_1.inner, &random_variable_2.inner)
         .map_err(PyValueError::new_err)?;
 
     Ok(FastRV::new(
@@ -92,15 +92,15 @@ pub fn maximum_rv_py(
     ))
 }
 
-#[pyfunction(name = "minimum_rv", signature = (random_variable_1, random_variable_2))]
-pub fn minimum_rv_py(
+#[pyfunction(name = "discrete_minimum", signature = (random_variable_1, random_variable_2))]
+pub fn discrete_minimum_py(
     random_variable_1: &Bound<'_, PyAny>,
     random_variable_2: &Bound<'_, PyAny>,
 ) -> PyResult<FastRV> {
     let random_variable_1: FastRV = random_variable_1.extract()?;
     let random_variable_2: FastRV = random_variable_2.extract()?;
 
-    let min_rv = order_stat::minimum_rv(&random_variable_1.inner, &random_variable_2.inner)
+    let min_rv = order_stat::discrete_minimum(&random_variable_1.inner, &random_variable_2.inner)
         .map_err(PyValueError::new_err)?;
 
     Ok(FastRV::new(

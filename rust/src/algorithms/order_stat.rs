@@ -14,7 +14,7 @@ pub enum OrderStatVariant {
 /// Computes the distribution of the maximum of two random variables.
 ///
 /// This currently supports discrete/discrete-functional random variables.
-pub fn maximum_rv(
+pub fn discrete_maximum(
     random_variable_1: &RandomVariable,
     random_variable_2: &RandomVariable,
 ) -> Result<RandomVariable, String> {
@@ -51,7 +51,7 @@ pub fn maximum_rv(
 /// Computes the distribution of the minimum of two random variables.
 ///
 /// This currently supports discrete/discrete-functional random variables.
-pub fn minimum_rv(
+pub fn discrete_minimum(
     random_variable_1: &RandomVariable,
     random_variable_2: &RandomVariable,
 ) -> Result<RandomVariable, String> {
@@ -849,10 +849,11 @@ fn divide_preserving_precision(lhs: Number, rhs: Number) -> Result<Number, Strin
 #[cfg(test)]
 mod tests {
     use super::{
-        discrete_order_stat, discrete_order_stat_with_replacement,
-        discrete_order_stat_without_replacement, discrete_range_stat,
-        discrete_range_stat_with_replacement, discrete_range_stat_without_replacement, maximum_rv,
-        minimum_rv, next_combination, next_permutation, OrderStatVariant,
+        discrete_maximum, discrete_minimum, discrete_order_stat,
+        discrete_order_stat_with_replacement, discrete_order_stat_without_replacement,
+        discrete_range_stat, discrete_range_stat_with_replacement,
+        discrete_range_stat_without_replacement, next_combination, next_permutation,
+        OrderStatVariant,
     };
     use crate::algorithms::number::Number;
     use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
@@ -1234,7 +1235,7 @@ mod tests {
     }
 
     #[test]
-    fn maximum_rv_matches_known_distribution() {
+    fn discrete_maximum_matches_known_distribution() {
         let rv_1 = RandomVariable {
             function: vec![Number::Float(0.5), Number::Float(0.5)],
             support: vec![Number::Integer(0), Number::Integer(1)],
@@ -1248,7 +1249,7 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let result = maximum_rv(&rv_1, &rv_2).unwrap();
+        let result = discrete_maximum(&rv_1, &rv_2).unwrap();
 
         assert_eq!(result.support, vec![Number::Integer(0), Number::Integer(1)]);
         assert_close(result.function[0], 0.125, 1e-12);
@@ -1258,7 +1259,7 @@ mod tests {
     }
 
     #[test]
-    fn minimum_rv_matches_known_distribution() {
+    fn discrete_minimum_matches_known_distribution() {
         let rv_1 = RandomVariable {
             function: vec![Number::Float(0.5), Number::Float(0.5)],
             support: vec![Number::Integer(0), Number::Integer(1)],
@@ -1272,7 +1273,7 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let result = minimum_rv(&rv_1, &rv_2).unwrap();
+        let result = discrete_minimum(&rv_1, &rv_2).unwrap();
 
         assert_eq!(result.support, vec![Number::Integer(0), Number::Integer(1)]);
         assert_close(result.function[0], 0.625, 1e-12);
@@ -1282,7 +1283,7 @@ mod tests {
     }
 
     #[test]
-    fn maximum_and_minimum_rv_merge_and_sort_support_values() {
+    fn discrete_maximum_and_discrete_minimum_merge_and_sort_support_values() {
         let rv_1 = RandomVariable {
             function: vec![Number::Float(0.4), Number::Float(0.6)],
             support: vec![Number::Integer(1), Number::Integer(3)],
@@ -1296,7 +1297,7 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let max_result = maximum_rv(&rv_1, &rv_2).unwrap();
+        let max_result = discrete_maximum(&rv_1, &rv_2).unwrap();
         assert_eq!(
             max_result.support,
             vec![Number::Integer(2), Number::Integer(3), Number::Integer(4)]
@@ -1305,7 +1306,7 @@ mod tests {
         assert_close(max_result.function[1], 0.42, 1e-12);
         assert_close(max_result.function[2], 0.30, 1e-12);
 
-        let min_result = minimum_rv(&rv_1, &rv_2).unwrap();
+        let min_result = discrete_minimum(&rv_1, &rv_2).unwrap();
         assert_eq!(
             min_result.support,
             vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)]
@@ -1316,7 +1317,7 @@ mod tests {
     }
 
     #[test]
-    fn maximum_and_minimum_rv_reject_domain_mismatch() {
+    fn discrete_maximum_and_discrete_minimum_reject_domain_mismatch() {
         let discrete_rv = RandomVariable {
             function: vec![Number::Float(0.5), Number::Float(0.5)],
             support: vec![Number::Integer(0), Number::Integer(1)],
@@ -1331,17 +1332,17 @@ mod tests {
         };
 
         assert_eq!(
-            maximum_rv(&discrete_rv, &continuous_rv).unwrap_err(),
+            discrete_maximum(&discrete_rv, &continuous_rv).unwrap_err(),
             "The RVs must both be discrete or continuous"
         );
         assert_eq!(
-            minimum_rv(&discrete_rv, &continuous_rv).unwrap_err(),
+            discrete_minimum(&discrete_rv, &continuous_rv).unwrap_err(),
             "The RVs must both be discrete or continuous"
         );
     }
 
     #[test]
-    fn maximum_and_minimum_rv_reject_continuous_inputs() {
+    fn discrete_maximum_and_discrete_minimum_reject_continuous_inputs() {
         let rv_1 = RandomVariable {
             function: vec![Number::Float(1.0)],
             support: vec![Number::Integer(0), Number::Integer(1)],
@@ -1356,11 +1357,11 @@ mod tests {
         };
 
         assert_eq!(
-            maximum_rv(&rv_1, &rv_2).unwrap_err(),
+            discrete_maximum(&rv_1, &rv_2).unwrap_err(),
             "continuous maximum/minimum random variables are not implemented"
         );
         assert_eq!(
-            minimum_rv(&rv_1, &rv_2).unwrap_err(),
+            discrete_minimum(&rv_1, &rv_2).unwrap_err(),
             "continuous maximum/minimum random variables are not implemented"
         );
     }
