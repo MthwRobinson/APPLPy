@@ -73,6 +73,44 @@ pub fn discrete_range_stat_py(
     Ok(fast_rv)
 }
 
+#[pyfunction(name = "maximum_rv", signature = (random_variable_1, random_variable_2))]
+pub fn maximum_rv_py(
+    random_variable_1: &Bound<'_, PyAny>,
+    random_variable_2: &Bound<'_, PyAny>,
+) -> PyResult<FastRV> {
+    let random_variable_1: FastRV = random_variable_1.extract()?;
+    let random_variable_2: FastRV = random_variable_2.extract()?;
+
+    let max_rv = order_stat::maximum_rv(&random_variable_1.inner, &random_variable_2.inner)
+        .map_err(PyValueError::new_err)?;
+
+    Ok(FastRV::new(
+        max_rv.function,
+        max_rv.support,
+        max_rv.functional_form,
+        max_rv.domain_type,
+    ))
+}
+
+#[pyfunction(name = "minimum_rv", signature = (random_variable_1, random_variable_2))]
+pub fn minimum_rv_py(
+    random_variable_1: &Bound<'_, PyAny>,
+    random_variable_2: &Bound<'_, PyAny>,
+) -> PyResult<FastRV> {
+    let random_variable_1: FastRV = random_variable_1.extract()?;
+    let random_variable_2: FastRV = random_variable_2.extract()?;
+
+    let min_rv = order_stat::minimum_rv(&random_variable_1.inner, &random_variable_2.inner)
+        .map_err(PyValueError::new_err)?;
+
+    Ok(FastRV::new(
+        min_rv.function,
+        min_rv.support,
+        min_rv.functional_form,
+        min_rv.domain_type,
+    ))
+}
+
 #[pyfunction(name = "next_combination", signature = (previous, n))]
 pub fn next_combination_py(previous: Vec<usize>, n: usize) -> PyResult<Option<Vec<usize>>> {
     if previous.is_empty() {

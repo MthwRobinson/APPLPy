@@ -24,6 +24,8 @@ fn applpy_rust(_py: Python<'_>, module: &Bound<'_, PyModule>) -> PyResult<()> {
         python::api::discrete_range_stat_py,
         module
     )?)?;
+    module.add_function(wrap_pyfunction!(python::api::maximum_rv_py, module)?)?;
+    module.add_function(wrap_pyfunction!(python::api::minimum_rv_py, module)?)?;
 
     // random variable class and related functions
     module.add_class::<FastRV>()?;
