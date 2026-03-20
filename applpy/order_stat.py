@@ -236,37 +236,13 @@ def maximum_rv(random_variable_1, random_variable_2):
         random_variable_2 = Convert(random_variable_2)
 
     if random_variable_1.is_discrete():
-        fx = pdf(random_variable_1)
-        fy = pdf(random_variable_2)
-        combo_list = []
-        prob_list = []
-        for i in range(len(fx.support)):
-            for j in range(len(fy.support)):
-                combo_list.append([fx.support[i], fy.support[j]])
-                prob_list.append(fx.func[i] * fy.func[j])
-
-        max_list = []
-        for i in range(len(combo_list)):
-            max_list.append(max(combo_list[i][0], combo_list[i][1]))
-
-        max_supp = []
-        max_func = []
-        for i in range(len(max_list)):
-            if max_list[i] not in max_supp:
-                max_supp.append(max_list[i])
-                max_func.append(prob_list[i])
-            else:
-                indx = max_supp.index(max_list[i])
-                max_func[indx] += prob_list[i]
-
-        zip_list = list(zip(max_supp, max_func))
-        zip_list.sort()
-        max_supp = []
-        max_func = []
-        for i in range(len(zip_list)):
-            max_supp.append(zip_list[i][0])
-            max_func.append(zip_list[i][1])
-        return pdf(RV(max_func, max_supp, ["discrete", "pdf"]))
+        fast_rv = rust_bindings.discrete_maximum(random_variable_1, random_variable_2)
+        return RV(
+            func=fast_rv.function,
+            support=fast_rv.support,
+            functional_form=fast_rv.functional_form,
+            domain_type=fast_rv.domain_type,
+        )
 
 
 def minimum_rv(random_variable_1, random_variable_2):
@@ -340,37 +316,13 @@ def minimum_rv(random_variable_1, random_variable_2):
         random_variable_2 = Convert(random_variable_2)
 
     if random_variable_1.is_discrete():
-        fx = pdf(random_variable_1)
-        fy = pdf(random_variable_2)
-        combo_list = []
-        prob_list = []
-        for i in range(len(fx.support)):
-            for j in range(len(fy.support)):
-                combo_list.append([fx.support[i], fy.support[j]])
-                prob_list.append(fx.func[i] * fy.func[j])
-
-        min_list = []
-        for i in range(len(combo_list)):
-            min_list.append(min(combo_list[i][0], combo_list[i][1]))
-
-        min_supp = []
-        min_func = []
-        for i in range(len(min_list)):
-            if min_list[i] not in min_supp:
-                min_supp.append(min_list[i])
-                min_func.append(prob_list[i])
-            else:
-                indx = min_supp.index(min_list[i])
-                min_func[indx] += prob_list[i]
-
-        zip_list = list(zip(min_supp, min_func))
-        zip_list.sort()
-        min_supp = []
-        min_func = []
-        for i in range(len(zip_list)):
-            min_supp.append(zip_list[i][0])
-            min_func.append(zip_list[i][1])
-        return pdf(RV(min_func, min_supp, ["discrete", "pdf"]))
+        fast_rv = rust_bindings.discrete_minimum(random_variable_1, random_variable_2)
+        return RV(
+            func=fast_rv.function,
+            support=fast_rv.support,
+            functional_form=fast_rv.functional_form,
+            domain_type=fast_rv.domain_type,
+        )
 
 
 def maximum(*argv):

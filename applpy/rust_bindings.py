@@ -31,6 +31,16 @@ def discrete_range_stat(random_variable, n, replace):
     return _extension_module().discrete_range_stat(random_variable, n, replace)
 
 
+def discrete_maximum(random_variable_1, random_variable_2):
+    """Return the discrete maximum of two random variables."""
+    return _extension_module().discrete_maximum(random_variable_1, random_variable_2)
+
+
+def discrete_minimum(random_variable_1, random_variable_2):
+    """Return the discrete minimum of two random variables."""
+    return _extension_module().discrete_minimum(random_variable_1, random_variable_2)
+
+
 def next_combination(previous, n):
     """Return the next lexicographical combination."""
     return _extension_module().next_combination(previous, n)
