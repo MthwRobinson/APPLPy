@@ -62,6 +62,34 @@ def test_order_stat_discrete_singleton_path():
     assert OrderStat(singleton, 1, 1, "w").ftype == ["discrete", "pdf"]
 
 
+def test_range_stat_discrete_with_replacement_distribution():
+    discrete_uniform = RV(
+        [Rational(1, 4), Rational(1, 4), Rational(1, 4), Rational(1, 4)],
+        [1, 2, 3, 4],
+        ["discrete", "pdf"],
+    )
+
+    result = RangeStat(discrete_uniform, 2, "w")
+
+    assert result.support == [0, 1, 2, 3]
+    assert result.func == [Rational(1, 4), Rational(3, 8), Rational(1, 4), Rational(1, 8)]
+    assert result.ftype == ["discrete", "pdf"]
+
+
+def test_range_stat_discrete_without_replacement_distribution():
+    discrete_uniform = RV(
+        [Rational(1, 4), Rational(1, 4), Rational(1, 4), Rational(1, 4)],
+        [1, 2, 3, 4],
+        ["discrete", "pdf"],
+    )
+
+    result = RangeStat(discrete_uniform, 2, "wo")
+
+    assert result.support == [1, 2, 3]
+    assert result.func == [Rational(1, 2), Rational(1, 3), Rational(1, 6)]
+    assert result.ftype == ["discrete", "pdf"]
+
+
 def test_snake_case_names_match_compat_aliases():
     assert maximum is order_stat_module.Maximum
     assert maximum_iid is order_stat_module.MaximumIID
