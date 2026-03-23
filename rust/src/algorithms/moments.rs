@@ -288,7 +288,7 @@ pub fn discrete_kurtosis(random_variable: &RandomVariable) -> Result<Number, Str
 ///
 /// # Examples
 /// ```
-/// use applpy_rust::algorithms::moments::discrete_coefficient_of_variance;
+/// use applpy_rust::algorithms::moments::discrete_coefficient_of_variation;
 /// use applpy_rust::algorithms::number::Number;
 /// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 /// use num_rational::Rational64;
@@ -308,12 +308,12 @@ pub fn discrete_kurtosis(random_variable: &RandomVariable) -> Result<Number, Str
 ///     domain_type: DomainType::Discrete,
 /// };
 ///
-/// let cv = discrete_coefficient_of_variance(&rv).unwrap();
+/// let cv = discrete_coefficient_of_variation(&rv).unwrap();
 /// assert!((cv.to_f64() - 0.487950036474267).abs() < 1e-12);
 /// ```
 ///
 /// ```
-/// use applpy_rust::algorithms::moments::discrete_coefficient_of_variance;
+/// use applpy_rust::algorithms::moments::discrete_coefficient_of_variation;
 /// use applpy_rust::algorithms::number::Number;
 /// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 ///
@@ -326,10 +326,10 @@ pub fn discrete_kurtosis(random_variable: &RandomVariable) -> Result<Number, Str
 ///     domain_type: DomainType::Discrete,
 /// };
 ///
-/// let cv = discrete_coefficient_of_variance(&rv).unwrap();
+/// let cv = discrete_coefficient_of_variation(&rv).unwrap();
 /// assert!((cv.to_f64() - 0.463980363569169).abs() < 1e-12);
 /// ```
-pub fn discrete_coefficient_of_variance(
+pub fn discrete_coefficient_of_variation(
     random_variable: &RandomVariable,
 ) -> Result<Number, String> {
     let mean = discrete_mean(random_variable)?;
@@ -684,7 +684,7 @@ mod tests {
     }
 
     #[test]
-    fn discrete_coefficient_of_variance_computes_discrete_expected_value_for_rational_pdf() {
+    fn discrete_coefficient_of_variation_computes_discrete_expected_value_for_rational_pdf() {
         // Fair die: CV = sqrt(35/12) / (7/2)
         let rv = RandomVariable {
             function: vec![Number::Rational(Rational64::new(1, 6)); 6],
@@ -700,12 +700,12 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let coefficient_of_variance = discrete_coefficient_of_variance(&rv).unwrap();
-        assert!((coefficient_of_variance.to_f64() - 0.487950036474267).abs() < 1e-12);
+        let coefficient_of_variation = discrete_coefficient_of_variation(&rv).unwrap();
+        assert!((coefficient_of_variation.to_f64() - 0.487950036474267).abs() < 1e-12);
     }
 
     #[test]
-    fn discrete_coefficient_of_variance_computes_discrete_expected_value_for_float_pdf() {
+    fn discrete_coefficient_of_variation_computes_discrete_expected_value_for_float_pdf() {
         // mean = 2.4, variance = 1.24, so CV = sqrt(1.24)/2.4
         let rv = RandomVariable {
             function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
@@ -714,12 +714,12 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let coefficient_of_variance = discrete_coefficient_of_variance(&rv).unwrap();
-        assert!((coefficient_of_variance.to_f64() - 0.463980363569169).abs() < 1e-12);
+        let coefficient_of_variation = discrete_coefficient_of_variation(&rv).unwrap();
+        assert!((coefficient_of_variation.to_f64() - 0.463980363569169).abs() < 1e-12);
     }
 
     #[test]
-    fn discrete_coefficient_of_variance_returns_error_when_mean_computation_fails() {
+    fn discrete_coefficient_of_variation_returns_error_when_mean_computation_fails() {
         let rv = RandomVariable {
             function: vec![],
             support: vec![],
@@ -727,7 +727,7 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let result = discrete_coefficient_of_variance(&rv);
+        let result = discrete_coefficient_of_variation(&rv);
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap(),

@@ -307,6 +307,46 @@ impl FastRV {
             "failed to compute the variance of the random variable",
         ))
     }
+
+    pub fn skewness(&self) -> PyResult<Number> {
+        if let Ok(skewness) = self.inner.skewness() {
+            return Ok(skewness);
+        }
+
+        Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "failed to compute the skewness of the random variable",
+        ))
+    }
+
+    pub fn kurtosis(&self) -> PyResult<Number> {
+        if let Ok(kurtosis) = self.inner.kurtosis() {
+            return Ok(kurtosis);
+        }
+
+        Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "failed to compute the kurtosis of the random variable",
+        ))
+    }
+
+    pub fn coefficient_of_variation(&self) -> PyResult<Number> {
+        if let Ok(coefficient_of_variation) = self.inner.coefficient_of_variation() {
+            return Ok(coefficient_of_variation);
+        }
+
+        Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "failed to compute the coefficient_of_variation of the random variable",
+        ))
+    }
+
+    pub fn entropy(&self) -> PyResult<Number> {
+        if let Ok(entropy) = self.inner.entropy() {
+            return Ok(entropy);
+        }
+
+        Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "failed to compute the entropy of the random variable",
+        ))
+    }
 }
 
 #[cfg(test)]

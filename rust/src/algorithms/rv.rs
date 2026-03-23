@@ -165,6 +165,22 @@ impl RandomVariable {
     pub fn variance(&self) -> Result<Number, String> {
         moments::discrete_variance(self)
     }
+
+    pub fn skewness(&self) -> Result<Number, String> {
+        moments::discrete_skewness(self)
+    }
+
+    pub fn kurtosis(&self) -> Result<Number, String> {
+        moments::discrete_kurtosis(self)
+    }
+
+    pub fn coefficient_of_variation(&self) -> Result<Number, String> {
+        moments::discrete_coefficient_of_variation(self)
+    }
+
+    pub fn entropy(&self) -> Result<Number, String> {
+        moments::discrete_entropy(self)
+    }
 }
 
 /// Verifies that the area under the PDF of random variable sums to 1
