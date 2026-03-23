@@ -150,7 +150,9 @@ def convolution(random_variable_1, random_variable_2):
         convolution_function_candidates = []
         for i in range(len(left_pdf_rv.support)):
             for j in range(len(right_pdf_rv.support)):
-                convolution_support_candidates.append(left_pdf_rv.support[i] + right_pdf_rv.support[j])
+                convolution_support_candidates.append(
+                    left_pdf_rv.support[i] + right_pdf_rv.support[j]
+                )
                 convolution_function_candidates.append(left_pdf_rv.func[i] * right_pdf_rv.func[j])
         # Sort the function and support lists for the convolution
         sorted_convolution_terms = list(
@@ -251,11 +253,17 @@ def product(random_variable_1, random_variable_2):
                     left_function = left_pdf_with_zero.func[i]
                     base_integral = integrate(left_function * right_function * (1 / x), (x, a, b))
                     if d < oo:
-                        upper_integral = integrate(left_function * right_function * (1 / x), (x, v / d, b))
+                        upper_integral = integrate(
+                            left_function * right_function * (1 / x), (x, v / d, b)
+                        )
                     if c > 0:
-                        lower_integral = integrate(left_function * right_function * (1 / x), (x, a, v / c))
+                        lower_integral = integrate(
+                            left_function * right_function * (1 / x), (x, a, v / c)
+                        )
                     if c > 0 and d < oo and a * d < b * c:
-                        middle_integral = integrate(left_function * right_function * (1 / x), (x, v / d, v / c))
+                        middle_integral = integrate(
+                            left_function * right_function * (1 / x), (x, v / d, v / c)
+                        )
                     # 1st Qd, Scenario 1
                     if c == 0 and d == oo:
                         for k in range(len(product_functions)):
@@ -313,11 +321,17 @@ def product(random_variable_1, random_variable_2):
                     left_function = left_pdf_with_zero.func[i]
                     base_integral = -integrate(left_function * right_function * (1 / x), (x, a, b))
                     if d < 0:
-                        upper_integral = -integrate(left_function * right_function * (1 / x), (x, (v / d), b))
+                        upper_integral = -integrate(
+                            left_function * right_function * (1 / x), (x, (v / d), b)
+                        )
                     if c > -oo:
-                        lower_integral = -integrate(left_function * right_function * (1 / x), (x, a, (v / c)))
+                        lower_integral = -integrate(
+                            left_function * right_function * (1 / x), (x, a, (v / c))
+                        )
                     if c > -oo and d < 0:
-                        middle_integral = -integrate(left_function * right_function * (1 / x), (x, (v / d), (v / c)))
+                        middle_integral = -integrate(
+                            left_function * right_function * (1 / x), (x, (v / d), (v / c))
+                        )
                     # 2nd Qd, Scenario 1
                     if c == -oo and d == 0:
                         for k in range(len(product_functions)):
@@ -375,11 +389,17 @@ def product(random_variable_1, random_variable_2):
                     left_function = left_pdf_with_zero.func[i]
                     base_integral = -integrate(left_function * right_function * (1 / x), (x, a, b))
                     if d < oo:
-                        upper_integral = -integrate(left_function * right_function * (1 / x), (x, a, (v / d)))
+                        upper_integral = -integrate(
+                            left_function * right_function * (1 / x), (x, a, (v / d))
+                        )
                     if c > 0:
-                        lower_integral = -integrate(left_function * right_function * (1 / x), (x, (v / b), c))
+                        lower_integral = -integrate(
+                            left_function * right_function * (1 / x), (x, (v / b), c)
+                        )
                     if c > 0 and d < oo:
-                        middle_integral = -integrate(left_function * right_function * (1 / x), (x, (v / c), (v / d)))
+                        middle_integral = -integrate(
+                            left_function * right_function * (1 / x), (x, (v / c), (v / d))
+                        )
                     # 3rd Qd, Scenario 1
                     if c == 0 and d == oo:
                         for k in range(len(product_functions)):
@@ -437,11 +457,17 @@ def product(random_variable_1, random_variable_2):
                     left_function = left_pdf_with_zero.func[i]
                     base_integral = integrate(left_function * right_function * (1 / x), (x, a, b))
                     if d < 0:
-                        upper_integral = integrate(left_function * right_function * (1 / x), (x, a, (v / d)))
+                        upper_integral = integrate(
+                            left_function * right_function * (1 / x), (x, a, (v / d))
+                        )
                     if c > -oo:
-                        lower_integral = integrate(left_function * right_function * (1 / x), (x, (v / c), b))
+                        lower_integral = integrate(
+                            left_function * right_function * (1 / x), (x, (v / c), b)
+                        )
                     if c > -oo and d < 0:
-                        middle_integral = integrate(left_function * right_function * (1 / x), (x, (v / c), (v / d)))
+                        middle_integral = integrate(
+                            left_function * right_function * (1 / x), (x, (v / c), (v / d))
+                        )
                     # 4th Qd, Scenario 1
                     if c == oo and d == 0:
                         for k in range(len(product_functions)):
