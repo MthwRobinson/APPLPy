@@ -23,7 +23,8 @@ from sympy import (
     ln,
     simplify,
 )
-from .rv import RV, RVError, truncate
+from .rv import RV, RVError
+from .transform import truncate
 
 x, y, z, t = symbols("x y z t")
 

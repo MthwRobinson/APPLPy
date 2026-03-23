@@ -9,7 +9,8 @@ from applpy.distributions.discrete import (
     PoissonRV,
     UniformDiscreteRV,
 )
-from applpy.rv import mean, RVError
+from applpy.moments import mean
+from applpy.rv import RVError
 
 
 def test_discrete_distribution_constructors_have_expected_structure():

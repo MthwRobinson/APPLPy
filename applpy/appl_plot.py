@@ -84,7 +84,8 @@ def plot_dist(random_variable, suplist=None, opt=None, color="r", display=True):
     Output:     1. A plot of the random variable
     """
     # Local import to avoid circular import with applpy.rv.
-    from applpy.rv import Convert, RV, RVError, pdf
+    from applpy.conversion import pdf
+    from applpy.rv import Convert, RV, RVError
 
     # Keep argument for backward compatibility.
     _ = display
@@ -190,7 +191,8 @@ def plot_emp_cdf(data):
     Arguments:  1. data: A data sample
     Output:     1. An empirical cdf of the data
     """
-    from applpy.rv import BootstrapRV, cdf
+    from applpy.conversion import cdf
+    from applpy.rv import BootstrapRV
 
     xstar = BootstrapRV(data)
     plot_dist(cdf(xstar), opt="EMPCDF")
@@ -206,7 +208,8 @@ def pp_plot(random_variable, sample):
     Output:     1. A pp_plot comparing the sample to a theoretical
                     model
     """
-    from applpy.rv import BootstrapRV, RVError, cdf
+    from applpy.conversion import cdf
+    from applpy.rv import BootstrapRV, RVError
 
     if not isinstance(sample, list):
         raise RVError("The data sample must be given as a list")

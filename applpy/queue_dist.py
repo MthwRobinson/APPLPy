@@ -22,12 +22,10 @@ from sympy import (
 )
 from mpmath import nsum, nprod
 import numpy as np
-from .rv import (
-    RVError,
-    mean,
-    convolution,
-    mixture,
-)
+from .algebra import convolution
+from .moments import mean
+from .rv import RVError
+from .transform import mixture
 from .distributions.continuous import ErlangRV
 
 x, y, z, t, v = symbols("x y z t v")

@@ -1,26 +1,18 @@
-"""
-Main Random Variable Module
-
-1. The Random Variable class
-2. Procedures for changing functional form
-3. Operations on one random variable
-4. Operations on two random variables
-5. Plots
-
-Procedures On One Random Variable:
-    transform(random_variable,gX)
-    truncate(random_variable,[lw,up])
-    VerifyPDF(random_variable)
-
-Procedures On Two Random Variables:
-    mixture(MixParameters,MixRVs)
-
-Plotting Procedures:
-    plot_dist(random_variable,suplist)
-    plot_emp_cdf(data)
-    pp_plot(random_variable,sample)
-    qq_plot(random_variable,sample)
-"""
+# A Probability Progamming Language (APPL) -- Python Edition
+# Copyright (C) 2001,2002,2008,2010,2014 Andrew Glen, Larry
+# Leemis, Diane Evans, Matthew Robinson
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from applpy import rust_bindings
 
@@ -41,22 +33,6 @@ from random import random
 from enum import Enum
 
 x, y, z, t = symbols("x y z t")
-
-# A Probability Progamming Language (APPL) -- Python Edition
-# Copyright (C) 2001,2002,2008,2010,2014 Andrew Glen, Larry
-# Leemis, Diane Evans, Matthew Robinson
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 
 class RVError(Exception):
@@ -285,6 +261,8 @@ class RV:
         Arguments:  1. self: the random variable
         Output:     1. The negative transformation of the random variable
         """
+        from .transform import transform
+
         gX = [[-x], [-oo, oo]]
         neg = transform(self, gX)
         return neg
@@ -297,6 +275,8 @@ class RV:
         Arguments:  1. self: the random variable
         Output:     1. The absolute value of the random variable
         """
+        from .transform import transform
+
         gX = [[abs(x)], [-oo, oo]]
         abs_rv = transform(self, gX)
         return abs_rv
@@ -314,6 +294,9 @@ class RV:
         """
         # If the random variable is added to another random variable,
         #   return the convolution of the two random variables
+        from .algebra import convolution
+        from .transform import transform
+
         if "RV" in other.__class__.__name__:
             try:
                 return convolution(self, other)
@@ -356,6 +339,9 @@ class RV:
         """
         # If the random variable is subtracted by another random variable,
         #   return the difference of the two random variables
+        from .algebra import convolution
+        from .transform import transform
+
         if "RV" in other.__class__.__name__:
             gX = [[-x], [-oo, oo]]
             random_variable = transform(other, gX)
@@ -395,6 +381,9 @@ class RV:
         """
         # If the random variable is multiplied by another random variable,
         #   return the product of the two random variables
+        from .algebra import product
+        from .transform import transform
+
         if "RV" in other.__class__.__name__:
             try:
                 return product(self, other)
@@ -434,6 +423,9 @@ class RV:
         """
         # If the random variable is divided by another random variable,
         #   return the quotient of the two random variables
+        from .algebra import product
+        from .transform import transform
+
         if "RV" in other.__class__.__name__:
             gX = [[1 / x, 1 / x], [-oo, 0, oo]]
             random_variable = transform(other, gX)
@@ -456,6 +448,8 @@ class RV:
         Output:     1. A new random variable
         """
         ## Invert the random variable
+        from .transform import transform
+
         gX = [[1 / x, 1 / x], [-oo, 0, oo]]
         invert = transform(self, gX)
         ## Call the multiplication function
@@ -702,6 +696,8 @@ class RV:
                         and a print statement indicating whether or not the
                         random variable is valid.
         """
+        from .conversion import pdf
+
         # If the random variable is continuous, verify the PDF
         if self.is_continuous():
             # Check to ensure that the distribution is fully
@@ -809,6 +805,9 @@ class RV:
                             convergence. (default is .1% of the mean)
         """
 
+        from .conversion import cdf, idf, pdf
+        from .moments import mean
+
         # Check to see if the user specified a valid method
         method_list = ["newton-raphson", "inverse"]
         if method not in method_list:
@@ -870,17 +869,6 @@ class RV:
         return varlist
 
 
-# Conversion Procedures:
-#     cdf(random_variable,value)
-#     chf(random_variable,value)
-#     hf(random_variable,value)
-#     idf(random_variable,value)
-#     pdf(random_variable,value)
-#     sf(random_variable,value)
-#     BootstrapRV(varlist)
-#     Convert(random_variable,inc)
-
-
 def check_value(value, sup):
     # Not intended for use by end user
     """
@@ -900,42 +888,6 @@ def check_value(value, sup):
             return False
         else:
             return True
-
-
-def cdf(random_variable, value=x, cache=False):
-    from .conversion import cdf as _cdf
-
-    return _cdf(random_variable, value=value, cache=cache)
-
-
-def chf(random_variable, value=x, cache=False):
-    from .conversion import chf as _chf
-
-    return _chf(random_variable, value=value, cache=cache)
-
-
-def hf(random_variable, value=x, cache=False):
-    from .conversion import hf as _hf
-
-    return _hf(random_variable, value=value, cache=cache)
-
-
-def idf(random_variable, value=x, cache=False):
-    from .conversion import idf as _idf
-
-    return _idf(random_variable, value=value, cache=cache)
-
-
-def pdf(random_variable, value=x, cache=False):
-    from .conversion import pdf as _pdf
-
-    return _pdf(random_variable, value=value, cache=cache)
-
-
-def sf(random_variable, value=x, cache=False):
-    from .conversion import sf as _sf
-
-    return _sf(random_variable, value=value, cache=cache)
 
 
 def BootstrapRV(varlist, symbolic=False):
@@ -994,79 +946,6 @@ def Convert(random_variable, inc=1):
     return RV(discrete_func, discrete_supp, ["discrete", random_variable.functional_form])
 
 
-# Procedures on One Random Variable
-#
-# Procedures:
-#     convolution_iid(random_variable,n)
-#     coef_of_var(random_variable)
-#     expected_value(random_variable,gX)
-#     entropy(random_variable)
-#     kurtosis(random_variable)
-#     mean(random_variable)
-#     mgf(random_variable)
-#     Power(Rvar,n)
-#     product_iid(random_variable,n)
-#     skewness(random_variable)
-#     SqRt(random_variable)
-#     transform(random_variable,gX)
-#     truncate(random_variable,[lw,up])
-#     variance(random_variable)
-
-
-def convolution_iid(random_variable, n):
-    from .algebra import convolution_iid as _ConvolutionIID
-
-    return _ConvolutionIID(random_variable, n)
-
-
-def coef_of_var(random_variable, cache=False):
-    from .moments import coef_of_var as _CoefOfVar
-
-    return _CoefOfVar(random_variable, cache=cache)
-
-
-def expected_value(random_variable, gX=x):
-    from .moments import expected_value as _ExpectedValue
-
-    return _ExpectedValue(random_variable, gX=gX)
-
-
-def entropy(random_variable, cache=False):
-    from .moments import entropy as _Entropy
-
-    return _Entropy(random_variable, cache=cache)
-
-
-def kurtosis(random_variable, cache=False):
-    from .moments import kurtosis as _Kurtosis
-
-    return _Kurtosis(random_variable, cache=cache)
-
-
-def mean(random_variable, cache=False):
-    from .moments import mean as _Mean
-
-    return _Mean(random_variable, cache=cache)
-
-
-def mgf(random_variable, cache=False):
-    from .moments import mgf as _MGF
-
-    return _MGF(random_variable, cache=cache)
-
-
-def skewness(random_variable, cache=False):
-    from .moments import skewness as _Skewness
-
-    return _Skewness(random_variable, cache=cache)
-
-
-def variance(random_variable, cache=False):
-    from .moments import variance as _Variance
-
-    return _Variance(random_variable, cache=cache)
-
-
 def Pow(random_variable, n):
     """
     Procedure Name: Pow
@@ -1084,19 +963,9 @@ def Pow(random_variable, n):
     # If n is odd, the g is a one-to-one transformation
     elif n % 2 == 1:
         g = [[x**n], [-oo, oo]]
+    from .transform import transform
+
     return transform(random_variable, g)
-
-
-def product_iid(random_variable, n):
-    from .algebra import product_iid as _ProductIID
-
-    return _ProductIID(random_variable, n)
-
-
-def RangeStat(random_variable, n, replace="w"):
-    from .order_stat import RangeStat as _RangeStat
-
-    return _RangeStat(random_variable, n, replace)
 
 
 def Sqrt(random_variable):
@@ -1111,21 +980,11 @@ def Sqrt(random_variable):
             err_string = "A negative value appears in the support of the"
             err_string += " random variable."
             raise RVError(err_string)
+    from .transform import transform
+
     u = [[sqrt(x)], [0, oo]]
     NewRvar = transform(random_variable, u)
     return NewRvar
-
-
-def transform(random_variable, gXt):
-    from .transform import transform as _transform
-
-    return _transform(random_variable, gXt)
-
-
-def truncate(random_variable, supp):
-    from .transform import truncate as _truncate
-
-    return _truncate(random_variable, supp)
 
 
 def VerifyPDF(random_variable):
@@ -1138,80 +997,3 @@ def VerifyPDF(random_variable):
     """
     return random_variable.verify_pdf()
 
-
-# Procedures on Two Random Variables
-#
-# Procedures:
-#     convolution(random_variable_1,random_variable_2)
-#     mixture(MixParameters,MixRVs)
-#     product(random_variable_1,random_variable_2)
-
-
-def convolution(random_variable_1, random_variable_2):
-    from .algebra import convolution as _Convolution
-
-    return _Convolution(random_variable_1, random_variable_2)
-
-
-def mixture(MixParameters, MixRVs):
-    from .transform import mixture as _mixture
-
-    return _mixture(MixParameters, MixRVs)
-
-
-def product(random_variable_1, random_variable_2):
-    from .algebra import product as _Product
-
-    return _Product(random_variable_1, random_variable_2)
-
-
-# Backward-compatible aliases for legacy APPLPy function names.
-ConvolutionIID = convolution_iid
-ProductIID = product_iid
-Convolution = convolution
-Product = product
-Transform = transform
-Truncate = truncate
-Mixture = mixture
-
-
-def ProductDiscrete(random_variable_1, random_variable_2):
-    """Backward-compatible wrapper for applpy.algebra._product_discrete."""
-    from .algebra import _product_discrete
-
-    return _product_discrete(random_variable_1, random_variable_2)
-
-
-def plot_dist(random_variable, suplist=None, opt=None, color="r", display=True):
-    """Wrapper for applpy.appl_plot.plot_dist."""
-    from .appl_plot import plot_dist as _plot_dist
-
-    return _plot_dist(random_variable, suplist=suplist, opt=opt, color=color, display=display)
-
-
-def plot_emp_cdf(data):
-    """Wrapper for applpy.appl_plot.plot_emp_cdf."""
-    from .appl_plot import plot_emp_cdf as _plot_emp_cdf
-
-    return _plot_emp_cdf(data)
-
-
-def pp_plot(random_variable, sample):
-    """Wrapper for applpy.appl_plot.pp_plot."""
-    from .appl_plot import pp_plot as _pp_plot
-
-    return _pp_plot(random_variable, sample)
-
-
-def qq_plot(random_variable, sample):
-    """Wrapper for applpy.appl_plot.qq_plot."""
-    from .appl_plot import qq_plot as _qq_plot
-
-    return _qq_plot(random_variable, sample)
-
-
-# Backward compatibility aliases for legacy APPLPy naming.
-PlotDist = plot_dist
-PlotEmpCDF = plot_emp_cdf
-PPPlot = pp_plot
-QQPlot = qq_plot

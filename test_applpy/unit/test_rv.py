@@ -1,17 +1,14 @@
 import pytest
 from sympy import Integer, Rational
 
+from applpy.algebra import _product_discrete as ProductDiscrete
+from applpy.appl_plot import plot_dist, plot_emp_cdf, pp_plot, qq_plot
 from applpy import rust_bindings
 from applpy.rv import (
     RV,
     RVError,
     BootstrapRV,
-    plot_dist,
-    plot_emp_cdf,
-    pp_plot,
     Pow,
-    ProductDiscrete,
-    qq_plot,
     Sqrt,
     VerifyPDF,
     x,

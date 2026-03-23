@@ -10,7 +10,8 @@ from sympy import (
     symbols,
 )
 
-from ...rv import idf, RV, RVError
+from ...conversion import idf
+from ...rv import RV, RVError
 from .param_check import param_check
 
 x, y, z, t, v = symbols("x y z t v")

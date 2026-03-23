@@ -5,7 +5,9 @@ Algebraic operations on one or two random variables.
 import numpy as np
 from sympy import Symbol, exp, expand, integrate, ln, nan, oo, simplify
 
-from .rv import RV, RVError, Convert, pdf, transform, x
+from .conversion import pdf
+from .rv import RV, RVError, Convert, x
+from .transform import transform
 
 
 def _product_discrete(random_variable_1, random_variable_2):

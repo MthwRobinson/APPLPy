@@ -13,7 +13,8 @@ from sympy import (
     symbols,
 )
 
-from ...rv import idf, RV, RVError
+from ...conversion import idf
+from ...rv import RV, RVError
 from .param_check import param_check
 from .uniform import UniformRV
 

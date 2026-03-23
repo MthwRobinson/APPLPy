@@ -24,7 +24,8 @@ from sympy import (
     log,
 )
 from .conversion import cdf, chf, hf, pdf
-from .rv import RVError, BootstrapRV, expected_value, mean, variance
+from .moments import expected_value, mean, variance
+from .rv import RVError, BootstrapRV
 
 x, y, z, t = symbols("x y z t")
 

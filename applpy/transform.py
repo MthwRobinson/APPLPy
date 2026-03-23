@@ -4,7 +4,8 @@ Transformation procedures extracted from `applpy.rv`.
 
 from sympy import Float, Symbol, diff, limit, oo, simplify, solve, zoo
 
-from .rv import Convert as convert, RV, RVError, cdf, pdf, t, x
+from .conversion import cdf, pdf
+from .rv import Convert as convert, RV, RVError, t, x
 
 
 def transform(random_variable, transform_spec):
