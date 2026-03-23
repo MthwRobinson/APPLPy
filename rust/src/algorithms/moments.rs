@@ -128,6 +128,47 @@ pub fn discrete_variance(random_variable: &RandomVariable) -> Result<Number, Str
 /// * `kurtosis`: the kurtosis of the random variable
 ///
 /// # Examples
+/// ```
+/// use applpy_rust::algorithms::moments::discrete_kurtosis;
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+/// use num_rational::Rational64;
+///
+/// // Fair die: kurtosis = 303/175
+/// let rv = RandomVariable {
+///     function: vec![Number::Rational(Rational64::new(1, 6)); 6],
+///     support: vec![
+///         Number::Integer(1),
+///         Number::Integer(2),
+///         Number::Integer(3),
+///         Number::Integer(4),
+///         Number::Integer(5),
+///         Number::Integer(6),
+///     ],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let kurtosis = discrete_kurtosis(&rv).unwrap();
+/// assert!((kurtosis.to_f64() - (303.0 / 175.0)).abs() < 1e-12);
+/// ```
+///
+/// ```
+/// use applpy_rust::algorithms::moments::discrete_kurtosis;
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+///
+/// // PDF [0.2, 0.5, 0.3] over support [1, 2, 4]
+/// let rv = RandomVariable {
+///     function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
+///     support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(4)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let kurtosis = discrete_kurtosis(&rv).unwrap();
+/// assert!((kurtosis.to_f64() - 1.7866805411030178).abs() < 1e-12);
+/// ```
 pub fn discrete_kurtosis(random_variable: &RandomVariable) -> Result<Number, String> {
     let mean = discrete_mean(random_variable)?;
     let variance = discrete_variance(random_variable)?;
@@ -153,7 +194,7 @@ pub fn discrete_kurtosis(random_variable: &RandomVariable) -> Result<Number, Str
         })?;
     let term_4 = three * mean.pow(four).expect("failed to compute x^4");
 
-    let numerator = term_1 + term_2 + term_3 + term_4;
+    let numerator = term_1 - term_2 + term_3 - term_4;
     let denominator = standard_deviation.pow(four).expect("failed to comput x^4");
 
     let kurtosis = numerator / denominator;
@@ -402,6 +443,58 @@ mod tests {
         };
 
         let result = discrete_variance(&rv);
+        assert!(result.is_err());
+        assert_eq!(
+            result.err().unwrap(),
+            "cannot compute the pdf. function is empty"
+        );
+    }
+
+    #[test]
+    fn discrete_kurtosis_computes_kurtosis_for_rational_pdf() {
+        // Fair die: kurtosis = 303/175
+        let rv = RandomVariable {
+            function: vec![Number::Rational(Rational64::new(1, 6)); 6],
+            support: vec![
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+                Number::Integer(5),
+                Number::Integer(6),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let kurtosis = discrete_kurtosis(&rv).unwrap();
+        assert!((kurtosis.to_f64() - (303.0 / 175.0)).abs() < 1e-12);
+    }
+
+    #[test]
+    fn discrete_kurtosis_computes_kurtosis_for_float_pdf() {
+        // For PDF [0.2, 0.5, 0.3] over [1, 2, 4], kurtosis ~= 1.7866805411030178
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(4)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let kurtosis = discrete_kurtosis(&rv).unwrap();
+        assert!((kurtosis.to_f64() - 1.7866805411030178).abs() < 1e-12);
+    }
+
+    #[test]
+    fn discrete_kurtosis_returns_error_when_mean_computation_fails() {
+        let rv = RandomVariable {
+            function: vec![],
+            support: vec![],
+            functional_form: FunctionalForm::Cdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = discrete_kurtosis(&rv);
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap(),
