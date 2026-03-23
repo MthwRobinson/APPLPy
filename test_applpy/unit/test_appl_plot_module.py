@@ -1,4 +1,9 @@
+import pytest
+from sympy import Integer
+
+from applpy import PlotDist as top_level_plot_dist
 from applpy import appl_plot
+from applpy.rv import RV, RVError
 
 
 class PlotRecorder:
@@ -59,3 +64,60 @@ def test_prob_plot_sets_identity_line_and_axis_labels(monkeypatch):
         "title": "PP Plot",
         "grid": True,
     }
+
+
+def _uniform_continuous_pdf():
+    return RV(Integer(1), [0, 1], ["continuous", "pdf"])
+
+
+def test_top_level_plotdist_import_points_to_appl_plot():
+    assert top_level_plot_dist is appl_plot.PlotDist
+
+
+def test_plot_dist_validation_and_plot_calls(monkeypatch):
+    calls = {"plot": 0, "title": []}
+    rv = _uniform_continuous_pdf()
+
+    monkeypatch.setattr(appl_plot, "plot", lambda *args, **kwargs: calls.__setitem__("plot", calls["plot"] + 1))
+    monkeypatch.setattr(appl_plot, "title", lambda value: calls["title"].append(value))
+
+    appl_plot.PlotDist(rv, suplist=[0, 1], display=False)
+    assert calls["plot"] >= 1
+    assert "Probability Density Function" in calls["title"]
+
+    with pytest.raises(RVError, match="ascending order"):
+        appl_plot.PlotDist(rv, suplist=[1, 0], display=False)
+    with pytest.raises(RVError, match="within RV support"):
+        appl_plot.PlotDist(rv, suplist=[-1, 0], display=False)
+
+
+def test_plot_emp_cdf_delegates_to_plot_dist(monkeypatch):
+    observed = {}
+
+    def fake_plot_dist(random_variable, suplist=None, opt=None, color="r", display=True):
+        observed["opt"] = opt
+        observed["display"] = display
+
+    monkeypatch.setattr(appl_plot, "PlotDist", fake_plot_dist)
+    appl_plot.PlotEmpCDF([1, 2, 3, 4])
+
+    assert observed["opt"] == "EMPCDF"
+    assert observed["display"] is True
+
+
+def test_pp_and_qq_plot_call_prob_plot(monkeypatch):
+    rv = _uniform_continuous_pdf()
+    seen = []
+
+    monkeypatch.setattr(appl_plot, "ion", lambda: None)
+    monkeypatch.setattr(appl_plot, "prob_plot", lambda sample, fitted, kind: seen.append(kind))
+
+    appl_plot.PPPlot(rv, [0.1, 0.2, 0.3])
+    appl_plot.QQPlot(rv, [0.1, 0.2, 0.3])
+
+    assert seen == ["PP Plot", "QQ Plot"]
+
+    with pytest.raises(RVError, match="given as a list"):
+        appl_plot.PPPlot(rv, "invalid")
+    with pytest.raises(RVError, match="given as a list"):
+        appl_plot.QQPlot(rv, "invalid")

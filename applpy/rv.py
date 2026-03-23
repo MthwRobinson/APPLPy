@@ -16,9 +16,7 @@ Procedures On Two Random Variables:
     mixture(MixParameters,MixRVs)
 
 Plotting Procedures:
-    Histogram(sample,bins)
     PlotDist(random_variable,suplist)
-    PlotDisplay(plot_list,suplist)
     PlotEmpCDF(data)
     PPPlot(random_variable,sample)
     QQPlot(random_variable,sample)
@@ -43,8 +41,6 @@ from random import random
 import numpy as np
 import pickle
 from enum import Enum
-
-import matplotlib.pylab as plt
 
 x, y, z, t = symbols("x y z t")
 
@@ -1278,334 +1274,29 @@ def ProductDiscrete(random_variable_1, random_variable_2):
     return RV(funclist3, prodlist3, ["discrete", "pdf"])
 
 
-# Utilities
-#
-# Procedures:
-#     Histogram(sample,bins)
-#     LoadRV(filename)
-#     PlotClear()
-#     PlotDist(random_variable,suplist)
-#     PlotDisplay(plot_list,suplist)
-#     PlotEmpCDF(data)
-#     PlotLimits(limits, axis)
-#     PPPlot(random_variable,sample)
-#     QQPlot(random_variable,sample)
-
-
-def Histogram(sample, Bins=None):
-    """
-    Procedure: Histogram
-    Purpose: Construct a histogram from a sample of data
-    Arguments: 1. sample: The data sample from which to construct
-                    the histogram
-               2. bins: The number of bins in the histogram
-    Output:    1. A histogram plot
-    """
-    # Check to ensure that the sample is given as a list
-    if not isinstance(sample, list):
-        raise RVError("The data sample must be entered as a list")
-
-    sample.sort()
-    if Bins is None:
-        Bins = 1
-        for i in range(1, len(sample)):
-            if sample[i] != sample[i - 1]:
-                Bins += 1
-
-    plt.ion()
-    plt.hist(sample, bins=Bins, normed=True)
-    plt.ylabel("Relative Frequency")
-    plt.xlabel("Observation Value")
-    plt.title("Histogram")
-    plt.grid(True)
-
-
-def LoadRV(filename):
-    """
-    Procedure: LoadRV
-    Purpose: Load a random variable from a binary file
-    Aruments:   1. filename: the name of the file
-                    where the random variable is stored
-    Output:     1. The stored random variable
-    """
-    fileObject = open(filename, "r")
-    random_variable = pickle.load(fileObject)
-    if "RV" not in random_variable.__class__.__name__:
-        print("WARNING: Object loaded is not a random variable")
-    return random_variable
-
-
-def PlotClear():
-    """
-    Procedure: PlotClear
-    Purpose: Clears the plot display
-    Arguments:  None
-    Output:     1. Clear plot display
-    """
-    plt.clf()
-
-
-def PlotLimits(limits, axis):
-    """
-    Procedure: PlotLimits
-    Purpose: Sets the limits of a plot
-    Arguments:  1. limits: A list of plot limits
-    Output:     1. Plot with limits reset
-    """
-    axes = plt.gca()
-    if axis == "x":
-        axes.set_xlim(limits)
-    elif axis == "y":
-        axes.set_ylim(limits)
-    else:
-        err_str = 'The axis parameter in PlotLimits must be "x" or "y"'
-        raise RVError(err_str)
-
-
 def PlotDist(random_variable, suplist=None, opt=None, color="r", display=True):
-    """
-    Procedure: PlotDist
-    Purpose: Plot a random variable
-    Arguments:  1. random_variable: A random variable
-                2. suplist: A list of supports for the plot
-    Output:     1. A plot of the random variable
-    """
-    # Create the labels for the plot
-    if random_variable.is_cdf():
-        # lab1='F(x)'
-        lab2 = "Cumulative Distribution Function"
-    elif random_variable.is_chf():
-        # lab1='H(x)'
-        lab2 = "Cumulative Hazard Function"
-    elif random_variable.is_hf():
-        # lab1='h(x)'
-        lab2 = "Hazard Function"
-    elif random_variable.is_idf():
-        # lab1='F-1(s)'
-        lab2 = "Inverse Density Function"
-    elif random_variable.is_pdf():
-        # lab1='f(x)'
-        lab2 = "Probability Density Function"
-    elif random_variable.is_sf():
-        # lab1='S(X)'
-        lab2 = "Survivor Function"
+    """Backward-compatible wrapper for applpy.appl_plot.PlotDist."""
+    from .appl_plot import PlotDist as _PlotDist
 
-    if opt == "EMPCDF":
-        lab2 = "Empirical CDF"
-
-    # If the distribution is continuous, plot the function
-    if random_variable.is_continuous():
-        # Return an error if the plot supports are not
-        #   within the support of the random variable
-        if suplist is not None:
-            if suplist[0] > suplist[1]:
-                raise RVError("Support list must be in ascending order")
-            if suplist[0] < random_variable.support[0]:
-                raise RVError("Plot supports must fall within RV support")
-            if suplist[1] > random_variable.support[1]:
-                raise RVError("Plot support must fall within RV support")
-        # Cut out parts of the distribution that don't fall
-        #   within the limits of the plot
-        if suplist is None:
-            # Since plotting is numeric, the lower support cannot be -oo
-            if random_variable.support[0] == -oo:
-                support1 = float(random_variable.variate(s=0.01)[0])
-            else:
-                support1 = float(random_variable.support[0])
-            # Since plotting is numeric, the upper support cannot be oo
-            if random_variable.support[len(random_variable.support) - 1] == oo:
-                support2 = float(random_variable.variate(s=0.99)[0])
-            else:
-                support2 = float(random_variable.support[len(random_variable.support) - 1])
-            suplist = [support1, support2]
-        for i in range(len(random_variable.func)):
-            if suplist[0] >= float(random_variable.support[i]):
-                if suplist[0] <= float(random_variable.support[i + 1]):
-                    lwindx = i
-            if suplist[1] >= float(random_variable.support[i]):
-                if suplist[1] <= float(random_variable.support[i + 1]):
-                    upindx = i
-        # Create a list of functions for the plot
-        plotfunc = []
-        for i in range(len(random_variable.func)):
-            if i >= lwindx and i <= upindx:
-                plotfunc.append(random_variable.func[i])
-        # Create a list of supports for the plot
-        plotsupp = [suplist[0]]
-        upindx += 1
-        for i in range(len(random_variable.support)):
-            if i > lwindx and i < upindx:
-                plotsupp.append(random_variable.support[i])
-        plotsupp.append(suplist[1])
-
-        # print plotfunc, plotsupp
-        for i, function in enumerate(plotfunc):
-
-            def f(y):
-                return function.subs(x, y).evalf()
-
-            x_range = np.arange(
-                plotsupp[i], plotsupp[i + 1], abs(plotsupp[i + 1] - plotsupp[i]) / 1000
-            )
-            y_range = np.array([f(num) for num in x_range])
-            plt.plot(x_range, y_range, color)
-        plt.title(lab2)
-
-        """
-        Old plot method using the sympy plot
-        plt.ioff()
-        print plotfunc, plotsupp
-        initial_plot=plot(plotfunc[0],(x,plotsupp[0],plotsupp[1]),
-                          title=lab2,show=False,line_color=color)
-        for i in range(1,len(plotfunc)):
-            plot_extension=plot(plotfunc[i],
-                               (x,plotsupp[i],plotsupp[i+1]),
-                                show=False,line_color=color)
-            initial_plot.append(plot_extension[0])
-        if display is True:
-            plt.ion()
-            initial_plot.show()
-            return initial_plot
-        else:
-            return initial_plot
-        """
-
-        # Old PlotDist code before sympy created the
-        #   plotting front-end
-        # print plotsupp
-        # Parse the functions for matplotlib
-        # plot_func=[]
-        # for i in range(len(plotfunc)):
-        #    strfunc=str(plotfunc[i])
-        #    plot_func.append(strfunc)
-        # print plot_func
-        # Display the plot
-        # if opt!='display':
-        #    plt.ion()
-        # plt.mat_plot(plot_func,plotsupp,lab1,lab2,'continuous')
-
-    if random_variable.is_discrete() or random_variable.is_discrete_functional():
-        if random_variable.is_discrete_functional():
-            if random_variable.support[-1] != oo:
-                random_variable = Convert(random_variable)
-            else:
-                p = 1
-                i = random_variable.support[0]
-                while p > 0.00001:
-                    p = pdf(random_variable, i).evalf()
-                    i += 1
-                newsupport = random_variable.support
-                newsupport[-1] = i
-                random_variable = RV(
-                    random_variable.func,
-                    newsupport,
-                    functional_form=random_variable.functional_form,
-                    domain_type=random_variable.domain_type,
-                )
-                random_variable = Convert(random_variable)
-        # if display==True:
-        #    plt.ion()
-        # plt.mat_plot(random_variable.func,random_variable.support,lab1,lab2,'discrete')
-        plt.step(random_variable.support, random_variable.func)
-        # plt.xlabel('x')
-        # if lab1!=None:
-        #    plt.ylabel(lab1)
-        if lab2 is not None:
-            plt.title(lab2)
-
-
-def PlotDisplay(plot_list):
-    if len(plot_list) < 2:
-        raise RVError("PlotDisplay requires a list with multiple plots")
-    plt.ion()
-    totalplot = plot_list[0]
-    for graph in plot_list[1:]:
-        totalplot.append(graph[0])
-    totalplot.show()
+    return _PlotDist(random_variable, suplist=suplist, opt=opt, color=color, display=display)
 
 
 def PlotEmpCDF(data):
-    """
-    Procedure Name: PlotEmpCDF
-    Purpose: Plots an empirical CDF, given a data set
-    Arguments:  1. data: A data sample
-    Output:     1. An empirical cdf of the data
-    """
+    """Backward-compatible wrapper for applpy.appl_plot.PlotEmpCDF."""
+    from .appl_plot import PlotEmpCDF as _PlotEmpCDF
 
-    # Create a bootstrap random variable from the data
-    Xstar = BootstrapRV(data)
-    PlotDist(cdf(Xstar), opt="EMPCDF")
+    return _PlotEmpCDF(data)
 
 
 def PPPlot(random_variable, sample):
-    """
-    Procedure Name: PPPlot
-    Purpose: Plots the model probability versus the sample
-                probability
-    Arguments:  1. random_variable: A random variable
-                2. sample: An experimental sample
-    Output:     1. A PPPlot comparing the sample to a theoretical
-                    model
-    """
-    # Return an error message if the sample is not given as
-    #   a list
-    if not isinstance(sample, list):
-        raise RVError("The data sample must be given as a list")
+    """Backward-compatible wrapper for applpy.appl_plot.PPPlot."""
+    from .appl_plot import PPPlot as _PPPlot
 
-    # Create a list of quantiles
-    n = len(sample)
-    sample.sort()
-    plist = []
-    for i in range(1, n + 1):
-        p = (i - (1 / 2)) / n
-        plist.append(p)
-
-    # Create a list of CDF values for the sample and the
-    # theoretical model
-    FX = cdf(random_variable)
-    fxstar = BootstrapRV(sample)
-    FXstar = cdf(fxstar)
-
-    FittedCDF = []
-    ObservedCDF = []
-    for i in range(len(plist)):
-        FittedCDF.append(cdf(FX, sample[i]))
-        ObservedCDF.append(cdf(FXstar, sample[i]))
-
-    # Plot the results
-    plt.ion()
-    plt.prob_plot(ObservedCDF, FittedCDF, "PP Plot")
+    return _PPPlot(random_variable, sample)
 
 
 def QQPlot(random_variable, sample):
-    """
-    Procedure: QQPlot
-    Purpose: Plots the q_i quantile of a fitted distribution
-                versus the q_i quantile of the sample dist
-    Arguments:  1. random_variable: A random variable
-                2. sample: sample data
-    Output:     1. QQ Plot
-    """
-    # Return an error message is the sample is not given as
-    #   a list
-    if not isinstance(sample, list):
-        raise RVError("The data sample must be given as a list")
+    """Backward-compatible wrapper for applpy.appl_plot.QQPlot."""
+    from .appl_plot import QQPlot as _QQPlot
 
-    # Create a list of quantiles
-    n = len(sample)
-    sample.sort()
-    qlist = []
-    for i in range(1, n + 1):
-        q = (i - (1 / 2)) / n
-        qlist.append(q)
-    # Create 'fitted' list
-    Fitted = []
-    for i in range(len(qlist)):
-        Fitted.append(random_variable.variate(s=qlist[i])[0])
-
-    # Plot the results
-    plt.ion()
-    plt.prob_plot(sample, Fitted, "QQ Plot")
-
-
-# Backward-compatible re-export for direct imports from applpy.rv.
+    return _QQPlot(random_variable, sample)

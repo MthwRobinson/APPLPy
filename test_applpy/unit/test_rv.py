@@ -6,13 +6,9 @@ from applpy.rv import (
     RV,
     RVError,
     BootstrapRV,
-    Histogram,
-    LoadRV,
     PPPlot,
-    PlotClear,
     PlotDist,
     PlotEmpCDF,
-    PlotLimits,
     Pow,
     ProductDiscrete,
     QQPlot,
@@ -185,9 +181,6 @@ def test_latex_and_save_edge_cases(tmp_path):
     rv.save(str(out_file))
     assert out_file.exists()
 
-    with pytest.raises(UnicodeDecodeError):
-        LoadRV(str(out_file))
-
 
 def test_single_rv_transformative_operations():
     continuous = _uniform_continuous_pdf()
@@ -224,12 +217,6 @@ def test_plotting_and_misc_utility_paths():
     continuous = _uniform_continuous_pdf()
     functional_discrete = _functional_discrete_pdf()
 
-    PlotClear()
-    PlotLimits([0, 1], "x")
-    PlotLimits([0, 2], "y")
-    with pytest.raises(RVError, match='must be "x" or "y"'):
-        PlotLimits([0, 1], "z")
-
     PlotDist(continuous, display=False)
     PlotDist(functional_discrete)
     PlotEmpCDF([1, 2, 3, 4])
@@ -239,19 +226,13 @@ def test_plotting_and_misc_utility_paths():
     with pytest.raises(RVError, match="within RV support"):
         PlotDist(continuous, suplist=[-1, 0], display=False)
 
-    with pytest.raises(RVError, match="entered as a list"):
-        Histogram("invalid")
-    with pytest.raises(AttributeError, match="normed"):
-        Histogram([1, 2, 3, 4], Bins=2)
-
     with pytest.raises(RVError, match="given as a list"):
         PPPlot(continuous, "invalid")
     with pytest.raises(RVError, match="given as a list"):
         QQPlot(continuous, "invalid")
-    with pytest.raises(AttributeError, match="prob_plot"):
-        PPPlot(continuous, [0.1, 0.2, 0.3])
-    with pytest.raises(AttributeError, match="prob_plot"):
-        QQPlot(continuous, [0.1, 0.2, 0.3])
+
+    PPPlot(continuous, [0.1, 0.2, 0.3])
+    QQPlot(continuous, [0.1, 0.2, 0.3])
 
 
 def test_variate_method_paths():
@@ -284,10 +265,3 @@ def test_sqrt_additional_error_paths():
     negative_support = RV(Integer(1), [-1, 0], ["continuous", "pdf"])
     with pytest.raises(RVError, match="negative value appears in the support"):
         Sqrt(negative_support)
-
-
-def test_plot_display_requires_multiple_plots():
-    with pytest.raises(RVError, match="requires a list with multiple plots"):
-        from applpy.rv import PlotDisplay
-
-        PlotDisplay([object()])
