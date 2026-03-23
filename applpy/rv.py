@@ -38,7 +38,6 @@ from sympy import (
     Rational,
 )
 from random import random
-import pickle
 from enum import Enum
 
 x, y, z, t = symbols("x y z t")
@@ -657,29 +656,6 @@ class RV:
 
         p = eval(piece3)
         return latex(p)
-
-    def save(self, filename=None):
-        """
-        Procedure Name: save
-        Purpose: Saves a random variable to disk in binary format
-        Arguments:  1. self: the random variable
-                    2. filename: the name of the file that will
-                        store the random variable. If none is
-                        specified, the most recently used file
-                        name is used
-        Output:     1. The random variable is stored to disk
-        """
-        if filename is None:
-            if self.filename is None:
-                err_string = "Please specify a file name, this random "
-                err_string += "has never been saved before "
-                raise RVError(err_string)
-            else:
-                filename = self.filename
-        else:
-            self.filename = filename
-        fileObject = open(filename, "wb")
-        pickle.dump(self, fileObject)
 
     def simplify(self, assumption=None):
         """

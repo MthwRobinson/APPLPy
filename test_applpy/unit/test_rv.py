@@ -166,22 +166,6 @@ def test_assumptions_cache_and_simplify_helpers():
     assert simp.support == [-1, 1]
 
 
-def test_latex_and_save_edge_cases(tmp_path):
-    rv = _uniform_continuous_pdf()
-    with pytest.raises(NameError):
-        rv.latex()
-
-    with pytest.raises(RVError, match="only designed to work"):
-        _discrete_pdf().latex()
-
-    with pytest.raises(RVError, match="specify a file name"):
-        _uniform_continuous_pdf().save()
-
-    out_file = tmp_path / "sample.rv"
-    rv.save(str(out_file))
-    assert out_file.exists()
-
-
 def test_single_rv_transformative_operations():
     continuous = _uniform_continuous_pdf()
     discrete = _discrete_pdf()
@@ -251,14 +235,6 @@ def test_variate_method_paths():
 
 def test_verifypdf_wrapper_function():
     assert VerifyPDF(_uniform_continuous_pdf()) is True
-
-
-def test_save_reuses_filename_when_already_known(tmp_path):
-    rv = _uniform_continuous_pdf()
-    out_file = tmp_path / "roundtrip.rv"
-    rv.save(str(out_file))
-    rv.save()
-    assert out_file.exists()
 
 
 def test_sqrt_additional_error_paths():
