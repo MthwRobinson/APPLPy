@@ -129,18 +129,18 @@ Z.display()
 
 U = UniformRV(Rational(1), Rational(2))
 U2 = UniformRV(Rational(3), Rational(4))
-Z = Convolution(U, U2)
+Z = convolution(U, U2)
 Z.display()
 
-Z = ConvolutionIID(U, 3)
+Z = convolution_iid(U, 3)
 Z.display()
 
 X = UniformRV(Rational(2), Rational(4))
 Y = UniformRV(Rational(3), Rational(5))
-Z = Product(X, Y)
+Z = product(X, Y)
 Z.display()
 
-Z = ProductIID(X, 3)
+Z = product_iid(X, 3)
 Z.display()
 
 # Random Variable Methods
@@ -159,7 +159,7 @@ T.display()
 T.latex()
 
 U = UniformRV(Rational(1), Rational(2))
-Z = ConvolutionIID(U, 3)
+Z = convolution_iid(U, 3)
 Z.display()
 Z.simplify()
 

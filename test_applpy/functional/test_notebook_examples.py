@@ -5,8 +5,8 @@ from applpy import (
     BetaRV,
     BootstrapRV,
     cdf,
-    Convolution,
-    ConvolutionIID,
+    convolution,
+    convolution_iid,
     expected_value,
     ExponentialRV,
     hf,
@@ -76,7 +76,7 @@ def test_maximum_and_minimum_compositions_from_notebook():
 def test_bootstrap_examples_from_notebook():
     bootstrap_rv = BootstrapRV(BALL_BEARING_SAMPLE)
     max_2 = MaximumIID(bootstrap_rv, 2)
-    conv_3 = ConvolutionIID(bootstrap_rv, 3)
+    conv_3 = convolution_iid(bootstrap_rv, 3)
 
     assert float(mean(bootstrap_rv).evalf()) == pytest.approx(72.2243478260870)
     assert pdf(bootstrap_rv, 68.64) == Rational(2, 23)
@@ -127,8 +127,8 @@ def test_examples_py_mixture_and_algebra_cases():
     assert mean(mixture_rv) == Rational(19, 4)
     assert float(cdf(mixture_rv, 4).evalf()) == pytest.approx(0.296875)
 
-    assert float(mean(Convolution(UniformRV(1, 2), UniformRV(3, 4))).evalf()) == pytest.approx(5.0)
-    assert float(mean(ConvolutionIID(UniformRV(1, 2), 3)).evalf()) == pytest.approx(4.5)
+    assert float(mean(convolution(UniformRV(1, 2), UniformRV(3, 4))).evalf()) == pytest.approx(5.0)
+    assert float(mean(convolution_iid(UniformRV(1, 2), 3)).evalf()) == pytest.approx(4.5)
 
 
 def test_examples_py_transform_and_truncate_cases():

@@ -8,17 +8,17 @@ Main Random Variable Module
 5. Plots
 
 Procedures On One Random Variable:
-    ConvolutionIID(random_variable,n)
-    ProductIID(random_variable,n)
+    convolution_iid(random_variable,n)
+    product_iid(random_variable,n)
     Transform(random_variable,gX)
     Truncate(random_variable,[lw,up])
     variance(random_variable)
     VerifyPDF(random_variable)
 
 Procedures On Two Random Variables:
-    Convolution(random_variable_1,random_variable_2)
+    convolution(random_variable_1,random_variable_2)
     Mixture(MixParameters,MixRVs)
-    Product(random_variable_1,random_variable_2)
+    product(random_variable_1,random_variable_2)
 
 Plotting Procedures:
     Histogram(sample,bins)
@@ -332,9 +332,9 @@ class RV:
         #   return the convolution of the two random variables
         if "RV" in other.__class__.__name__:
             try:
-                return Convolution(self, other)
+                return convolution(self, other)
             except Exception:
-                return Convolution(other, self)
+                return convolution(other, self)
             else:
                 raise RVError("Could not compute the convolution")
         # If the random variable is added to a constant, shift
@@ -375,7 +375,7 @@ class RV:
         if "RV" in other.__class__.__name__:
             gX = [[-x], [-oo, oo]]
             random_variable = Transform(other, gX)
-            return Convolution(self, random_variable)
+            return convolution(self, random_variable)
         # If the random variable is subtracted by a constant, shift
         # the random variable
         if isinstance(other, (float, int)):
@@ -413,9 +413,9 @@ class RV:
         #   return the product of the two random variables
         if "RV" in other.__class__.__name__:
             try:
-                return Product(self, other)
+                return product(self, other)
             except Exception:
-                return Product(other, self)
+                return product(other, self)
             else:
                 raise RVError("Could not compute the product")
         # If the random variable is multiplied by a constant, scale
@@ -453,7 +453,7 @@ class RV:
         if "RV" in other.__class__.__name__:
             gX = [[1 / x, 1 / x], [-oo, 0, oo]]
             random_variable = Transform(other, gX)
-            return Product(self, random_variable)
+            return product(self, random_variable)
         # If the random variable is divided by a constant, scale
         # the random variable by theinverse of the constant
         if isinstance(other, (float, int)):
@@ -1045,7 +1045,7 @@ def Convert(random_variable, inc=1):
 # Procedures on One Random Variable
 #
 # Procedures:
-#     ConvolutionIID(random_variable,n)
+#     convolution_iid(random_variable,n)
 #     coef_of_var(random_variable)
 #     expected_value(random_variable,gX)
 #     entropy(random_variable)
@@ -1053,7 +1053,7 @@ def Convert(random_variable, inc=1):
 #     mean(random_variable)
 #     mgf(random_variable)
 #     Power(Rvar,n)
-#     ProductIID(random_variable,n)
+#     product_iid(random_variable,n)
 #     skewness(random_variable)
 #     SqRt(random_variable)
 #     Transform(random_variable,gX)
@@ -1061,8 +1061,8 @@ def Convert(random_variable, inc=1):
 #     variance(random_variable)
 
 
-def ConvolutionIID(random_variable, n):
-    from .algebra import ConvolutionIID as _ConvolutionIID
+def convolution_iid(random_variable, n):
+    from .algebra import convolution_iid as _ConvolutionIID
 
     return _ConvolutionIID(random_variable, n)
 
@@ -1146,8 +1146,8 @@ def Pow(random_variable, n):
     return Transform(random_variable, g)
 
 
-def ProductIID(random_variable, n):
-    from .algebra import ProductIID as _ProductIID
+def product_iid(random_variable, n):
+    from .algebra import product_iid as _ProductIID
 
     return _ProductIID(random_variable, n)
 
@@ -1517,13 +1517,13 @@ def VerifyPDF(random_variable):
 # Procedures on Two Random Variables
 #
 # Procedures:
-#     Convolution(random_variable_1,random_variable_2)
+#     convolution(random_variable_1,random_variable_2)
 #     Mixture(MixParameters,MixRVs)
-#     Product(random_variable_1,random_variable_2)
+#     product(random_variable_1,random_variable_2)
 
 
-def Convolution(random_variable_1, random_variable_2):
-    from .algebra import Convolution as _Convolution
+def convolution(random_variable_1, random_variable_2):
+    from .algebra import convolution as _Convolution
 
     return _Convolution(random_variable_1, random_variable_2)
 
@@ -1630,10 +1630,17 @@ def Mixture(MixParameters, MixRVs):
         return RV(fxnew, MixSupp, ["discrete", "pdf"])
 
 
-def Product(random_variable_1, random_variable_2):
-    from .algebra import Product as _Product
+def product(random_variable_1, random_variable_2):
+    from .algebra import product as _Product
 
     return _Product(random_variable_1, random_variable_2)
+
+
+# Backward-compatible aliases for legacy APPLPy function names.
+ConvolutionIID = convolution_iid
+ProductIID = product_iid
+Convolution = convolution
+Product = product
 
 
 def ProductDiscrete(random_variable_1, random_variable_2):

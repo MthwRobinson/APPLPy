@@ -1,13 +1,13 @@
 import pytest
 from sympy import Symbol, sqrt
 
-from applpy import ConvolutionIID, ExponentialRV, mean, NormalRV, Transform, variance
+from applpy import convolution_iid, ExponentialRV, mean, NormalRV, Transform, variance
 
 
 def _sample_mean_exact_rv(n):
     x = Symbol("x")
     x_rv = ExponentialRV(1)
-    y_rv = ConvolutionIID(x_rv, n)
+    y_rv = convolution_iid(x_rv, n)
     return Transform(y_rv, [[x / n], [0, float("inf")]])
 
 

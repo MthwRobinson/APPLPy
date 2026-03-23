@@ -7,9 +7,9 @@ from sympy import Symbol, exp, expand, integrate, ln, nan, oo, simplify
 from .rv import RV, RVError, Convert, Transform, pdf, x
 
 
-def ConvolutionIID(random_variable, n):
+def convolution_iid(random_variable, n):
     """
-    Procedure Name: ConvolutionIID
+    Procedure Name: convolution_iid
     Purpose: Compute the convolution of n iid random variables
     Arguments:  1. random_variable: A random variable
                 2. n: an integer
@@ -27,9 +27,9 @@ def ConvolutionIID(random_variable, n):
     return pdf(X_final)
 
 
-def ProductIID(random_variable, n):
+def product_iid(random_variable, n):
     """
-    Procedure Name: ProductIID
+    Procedure Name: product_iid
     Purpose: Compute the product of n iid random variables
     Arguments:  1. random_variable: A random variable
                 2. n: an integer
@@ -47,9 +47,9 @@ def ProductIID(random_variable, n):
     return pdf(X_final)
 
 
-def Convolution(random_variable_1, random_variable_2):
+def convolution(random_variable_1, random_variable_2):
     """
-    Procedure Name: Convolution
+    Procedure Name: convolution
     Purpose: Compute the convolution of two independent
                 random variables
     Arguments:  1. random_variable_1: A random variable
@@ -103,7 +103,7 @@ def Convolution(random_variable_1, random_variable_2):
             ge = [[exp(x), exp(x)], [-oo, 0, oo]]
             temp1 = Transform(X1_dummy, ge)
             temp2 = Transform(X2_dummy, ge)
-            temp3 = Product(temp1, temp2)
+            temp3 = product(temp1, temp2)
             fz = Transform(temp3, gln)
             convfunc = []
             for i in range(len(fz.func)):
@@ -115,14 +115,14 @@ def Convolution(random_variable_1, random_variable_2):
     if random_variable_1.is_discrete_functional():
         for num in random_variable_1.support:
             if not isinstance(num, (int, float)):
-                err_string = "Convolution does not currently work with"
+                err_string = "convolution does not currently work with"
                 err_string = " RVs that have symbolic or infinite support"
                 raise RVError(err_string)
         random_variable_1 = Convert(random_variable_1)
     if random_variable_2.is_discrete_functional():
         for num in random_variable_1.support:
             if not isinstance(num, (int, float)):
-                err_string = "Convolution does not currently work with"
+                err_string = "convolution does not currently work with"
                 err_string = " RVs that have symbolic or infinite support"
                 raise RVError(err_string)
         random_variable_2 = Convert(random_variable_2)
@@ -162,9 +162,9 @@ def Convolution(random_variable_1, random_variable_2):
         return RV(funclist3, convlist3, ["discrete", "pdf"])
 
 
-def Product(random_variable_1, random_variable_2):
+def product(random_variable_1, random_variable_2):
     """
-    Procedure Name: Product
+    Procedure Name: product
     Purpose: Compute the product of two independent
                 random variables
     Arguments:  1. random_variable_1: A random variable
@@ -487,14 +487,14 @@ def Product(random_variable_1, random_variable_2):
     if random_variable_1.is_discrete_functional():
         for num in random_variable_1.support:
             if not isinstance(num, (int, float)):
-                err_string = "Product does not currently work with"
+                err_string = "product does not currently work with"
                 err_string = " RVs that have symbolic or infinite support"
                 raise RVError(err_string)
         random_variable_1 = Convert(random_variable_1)
     if random_variable_2.is_discrete_functional():
         for num in random_variable_1.support:
             if not isinstance(num, (int, float)):
-                err_string = "Product does not currently work with"
+                err_string = "product does not currently work with"
                 err_string = " RVs that have symbolic or infinite support"
                 raise RVError(err_string)
         random_variable_2 = Convert(random_variable_2)
@@ -532,3 +532,10 @@ def Product(random_variable_1, random_variable_2):
                 funclist3[prodlist3.index(prodlist2[i])] += funclist2[i]
         # Create and return the new random variable
         return RV(funclist3, prodlist3, ["discrete", "pdf"])
+
+
+# Backward-compatible aliases for legacy APPLPy function names.
+ConvolutionIID = convolution_iid
+ProductIID = product_iid
+Convolution = convolution
+Product = product

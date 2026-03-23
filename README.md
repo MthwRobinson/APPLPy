@@ -202,11 +202,11 @@ print(Variance(inv_1)) # 19/18
 print(Mean(portfolio)) # 5
 ```
 
-### Mixture and IID Convolution
+### Mixture and IID convolution
 
 ```python
 from sympy import Rational
-from applpy import CDF, ConvolutionIID, Mean, Mixture, TriangularRV, UniformRV
+from applpy import CDF, convolution_iid, Mean, Mixture, TriangularRV, UniformRV
 
 mix = Mixture(
     [Rational(1, 4), Rational(1, 4), Rational(1, 2)],
@@ -215,7 +215,7 @@ mix = Mixture(
 
 print(Mean(mix))                  # 19/4
 print(float(CDF(mix, 4).evalf())) # 0.296875
-print(float(Mean(ConvolutionIID(UniformRV(1, 2), 3)).evalf())) # 4.5
+print(float(Mean(convolution_iid(UniformRV(1, 2), 3)).evalf())) # 4.5
 ```
 
 ## Distribution References

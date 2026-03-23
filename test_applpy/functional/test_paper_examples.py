@@ -4,7 +4,7 @@ from sympy import Rational, Symbol, sqrt
 from applpy import (
     BootstrapRV,
     ChiRV,
-    ConvolutionIID,
+    convolution_iid,
     ExponentialRV,
     kurtosis,
     MarkovChain,
@@ -28,7 +28,7 @@ def test_exponential_sum_example_from_paper():
 def test_discrete_convolution_moments_from_paper():
     x = Symbol("x")
     x_rv = RV([x / 21], [1, 6], ["Discrete", "pdf"])
-    y_rv = ConvolutionIID(x_rv, 5)
+    y_rv = convolution_iid(x_rv, 5)
 
     assert mean(y_rv) == Rational(65, 3)
     assert variance(y_rv) == Rational(100, 9)

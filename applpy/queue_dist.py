@@ -25,7 +25,7 @@ import numpy as np
 from .rv import (
     RVError,
     mean,
-    Convolution,
+    convolution,
     Mixture,
 )
 from .distributions.continuous import ErlangRV
@@ -155,7 +155,7 @@ def BuildDist(X, Y, n, k, s):
             if i <= s or s > n + k:
                 lst.append(Y)
             else:
-                lst.append(Convolution(ErlangRV(s * (1 / meany), i - s), Y))
+                lst.append(convolution(ErlangRV(s * (1 / meany), i - s), Y))
     return lst
 
 

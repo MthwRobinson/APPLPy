@@ -1,7 +1,7 @@
 import pytest
 from sympy import Integer, Rational, exp, oo
 
-from applpy import Convolution, ConvolutionIID, Product, ProductIID
+from applpy import convolution, convolution_iid, product, product_iid
 from applpy.rv import RV, RVError, x
 
 
@@ -22,25 +22,25 @@ def _functional_discrete_pdf():
 
 
 def test_functions_still_importable_from_base_package():
-    assert callable(ConvolutionIID)
-    assert callable(ProductIID)
-    assert callable(Convolution)
-    assert callable(Product)
+    assert callable(convolution_iid)
+    assert callable(product_iid)
+    assert callable(convolution)
+    assert callable(product)
 
 
 def test_single_rv_convolution_and_product_iid_operations():
     continuous = _uniform_continuous_pdf()
     discrete = _discrete_pdf()
 
-    assert isinstance(ConvolutionIID(continuous, 2), RV)
-    assert isinstance(ConvolutionIID(discrete, 2), RV)
-    assert isinstance(ProductIID(continuous, 2), RV)
-    assert isinstance(ProductIID(discrete, 2), RV)
+    assert isinstance(convolution_iid(continuous, 2), RV)
+    assert isinstance(convolution_iid(discrete, 2), RV)
+    assert isinstance(product_iid(continuous, 2), RV)
+    assert isinstance(product_iid(discrete, 2), RV)
 
 
 def test_convolution_iid_error_paths():
     with pytest.raises(RVError, match="must be an integer"):
-        ConvolutionIID(_uniform_continuous_pdf(), Rational(3, 2))
+        convolution_iid(_uniform_continuous_pdf(), Rational(3, 2))
 
 
 def test_two_rv_convolution_and_product_for_continuous_and_discrete():
@@ -48,23 +48,23 @@ def test_two_rv_convolution_and_product_for_continuous_and_discrete():
     discrete = _discrete_pdf()
     bernoulli = _discrete_pdf_bernoulli()
 
-    assert isinstance(Convolution(continuous, continuous), RV)
-    assert isinstance(Convolution(discrete, bernoulli), RV)
-    assert isinstance(Product(continuous, continuous), RV)
-    assert isinstance(Product(discrete, bernoulli), RV)
+    assert isinstance(convolution(continuous, continuous), RV)
+    assert isinstance(convolution(discrete, bernoulli), RV)
+    assert isinstance(product(continuous, continuous), RV)
+    assert isinstance(product(discrete, bernoulli), RV)
 
 
 def test_operations_on_symmetric_support_cover_additional_branches():
     symmetric = RV([Rational(1, 2), Rational(1, 2)], [-1, 0, 1], ["continuous", "pdf"])
 
-    assert isinstance(Convolution(symmetric, symmetric), RV)
-    assert isinstance(Product(symmetric, symmetric), RV)
+    assert isinstance(convolution(symmetric, symmetric), RV)
+    assert isinstance(product(symmetric, symmetric), RV)
 
 
 def test_lifetime_continuous_special_case_paths():
     lifetime = RV([exp(-x)], [0, oo], ["continuous", "pdf"])
 
-    assert isinstance(Convolution(lifetime, lifetime), RV)
+    assert isinstance(convolution(lifetime, lifetime), RV)
 
 
 def test_product_continuous_quadrant_case_coverage():
@@ -85,18 +85,18 @@ def test_product_continuous_quadrant_case_coverage():
     for (a, b), (c, d) in interval_pairs:
         left = RV(Integer(1), [a, b], ["continuous", "pdf"])
         right = RV(Integer(1), [c, d], ["continuous", "pdf"])
-        product = Product(left, right)
-        assert isinstance(product, RV)
-        assert product.ftype == ["continuous", "pdf"]
+        product_rv = product(left, right)
+        assert isinstance(product_rv, RV)
+        assert product_rv.ftype == ["continuous", "pdf"]
 
 
 def test_product_discrete_symbolic_support_error_path():
     symbolic_support = RV([x], [x, 3], ["discrete_functional", "pdf"])
     regular = _functional_discrete_pdf()
     with pytest.raises(RVError, match="symbolic or infinite support"):
-        Product(symbolic_support, regular)
+        product(symbolic_support, regular)
 
 
 def test_discrete_convolution_edge_paths():
     with pytest.raises(RVError, match="symbolic or infinite support"):
-        Convolution(RV([x], [x, 3], ["discrete_functional", "pdf"]), _discrete_pdf())
+        convolution(RV([x], [x, 3], ["discrete_functional", "pdf"]), _discrete_pdf())
