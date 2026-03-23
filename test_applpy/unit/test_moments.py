@@ -1,6 +1,7 @@
 import pytest
 from sympy import Integer, Rational, Symbol
 
+import applpy.moments as moments_module
 from applpy import mean as TopLevelMean
 from applpy.moments import (
     coef_of_var,
@@ -64,3 +65,48 @@ def test_variance_list_input():
 
 def test_top_level_mean_export():
     assert TopLevelMean(_uniform_continuous_pdf()) == Rational(1, 2)
+
+
+def test_random_variable_is_discrete_branches_use_fast_rv(monkeypatch):
+    discrete = _discrete_pdf()
+    continuous = _uniform_continuous_pdf()
+    fast_rv_inits = []
+
+    class FakeFastRV:
+        def __init__(self, *, function, support, functional_form, domain_type):
+            fast_rv_inits.append(
+                {
+                    "function": function,
+                    "support": support,
+                    "functional_form": functional_form,
+                    "domain_type": domain_type,
+                }
+            )
+
+        def coefficient_of_variation(self):
+            return Rational(11, 10)
+
+        def entropy(self):
+            return Rational(7, 10)
+
+        def kurtosis(self):
+            return Rational(13, 10)
+
+        def skewness(self):
+            return Rational(-3, 10)
+
+    monkeypatch.setattr(moments_module, "FastRV", FakeFastRV)
+
+    assert coef_of_var(discrete) == Rational(11, 10)
+    assert entropy(discrete) == Rational(7, 10)
+    assert kurtosis(discrete) == Rational(13, 10)
+    assert skewness(discrete) == Rational(-3, 10)
+    assert len(fast_rv_inits) == 4
+    assert all(init["domain_type"] == "discrete" for init in fast_rv_inits)
+
+    # Continuous random variables should not enter the random_variable.is_discrete() branches.
+    assert coef_of_var(continuous) > 0
+    assert entropy(continuous) < 0
+    assert kurtosis(continuous) == Rational(9, 5)
+    assert skewness(continuous) == 0
+    assert len(fast_rv_inits) == 4
