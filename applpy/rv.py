@@ -938,15 +938,6 @@ def sf(random_variable, value=x, cache=False):
     return _sf(random_variable, value=value, cache=cache)
 
 
-# Backward-compatible aliases
-CDF = cdf
-CHF = chf
-HF = hf
-IDF = idf
-PDF = pdf
-SF = sf
-
-
 def BootstrapRV(varlist, symbolic=False):
     """
     Procedure Name: Bootstrap RV
@@ -1074,17 +1065,6 @@ def variance(random_variable, cache=False):
     from .moments import variance as _Variance
 
     return _Variance(random_variable, cache=cache)
-
-
-# Backward-compatible aliases
-CoefOfVar = coef_of_var
-ExpectedValue = expected_value
-Entropy = entropy
-Kurtosis = kurtosis
-Mean = mean
-MGF = mgf
-Skewness = skewness
-Variance = variance
 
 
 def Pow(random_variable, n):

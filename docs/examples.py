@@ -2,6 +2,17 @@ from sympy import *
 
 init_session()
 from applpy import *
+from applpy.conversion import cdf, hf
+from applpy.moments import (
+    coef_of_var,
+    expected_value,
+    kurtosis,
+    mean,
+    mgf,
+    skewness,
+    variance,
+)
+from applpy.rv import BootstrapRV
 
 # Bayes
 theta = Symbol("theta")
@@ -28,27 +39,27 @@ Xstar.display()
 # Converting RV Type
 
 X = NormalRV(2, 2)
-CDF(X, cache=True)
+cdf(X, cache=True)
 T = TriangularRV(2, 4, 6)
-HF(T).display()
-CDF(T, Rational(5, 2))
+hf(T).display()
+cdf(T, Rational(5, 2))
 
 # Expected Values
 X = WeibullRV()
-CoefOfVar(X)
+coef_of_var(X)
 X = NormalRV(2, 2)
-ExpectedValue(X, x**2)
+expected_value(X, x**2)
 X = BetaRV(2, 2)
-Kurtosis(X)
+kurtosis(X)
 X = ExponentialRV()
-Mean(X)
+mean(X)
 X = UniformRV()
-MGF(X)
+mgf(X)
 X = BetaRV(2, 3)
-Skewness(X)
+skewness(X)
 X = UniformRV()
 X = WeibullRV()
-Variance(X)
+variance(X)
 
 # Markov Chains
 Y = MarkovChain(P=[[0.97, 0.03], [0.04, 0.96]], init=[0.7, 0.3], states=["red", "blue"])
@@ -93,8 +104,8 @@ PlotLimits([0, 12], axis="x")
 
 PlotClear()
 Xstar = BootstrapRV(X.variate(n=100))
-plot_dist(CDF(X))
-plot_dist(CDF(Xstar))
+plot_dist(cdf(X))
+plot_dist(cdf(Xstar))
 plt.title("Comparison of Exponential CDF and Bootstrapped EDF")
 
 # Queue
