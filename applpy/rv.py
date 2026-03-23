@@ -38,7 +38,6 @@ from sympy import (
     Rational,
 )
 from random import random
-import numpy as np
 import pickle
 from enum import Enum
 
@@ -1221,57 +1220,10 @@ Mixture = mixture
 
 
 def ProductDiscrete(random_variable_1, random_variable_2):
-    """
-    Procedure Name: ProductDiscrete
-    Purpose: Compute the product of two independent
-                discrete random variables
-    Arguments:  1. random_variable_1: A random variable
-                2. random_variable_2: A random variable
-    Output:     1. The product of random_variable_1 and random_variable_2
-    """
-    # Ensure that both random variables are discrete
-    if not random_variable_1.is_discrete() or not random_variable_2.is_discrete():
-        raise RVError("both random variables must be discrete")
-    # Convert both random variables to pdf form
-    X_dummy1 = pdf(random_variable_1)
-    X_dummy2 = pdf(random_variable_2)
-    # Convert the support and the value of each random variable
-    #   into numpy arrays
-    support1 = np.asarray(X_dummy1.support, dtype=object)
-    support2 = np.asarray(X_dummy2.support, dtype=object)
-    pdf1 = np.asarray(X_dummy1.func, dtype=object)
-    pdf2 = np.asarray(X_dummy2.func, dtype=object)
-    # Find all possible values of support1*support2 and val1*val2
-    #   via the pairwise outer product, flatten into vectors
-    prodsupport = np.outer(support1, support2).flatten()
-    prodpdf = np.outer(pdf1, pdf2).flatten()
-    #
-    # Stack the support vector and the value vector into a matrix
-    # prodmatrix=np.vstack([prodsupport,prodpdf]).T
-    #
-    #
-    # Convert the resulting vectors into lists
-    supportlist = prodsupport.tolist()
-    pdflist = prodpdf.tolist()
-    # Sort the function and support lists for the product
-    sortlist = list(zip(supportlist, pdflist))
-    sortlist.sort()
-    prodlist2 = []
-    funclist2 = []
-    for i in range(len(sortlist)):
-        prodlist2.append(sortlist[i][0])
-        funclist2.append(sortlist[i][1])
-    # Remove redundant elements in the support list
-    prodlist3 = []
-    funclist3 = []
-    for i in range(len(prodlist2)):
-        if prodlist2[i] not in prodlist3:
-            prodlist3.append(prodlist2[i])
-            funclist3.append(funclist2[i])
-        else:
-            funclist3[prodlist3.index(prodlist2[i])] += funclist2[i]
-    # Create and return the new random variable
-    return RV(funclist3, prodlist3, ["discrete", "pdf"])
+    """Backward-compatible wrapper for applpy.algebra._product_discrete."""
+    from .algebra import _product_discrete
+
+    return _product_discrete(random_variable_1, random_variable_2)
 
 
 def plot_dist(random_variable, suplist=None, opt=None, color="r", display=True):

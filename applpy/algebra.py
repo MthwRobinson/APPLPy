@@ -2,9 +2,59 @@
 Algebraic operations on one or two random variables.
 """
 
+import numpy as np
 from sympy import Symbol, exp, expand, integrate, ln, nan, oo, simplify
 
 from .rv import RV, RVError, Convert, pdf, transform, x
+
+
+def _product_discrete(random_variable_1, random_variable_2):
+    """
+    Procedure Name: _product_discrete
+    Purpose: Compute the product of two independent
+                discrete random variables
+    Arguments:  1. random_variable_1: A random variable
+                2. random_variable_2: A random variable
+    Output:     1. The product of random_variable_1 and random_variable_2
+    """
+    # Ensure that both random variables are discrete
+    if not random_variable_1.is_discrete() or not random_variable_2.is_discrete():
+        raise RVError("both random variables must be discrete")
+    # Convert both random variables to pdf form
+    left_pdf_rv = pdf(random_variable_1)
+    right_pdf_rv = pdf(random_variable_2)
+    # Convert the support and the value of each random variable
+    #   into numpy arrays
+    support1 = np.asarray(left_pdf_rv.support, dtype=object)
+    support2 = np.asarray(right_pdf_rv.support, dtype=object)
+    pdf1 = np.asarray(left_pdf_rv.func, dtype=object)
+    pdf2 = np.asarray(right_pdf_rv.func, dtype=object)
+    # Find all possible values of support1*support2 and val1*val2
+    #   via the pairwise outer product, flatten into vectors
+    prodsupport = np.outer(support1, support2).flatten()
+    prodpdf = np.outer(pdf1, pdf2).flatten()
+    # Convert the resulting vectors into lists
+    supportlist = prodsupport.tolist()
+    pdflist = prodpdf.tolist()
+    # Sort the function and support lists for the product
+    sortlist = list(zip(supportlist, pdflist))
+    sortlist.sort()
+    prodlist2 = []
+    funclist2 = []
+    for i in range(len(sortlist)):
+        prodlist2.append(sortlist[i][0])
+        funclist2.append(sortlist[i][1])
+    # Remove redundant elements in the support list
+    prodlist3 = []
+    funclist3 = []
+    for i in range(len(prodlist2)):
+        if prodlist2[i] not in prodlist3:
+            prodlist3.append(prodlist2[i])
+            funclist3.append(funclist2[i])
+        else:
+            funclist3[prodlist3.index(prodlist2[i])] += funclist2[i]
+    # Create and return the new random variable
+    return RV(funclist3, prodlist3, ["discrete", "pdf"])
 
 
 def convolution_iid(random_variable, n):
@@ -542,37 +592,7 @@ def product(random_variable_1, random_variable_2):
     # If the distributions are discrete, find and return the product
     #   of the two random variables.
     if random_variable_1.is_discrete():
-        # Convert each random variable to its pdf form
-        left_pdf_rv = pdf(random_variable_1)
-        right_pdf_rv = pdf(random_variable_2)
-        # Create function and support lists for the product of the
-        #   two random variables
-        product_support_candidates = []
-        product_function_candidates = []
-        for i in range(len(left_pdf_rv.support)):
-            for j in range(len(right_pdf_rv.support)):
-                product_support_candidates.append(left_pdf_rv.support[i] * right_pdf_rv.support[j])
-                product_function_candidates.append(left_pdf_rv.func[i] * right_pdf_rv.func[j])
-        # Sort the function and support lists for the convolution
-        sorted_product_terms = list(zip(product_support_candidates, product_function_candidates))
-        sorted_product_terms.sort()
-        sorted_product_support = []
-        sorted_product_functions = []
-        for i in range(len(sorted_product_terms)):
-            sorted_product_support.append(sorted_product_terms[i][0])
-            sorted_product_functions.append(sorted_product_terms[i][1])
-        # Remove redundant elements in the support list
-        unique_product_support = []
-        unique_product_functions = []
-        for i in range(len(sorted_product_support)):
-            if sorted_product_support[i] not in unique_product_support:
-                unique_product_support.append(sorted_product_support[i])
-                unique_product_functions.append(sorted_product_functions[i])
-            else:
-                support_index = unique_product_support.index(sorted_product_support[i])
-                unique_product_functions[support_index] += sorted_product_functions[i]
-        # Create and return the new random variable
-        return RV(unique_product_functions, unique_product_support, ["discrete", "pdf"])
+        return _product_discrete(random_variable_1, random_variable_2)
 
 
 # Backward-compatible aliases for legacy APPLPy function names.
