@@ -88,8 +88,8 @@ def Menu():
     print("")
 
     print("Utilities")
-    print("PlotDist(X,{[x1,x2]}),PlotDisplay([plotlist],{[x1,x2]})")
-    print("PPPlot(X,[sample]),QQPlot(X,[sample])")
+    print("plot_dist(X,{[x1,x2]})")
+    print("pp_plot(X,[sample]),qq_plot(X,[sample])")
     print("")
 
     print("Continuous Distributions")

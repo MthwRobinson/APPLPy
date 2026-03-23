@@ -77,7 +77,7 @@ def prob_plot(Sample, Fitted, plot_type):
 
 def plot_dist(random_variable, suplist=None, opt=None, color="r", display=True):
     """
-    Procedure: PlotDist
+    Procedure: plot_dist
     Purpose: Plot a random variable
     Arguments:  1. random_variable: A random variable
                 2. suplist: A list of supports for the plot
@@ -185,7 +185,7 @@ def plot_dist(random_variable, suplist=None, opt=None, color="r", display=True):
 
 def plot_emp_cdf(data):
     """
-    Procedure Name: PlotEmpCDF
+    Procedure Name: plot_emp_cdf
     Purpose: Plots an empirical CDF, given a data set
     Arguments:  1. data: A data sample
     Output:     1. An empirical cdf of the data
@@ -198,12 +198,12 @@ def plot_emp_cdf(data):
 
 def pp_plot(random_variable, sample):
     """
-    Procedure Name: PPPlot
+    Procedure Name: pp_plot
     Purpose: Plots the model probability versus the sample
                 probability
     Arguments:  1. random_variable: A random variable
                 2. sample: An experimental sample
-    Output:     1. A PPPlot comparing the sample to a theoretical
+    Output:     1. A pp_plot comparing the sample to a theoretical
                     model
     """
     from applpy.rv import BootstrapRV, RVError, cdf
@@ -234,7 +234,7 @@ def pp_plot(random_variable, sample):
 
 def qq_plot(random_variable, sample):
     """
-    Procedure: QQPlot
+    Procedure: qq_plot
     Purpose: Plots the q_i quantile of a fitted distribution
                 versus the q_i quantile of the sample dist
     Arguments:  1. random_variable: A random variable

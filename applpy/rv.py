@@ -16,10 +16,10 @@ Procedures On Two Random Variables:
     mixture(MixParameters,MixRVs)
 
 Plotting Procedures:
-    PlotDist(random_variable,suplist)
-    PlotEmpCDF(data)
-    PPPlot(random_variable,sample)
-    QQPlot(random_variable,sample)
+    plot_dist(random_variable,suplist)
+    plot_emp_cdf(data)
+    pp_plot(random_variable,sample)
+    qq_plot(random_variable,sample)
 """
 
 from applpy import rust_bindings
@@ -1274,29 +1274,36 @@ def ProductDiscrete(random_variable_1, random_variable_2):
     return RV(funclist3, prodlist3, ["discrete", "pdf"])
 
 
-def PlotDist(random_variable, suplist=None, opt=None, color="r", display=True):
-    """Backward-compatible wrapper for applpy.appl_plot.PlotDist."""
-    from .appl_plot import PlotDist as _PlotDist
+def plot_dist(random_variable, suplist=None, opt=None, color="r", display=True):
+    """Wrapper for applpy.appl_plot.plot_dist."""
+    from .appl_plot import plot_dist as _plot_dist
 
-    return _PlotDist(random_variable, suplist=suplist, opt=opt, color=color, display=display)
-
-
-def PlotEmpCDF(data):
-    """Backward-compatible wrapper for applpy.appl_plot.PlotEmpCDF."""
-    from .appl_plot import PlotEmpCDF as _PlotEmpCDF
-
-    return _PlotEmpCDF(data)
+    return _plot_dist(random_variable, suplist=suplist, opt=opt, color=color, display=display)
 
 
-def PPPlot(random_variable, sample):
-    """Backward-compatible wrapper for applpy.appl_plot.PPPlot."""
-    from .appl_plot import PPPlot as _PPPlot
+def plot_emp_cdf(data):
+    """Wrapper for applpy.appl_plot.plot_emp_cdf."""
+    from .appl_plot import plot_emp_cdf as _plot_emp_cdf
 
-    return _PPPlot(random_variable, sample)
+    return _plot_emp_cdf(data)
 
 
-def QQPlot(random_variable, sample):
-    """Backward-compatible wrapper for applpy.appl_plot.QQPlot."""
-    from .appl_plot import QQPlot as _QQPlot
+def pp_plot(random_variable, sample):
+    """Wrapper for applpy.appl_plot.pp_plot."""
+    from .appl_plot import pp_plot as _pp_plot
 
-    return _QQPlot(random_variable, sample)
+    return _pp_plot(random_variable, sample)
+
+
+def qq_plot(random_variable, sample):
+    """Wrapper for applpy.appl_plot.qq_plot."""
+    from .appl_plot import qq_plot as _qq_plot
+
+    return _qq_plot(random_variable, sample)
+
+
+# Backward compatibility aliases for legacy APPLPy naming.
+PlotDist = plot_dist
+PlotEmpCDF = plot_emp_cdf
+PPPlot = pp_plot
+QQPlot = qq_plot

@@ -6,12 +6,12 @@ from applpy.rv import (
     RV,
     RVError,
     BootstrapRV,
-    PPPlot,
-    PlotDist,
-    PlotEmpCDF,
+    plot_dist,
+    plot_emp_cdf,
+    pp_plot,
     Pow,
     ProductDiscrete,
-    QQPlot,
+    qq_plot,
     Sqrt,
     VerifyPDF,
     x,
@@ -217,22 +217,22 @@ def test_plotting_and_misc_utility_paths():
     continuous = _uniform_continuous_pdf()
     functional_discrete = _functional_discrete_pdf()
 
-    PlotDist(continuous, display=False)
-    PlotDist(functional_discrete)
-    PlotEmpCDF([1, 2, 3, 4])
+    plot_dist(continuous, display=False)
+    plot_dist(functional_discrete)
+    plot_emp_cdf([1, 2, 3, 4])
 
     with pytest.raises(RVError, match="ascending order"):
-        PlotDist(continuous, suplist=[1, 0], display=False)
+        plot_dist(continuous, suplist=[1, 0], display=False)
     with pytest.raises(RVError, match="within RV support"):
-        PlotDist(continuous, suplist=[-1, 0], display=False)
+        plot_dist(continuous, suplist=[-1, 0], display=False)
 
     with pytest.raises(RVError, match="given as a list"):
-        PPPlot(continuous, "invalid")
+        pp_plot(continuous, "invalid")
     with pytest.raises(RVError, match="given as a list"):
-        QQPlot(continuous, "invalid")
+        qq_plot(continuous, "invalid")
 
-    PPPlot(continuous, [0.1, 0.2, 0.3])
-    QQPlot(continuous, [0.1, 0.2, 0.3])
+    pp_plot(continuous, [0.1, 0.2, 0.3])
+    qq_plot(continuous, [0.1, 0.2, 0.3])
 
 
 def test_variate_method_paths():
