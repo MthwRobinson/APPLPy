@@ -4,32 +4,6 @@ from sympy import oo, symbols
 
 x, y, z, t, v = symbols("x y z t v")
 
-"""
-    A Probability Progamming Language (APPL) -- Python Edition
-    Copyright (C) 2001,2002,2008,2010,2014 Andrew Glen, Larry
-    Leemis, Diane Evans, Matthew Robinson
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        https://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-"""
-
-
-"""
-Plotting Module
-
-Defines procedures for plotting random variables
-
-"""
-
 
 def mat_plot(funclist, suplist, lab1=None, lab2=None, ftype="continuous"):
     """
@@ -101,7 +75,7 @@ def prob_plot(Sample, Fitted, plot_type):
     grid(True)
 
 
-def PlotDist(random_variable, suplist=None, opt=None, color="r", display=True):
+def plot_dist(random_variable, suplist=None, opt=None, color="r", display=True):
     """
     Procedure: PlotDist
     Purpose: Plot a random variable
@@ -209,7 +183,7 @@ def PlotDist(random_variable, suplist=None, opt=None, color="r", display=True):
             title(lab2)
 
 
-def PlotEmpCDF(data):
+def plot_emp_cdf(data):
     """
     Procedure Name: PlotEmpCDF
     Purpose: Plots an empirical CDF, given a data set
@@ -219,10 +193,10 @@ def PlotEmpCDF(data):
     from applpy.rv import BootstrapRV, cdf
 
     xstar = BootstrapRV(data)
-    PlotDist(cdf(xstar), opt="EMPCDF")
+    plot_dist(cdf(xstar), opt="EMPCDF")
 
 
-def PPPlot(random_variable, sample):
+def pp_plot(random_variable, sample):
     """
     Procedure Name: PPPlot
     Purpose: Plots the model probability versus the sample
@@ -258,7 +232,7 @@ def PPPlot(random_variable, sample):
     prob_plot(observed_cdf, fitted_cdf, "PP Plot")
 
 
-def QQPlot(random_variable, sample):
+def qq_plot(random_variable, sample):
     """
     Procedure: QQPlot
     Purpose: Plots the q_i quantile of a fitted distribution
@@ -285,3 +259,10 @@ def QQPlot(random_variable, sample):
 
     ion()
     prob_plot(sample, fitted, "QQ Plot")
+
+
+# Backward compatibility aliases for legacy APPLPy naming.
+PlotDist = plot_dist
+PlotEmpCDF = plot_emp_cdf
+PPPlot = pp_plot
+QQPlot = qq_plot

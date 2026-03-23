@@ -98,8 +98,8 @@ def test_plot_emp_cdf_delegates_to_plot_dist(monkeypatch):
         observed["opt"] = opt
         observed["display"] = display
 
-    monkeypatch.setattr(appl_plot, "PlotDist", fake_plot_dist)
-    appl_plot.PlotEmpCDF([1, 2, 3, 4])
+    monkeypatch.setattr(appl_plot, "plot_dist", fake_plot_dist)
+    appl_plot.plot_emp_cdf([1, 2, 3, 4])
 
     assert observed["opt"] == "EMPCDF"
     assert observed["display"] is True
