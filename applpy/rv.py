@@ -8,17 +8,12 @@ Main Random Variable Module
 5. Plots
 
 Procedures On One Random Variable:
-    convolution_iid(random_variable,n)
-    product_iid(random_variable,n)
     Transform(random_variable,gX)
     Truncate(random_variable,[lw,up])
-    variance(random_variable)
     VerifyPDF(random_variable)
 
 Procedures On Two Random Variables:
-    convolution(random_variable_1,random_variable_2)
     Mixture(MixParameters,MixRVs)
-    product(random_variable_1,random_variable_2)
 
 Plotting Procedures:
     Histogram(sample,bins)
