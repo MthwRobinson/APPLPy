@@ -425,12 +425,47 @@ where
 /// * `entropy`: the entropy of the random variable
 ///
 /// # Examples
+/// ```
+/// use applpy_rust::algorithms::moments::discrete_entropy;
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+/// use num_rational::Rational64;
+///
+/// let rv = RandomVariable {
+///     function: vec![
+///         Number::Rational(Rational64::new(1, 2)),
+///         Number::Rational(Rational64::new(1, 2)),
+///     ],
+///     support: vec![Number::Integer(1), Number::Integer(2)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let entropy = discrete_entropy(&rv).unwrap();
+/// assert_eq!(entropy, Number::Rational(Rational64::new(1, 2)));
+/// ```
+///
+/// ```
+/// use applpy_rust::algorithms::moments::discrete_entropy;
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+///
+/// // 0.2*log2(1) + 0.5*log2(2) + 0.3*log2(4) = 1.1
+/// let rv = RandomVariable {
+///     function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
+///     support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(4)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let entropy = discrete_entropy(&rv).unwrap();
+/// assert!((entropy.to_f64() - 1.1).abs() < 1e-12);
+/// ```
 pub fn discrete_entropy(random_variable: &RandomVariable) -> Result<Number, String> {
     let two = Number::Integer(2);
-    let entropy = discrete_expected_value(
-        random_variable,
-        |x| x.log(two).expect("failed to compute log_2(x)"),
-    )?;
+    let entropy = discrete_expected_value(random_variable, |x| {
+        x.log(two).expect("failed to compute log_2(x)")
+    })?;
     Ok(entropy)
 }
 
@@ -749,5 +784,49 @@ mod tests {
 
         let expectation = discrete_expected_value(&rv, |x| x).unwrap();
         assert_eq!(expectation, Number::default());
+    }
+
+    #[test]
+    fn discrete_entropy_computes_expected_log_for_rational_pdf() {
+        // 0.5*log2(1) + 0.5*log2(2) = 0.5
+        let rv = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let entropy = discrete_entropy(&rv).unwrap();
+        assert_eq!(entropy, Number::Rational(Rational64::new(1, 2)));
+    }
+
+    #[test]
+    fn discrete_entropy_computes_expected_log_for_float_pdf() {
+        // 0.2*log2(1) + 0.5*log2(2) + 0.3*log2(4) = 1.1
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(4)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let entropy = discrete_entropy(&rv).unwrap();
+        assert!((entropy.to_f64() - 1.1).abs() < 1e-12);
+    }
+
+    #[test]
+    #[should_panic(expected = "failed to compute log_2(x)")]
+    fn discrete_entropy_panics_when_log_cannot_be_computed() {
+        let rv = RandomVariable {
+            function: vec![Number::Integer(1)],
+            support: vec![Number::Integer(0)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let _ = discrete_entropy(&rv);
     }
 }
