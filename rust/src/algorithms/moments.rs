@@ -201,6 +201,43 @@ pub fn discrete_kurtosis(random_variable: &RandomVariable) -> Result<Number, Str
     Ok(kurtosis)
 }
 
+/// Computes the kurtosis of a discrete random variable
+///
+/// # Arguments
+/// * `random_variable`: a discrete random variable
+///
+/// # Returns
+/// * `kurtosis`: the kurtosis of the random variable
+///
+/// # Examples
+///
+pub fn discrete_skewness(random_variable: &RandomVariable) -> Result<Number, String> {
+    let mean = discrete_mean(random_variable)?;
+    let variance = discrete_variance(random_variable)?;
+    let standard_deviation = variance.sqrt()?;
+
+    let two = Number::Integer(2);
+    let three = Number::Integer(3);
+
+    let term_1 = discrete_expected_value(random_variable, |x| {
+        x.pow(three).expect("failed to compute x^3")
+    })?;
+    let term_2 = three
+        * mean
+        * discrete_expected_value(random_variable, |x| {
+            x.pow(two).expect("failed to compute x^2")
+        })?;
+    let term_3 = two * mean.pow(three).expect("failed to compute x^3");
+
+    let numerator = term_1 - term_2 + term_3;
+    let denominator = standard_deviation
+        .pow(three)
+        .expect("failed to compute x^3");
+
+    let skewness = numerator / denominator;
+    Ok(skewness)
+}
+
 /// Computes the variance of a discrete random variable using the relationships
 /// Var(x) = E(X^2) - E(X)^2
 ///
