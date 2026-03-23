@@ -4,10 +4,10 @@ Transformation procedures extracted from `applpy.rv`.
 
 from sympy import Float, Symbol, diff, limit, oo, simplify, solve, zoo
 
-from .rv import Convert, RV, RVError, cdf, pdf, t, x
+from .rv import Convert as convert, RV, RVError, cdf, pdf, t, x
 
 
-def transform(random_variable, gXt):
+def transform(random_variable, transform_spec):
     """
     Procedure Name: Transform
     Purpose: Compute the transformation of a random variable
@@ -18,171 +18,175 @@ def transform(random_variable, gXt):
     """
 
     # Check to make sure support of transform is in ascending order
-    for i in range(len(gXt[1]) - 1):
-        if gXt[1][i] > gXt[1][i + 1]:
+    for i in range(len(transform_spec[1]) - 1):
+        if transform_spec[1][i] > transform_spec[1][i + 1]:
             raise RVError("Transform support is not in ascending order")
 
     # Convert the RV to its PDF form
-    X_dummy = pdf(random_variable)
+    pdf_random_variable = pdf(random_variable)
 
     # If the distribution is continuous, find and return the transformation
     if random_variable.is_continuous():
         # Adjust the transformation to include the support of the random
         #   variable
-        gXold = []
-        for i in range(len(gXt)):
-            gXold.append(gXt[i])
-        gXsupp = []
-        for i in range(len(gXold[1])):
-            gXsupp.append(gXold[1][i])
+        transform_spec_copy = []
+        for i in range(len(transform_spec)):
+            transform_spec_copy.append(transform_spec[i])
+        transform_support = []
+        for i in range(len(transform_spec_copy[1])):
+            transform_support.append(transform_spec_copy[1][i])
         # Add the support of the random variable into the support
         #   of the transformation
-        for i in range(len(X_dummy.support)):
-            if X_dummy.support[i] not in gXsupp:
-                gXsupp.append(X_dummy.support[i])
-        gXsupp.sort()
+        for i in range(len(pdf_random_variable.support)):
+            if pdf_random_variable.support[i] not in transform_support:
+                transform_support.append(pdf_random_variable.support[i])
+        transform_support.sort()
         # Find which segment of the transformation applies, and add it
         #   to the transformation list
-        gXfunc = []
-        for i in range(1, len(gXsupp)):
-            for j in range(len(gXold[0])):
-                if gXsupp[i] >= gXold[1][j]:
-                    if gXsupp[i] <= gXold[1][j + 1]:
-                        gXfunc.append(gXold[0][j])
+        transform_functions = []
+        for i in range(1, len(transform_support)):
+            for j in range(len(transform_spec_copy[0])):
+                if transform_support[i] >= transform_spec_copy[1][j]:
+                    if transform_support[i] <= transform_spec_copy[1][j + 1]:
+                        transform_functions.append(transform_spec_copy[0][j])
                         break
-        # Set the adjusted transformation as gX
-        gX = []
-        gX.append(gXfunc)
-        gX.append(gXsupp)
+        # Set the adjusted transformation as the active transform spec.
+        active_transform = []
+        active_transform.append(transform_functions)
+        active_transform.append(transform_support)
         # If the support of the transformation does not match up with the
         #   support of the RV, adjust the support of the transformation
 
         # Traverse list to find elements that are not within the support
         #   of the rv
-        for i in range(len(gX[1])):
-            if gX[1][i] < X_dummy.support[0]:
-                gX[1][i] = X_dummy.support[0]
-            if gX[1][i] > X_dummy.support[len(X_dummy.support) - 1]:
-                gX[1][i] = X_dummy.support[len(X_dummy.support) - 1]
+        for i in range(len(active_transform[1])):
+            if active_transform[1][i] < pdf_random_variable.support[0]:
+                active_transform[1][i] = pdf_random_variable.support[0]
+            if active_transform[1][i] > pdf_random_variable.support[len(pdf_random_variable.support) - 1]:
+                active_transform[1][i] = pdf_random_variable.support[len(pdf_random_variable.support) - 1]
         # Delete segments of the transformation that will not be used
-        gX0_removal = []
-        gX1_removal = []
-        for i in range(len(gX[0]) - 1):
-            if gX[1][i] == gX[1][i + 1]:
-                gX0_removal.append(i)
-                gX1_removal.append(i + 1)
-        for i in range(len(gX0_removal)):
-            index = gX0_removal[i]
-            del gX[0][index - i]
-        for i in range(len(gX1_removal)):
-            index = gX1_removal[i]
-            del gX[1][index - i]
+        function_indexes_to_remove = []
+        support_indexes_to_remove = []
+        for i in range(len(active_transform[0]) - 1):
+            if active_transform[1][i] == active_transform[1][i + 1]:
+                function_indexes_to_remove.append(i)
+                support_indexes_to_remove.append(i + 1)
+        for i in range(len(function_indexes_to_remove)):
+            index = function_indexes_to_remove[i]
+            del active_transform[0][index - i]
+        for i in range(len(support_indexes_to_remove)):
+            index = support_indexes_to_remove[i]
+            del active_transform[1][index - i]
         # Create a list of mappings x->g(x)
-        mapping = []
-        for i in range(len(gX[0])):
-            gXsubs1 = gX[0][i].subs(x, gX[1][i])
-            if gXsubs1 == zoo:
-                gXsubs1 = limit(gX[0][i], x, gX[1][i])
-            gXsubs2 = gX[0][i].subs(x, gX[1][i + 1])
-            if gXsubs2 == zoo:
-                gXsubs2 = limit(gX[0][i + 1], x, gX[1][i + 1])
-            mapping.append([gXsubs1, gXsubs2])
+        mapped_intervals = []
+        for i in range(len(active_transform[0])):
+            left_mapped_value = active_transform[0][i].subs(x, active_transform[1][i])
+            if left_mapped_value == zoo:
+                left_mapped_value = limit(active_transform[0][i], x, active_transform[1][i])
+            right_mapped_value = active_transform[0][i].subs(x, active_transform[1][i + 1])
+            if right_mapped_value == zoo:
+                right_mapped_value = limit(
+                    active_transform[0][i + 1], x, active_transform[1][i + 1]
+                )
+            mapped_intervals.append([left_mapped_value, right_mapped_value])
         # Create the support for the transformed random variable
-        trans_supp = []
-        for i in range(len(mapping)):
+        transformed_support = []
+        for i in range(len(mapped_intervals)):
             for j in range(2):
-                if mapping[i][j] not in trans_supp:
-                    trans_supp.append(mapping[i][j])
-        if zoo in trans_supp:
+                if mapped_intervals[i][j] not in transformed_support:
+                    transformed_support.append(mapped_intervals[i][j])
+        if zoo in transformed_support:
             error_string = "complex infinity appears in the support, "
             error_string += "please check for an undefined transformation "
             error_string += "such as 1/0"
             raise RVError(error_string)
-        trans_supp.sort()
+        transformed_support.sort()
         # Find which segment of the transformation each transformation
         #   function applies to
-        applist = []
-        for i in range(len(mapping)):
-            temp = []
-            for j in range(len(trans_supp) - 1):
-                if min(mapping[i]) <= trans_supp[j]:
-                    if max(mapping[i]) >= trans_supp[j + 1]:
-                        temp.append(j)
-            applist.append(temp)
+        applicable_interval_indexes = []
+        for i in range(len(mapped_intervals)):
+            matching_indexes = []
+            for j in range(len(transformed_support) - 1):
+                if min(mapped_intervals[i]) <= transformed_support[j]:
+                    if max(mapped_intervals[i]) >= transformed_support[j + 1]:
+                        matching_indexes.append(j)
+            applicable_interval_indexes.append(matching_indexes)
         # Find the appropriate inverse for each g(x)
-        ginv = []
-        for i in range(len(gX[0])):
-            # Find the 'test point' for the inverse
-            if [gX[1][i], gX[1][i + 1]] == [-oo, oo]:
-                c = 0
-            elif gX[1][i] == -oo and gX[1][i + 1] != oo:
-                c = gX[1][i + 1] - 1
-            elif gX[1][i] != -oo and gX[1][i + 1] == oo:
-                c = gX[1][i] + 1
+        inverse_functions = []
+        for i in range(len(active_transform[0])):
+            # Find the test point for selecting the correct inverse.
+            if [active_transform[1][i], active_transform[1][i + 1]] == [-oo, oo]:
+                test_point = 0
+            elif active_transform[1][i] == -oo and active_transform[1][i + 1] != oo:
+                test_point = active_transform[1][i + 1] - 1
+            elif active_transform[1][i] != -oo and active_transform[1][i + 1] == oo:
+                test_point = active_transform[1][i] + 1
             else:
-                c = (gX[1][i] + gX[1][i + 1]) / 2
+                test_point = (active_transform[1][i] + active_transform[1][i + 1]) / 2
             # Create a list of possible inverses
-            invlist = solve(gX[0][i] - t, x)
-            # Use the test point to determine the correct inverse
+            candidate_inverses = solve(active_transform[0][i] - t, x)
+            # Use the test point to determine the correct inverse.
             selected_inverse = False
-            for j in range(len(invlist)):
-                # If g-1(g(c))=c, then the inverse is correct
-                test = invlist[j].subs(t, gX[0][i].subs(x, c))
-                if simplify(test - c) == 0:
-                    ginv.append(invlist[j])
+            for j in range(len(candidate_inverses)):
+                # If g-1(g(test_point))=test_point, then the inverse is correct
+                inverse_test_value = candidate_inverses[j].subs(
+                    t, active_transform[0][i].subs(x, test_point)
+                )
+                if simplify(inverse_test_value - test_point) == 0:
+                    inverse_functions.append(candidate_inverses[j])
                     selected_inverse = True
                     break
                 try:
-                    if test <= Float(float(c), 10) + 0.0000001:
-                        if test >= Float(float(c), 10) - 0.0000001:
-                            ginv.append(invlist[j])
+                    if inverse_test_value <= Float(float(test_point), 10) + 0.0000001:
+                        if inverse_test_value >= Float(float(test_point), 10) - 0.0000001:
+                            inverse_functions.append(candidate_inverses[j])
                             selected_inverse = True
                             break
                 except Exception:
-                    if j == len(invlist) - 1 and len(ginv) < i + 1:
-                        ginv.append(None)
+                    if j == len(candidate_inverses) - 1 and len(inverse_functions) < i + 1:
+                        inverse_functions.append(None)
                         selected_inverse = True
             # Some symbolic comparisons do not trigger either branch above.
             # Fall back to the only available inverse when the mapping is
             # unambiguous.
-            if not selected_inverse and len(invlist) == 1:
-                ginv.append(invlist[0])
+            if not selected_inverse and len(candidate_inverses) == 1:
+                inverse_functions.append(candidate_inverses[0])
         # Find the transformation function for each segment'
-        seg_func = []
-        for i in range(len(X_dummy.func)):
+        segment_transform_functions = []
+        for i in range(len(pdf_random_variable.func)):
             # Only find transformation for applicable segments
-            for j in range(len(gX[0])):
-                if gX[1][j] >= X_dummy.support[i]:
-                    if gX[1][j + 1] <= X_dummy.support[i + 1]:
-                        if j >= len(ginv) or ginv[j] is None:
+            for j in range(len(active_transform[0])):
+                if active_transform[1][j] >= pdf_random_variable.support[i]:
+                    if active_transform[1][j + 1] <= pdf_random_variable.support[i + 1]:
+                        if j >= len(inverse_functions) or inverse_functions[j] is None:
                             continue
-                        if not isinstance(X_dummy.func[i], (float, int)):
-                            tran = X_dummy.func[i].subs(x, ginv[j])
-                            tran = tran * diff(ginv[j], t)
+                        if not isinstance(pdf_random_variable.func[i], (float, int)):
+                            transformed_piece = pdf_random_variable.func[i].subs(x, inverse_functions[j])
+                            transformed_piece = transformed_piece * diff(inverse_functions[j], t)
                         else:
-                            tran = X_dummy.func[i] * diff(ginv[j], t)
-                        seg_func.append(tran)
+                            transformed_piece = pdf_random_variable.func[i] * diff(inverse_functions[j], t)
+                        segment_transform_functions.append(transformed_piece)
         # Sum the transformations for each piece of the transformed
         #   random variable
-        trans_func = []
-        for i in range(len(trans_supp) - 1):
-            h = 0
-            for j in range(len(seg_func)):
-                if i in applist[j]:
-                    if mapping[j][0] < mapping[j][1]:
-                        h = h + seg_func[j]
+        transformed_functions_by_interval = []
+        for i in range(len(transformed_support) - 1):
+            combined_interval_function = 0
+            for j in range(len(segment_transform_functions)):
+                if i in applicable_interval_indexes[j]:
+                    if mapped_intervals[j][0] < mapped_intervals[j][1]:
+                        combined_interval_function = combined_interval_function + segment_transform_functions[j]
                     else:
-                        h = h - seg_func[j]
-            trans_func.append(h)
+                        combined_interval_function = combined_interval_function - segment_transform_functions[j]
+            transformed_functions_by_interval.append(combined_interval_function)
         # Substitute x into the transformed random variable
-        trans_func2 = []
-        for i in range(len(trans_func)):
-            if not isinstance(trans_func[i], (int, float)):
-                trans_func2.append(simplify(trans_func[i].subs(t, x)))
+        transformed_pdf_functions = []
+        for i in range(len(transformed_functions_by_interval)):
+            if not isinstance(transformed_functions_by_interval[i], (int, float)):
+                transformed_pdf_functions.append(simplify(transformed_functions_by_interval[i].subs(t, x)))
             else:
-                trans_func2.append(trans_func[i])
+                transformed_pdf_functions.append(transformed_functions_by_interval[i])
         # Create and return the random variable
-        return RV(trans_func2, trans_supp, ["continuous", "pdf"])
+        return RV(transformed_pdf_functions, transformed_support, ["continuous", "pdf"])
 
     # If the distribution in symbolic discrete, convert it and then compute
     #   the transformation
@@ -193,228 +197,234 @@ def transform(random_variable, gXt):
                 err_string += "random variables with symbolic or inifinite "
                 err_string += "support"
                 raise RVError(err_string)
-        X_dummy = Convert(random_variable)
-        return transform(X_dummy, gXt)
+        pdf_random_variable = convert(random_variable)
+        return transform(pdf_random_variable, transform_spec)
 
     # If the distribution is discrete, find and return the transformation
     if random_variable.is_discrete():
-        gX = gXt
-        trans_sup = []
+        active_transform = transform_spec
+        transformed_support_points = []
         # Find the portion of the transformation each element
         #   in the random variable applies to, and then transform it
-        for i in range(len(X_dummy.support)):
-            X_support = X_dummy.support[i]
-            if X_support < min(gX[1]) or X_support > max(gX[1]):
-                trans_sup.append(X_support)
-            for j in range(len(gX[1]) - 1):
-                if X_support >= gX[1][j] and X_support <= gX[1][j + 1]:
-                    trans_sup.append(gX[0][j].subs(x, X_dummy.support[i]))
+        for i in range(len(pdf_random_variable.support)):
+            support_point = pdf_random_variable.support[i]
+            if support_point < min(active_transform[1]) or support_point > max(active_transform[1]):
+                transformed_support_points.append(support_point)
+            for j in range(len(active_transform[1]) - 1):
+                if support_point >= active_transform[1][j] and support_point <= active_transform[1][j + 1]:
+                    transformed_support_points.append(
+                        active_transform[0][j].subs(x, pdf_random_variable.support[i])
+                    )
                     break
                     # Break is required, otherwise points on the boundaries
                     #   between two segments of the transformation will
                     #   be entered twice
         # Sort the function and support lists
-        sortlist = list(zip(trans_sup, X_dummy.func))
-        sortlist.sort()
-        translist = []
-        funclist = []
-        for i in range(len(sortlist)):
-            translist.append(sortlist[i][0])
-            funclist.append(sortlist[i][1])
+        sorted_pairs = list(zip(transformed_support_points, pdf_random_variable.func))
+        sorted_pairs.sort()
+        sorted_support_points = []
+        sorted_probabilities = []
+        for i in range(len(sorted_pairs)):
+            sorted_support_points.append(sorted_pairs[i][0])
+            sorted_probabilities.append(sorted_pairs[i][1])
         # Combine redundant elements in the list
-        translist2 = []
-        funclist2 = []
-        for i in range(len(translist)):
-            if translist[i] not in translist2:
-                translist2.append(translist[i])
-                funclist2.append(funclist[i])
-            elif translist[i] in translist2:
-                idx = translist2.index(translist[i])
-                funclist2[idx] += funclist[i]
+        unique_support_points = []
+        aggregated_probabilities = []
+        for i in range(len(sorted_support_points)):
+            if sorted_support_points[i] not in unique_support_points:
+                unique_support_points.append(sorted_support_points[i])
+                aggregated_probabilities.append(sorted_probabilities[i])
+            elif sorted_support_points[i] in unique_support_points:
+                support_index = unique_support_points.index(sorted_support_points[i])
+                aggregated_probabilities[support_index] += sorted_probabilities[i]
         # Return the transformed random variable
-        return RV(funclist2, translist2, ["discrete", "pdf"])
+        return RV(aggregated_probabilities, unique_support_points, ["discrete", "pdf"])
 
 
-def truncate(random_variable, supp):
+def truncate(random_variable, support_interval):
     """
     Procedure Name: Truncate
     Purpose: Truncate a random variable
     Arguments: 1. random_variable: A random variable
-               2. supp: The support of the truncated random variable
+               2. support_interval: The support of the truncated random variable
     Output:    1. A truncated random variable
     """
     # Check to make sure the support of the truncated random
     #   variable is given in ascending order
-    if supp[0] > supp[1]:
+    if support_interval[0] > support_interval[1]:
         raise RVError("The support must be given in ascending order")
 
     # Conver the random variable to its pdf form
-    X_dummy = pdf(random_variable)
-    cdf_dummy = cdf(random_variable)
+    pdf_random_variable = pdf(random_variable)
+    cdf_random_variable = cdf(random_variable)
 
     # If the random variable is continuous, find and return
     #   the truncated random variable
     if random_variable.is_continuous():
         # Find the area of the truncated random variable
-        area = cdf(cdf_dummy, supp[1]) - cdf(cdf_dummy, supp[0])
+        truncation_area = cdf(cdf_random_variable, support_interval[1]) - cdf(
+            cdf_random_variable, support_interval[0]
+        )
         # Cut out parts of the distribution that don't fall
         #   within the new limits
-        for i in range(len(X_dummy.func)):
-            if supp[0] >= X_dummy.support[i]:
-                if supp[0] <= X_dummy.support[i + 1]:
-                    lwindx = i
-            if supp[1] >= X_dummy.support[i]:
-                if supp[1] <= X_dummy.support[i + 1]:
-                    upindx = i
-        truncfunc = []
-        for i in range(len(X_dummy.func)):
-            if i >= lwindx and i <= upindx:
-                truncfunc.append(simplify(X_dummy.func[i] / area))
-        truncsupp = [supp[0]]
-        upindx += 1
-        for i in range(len(X_dummy.support)):
-            if i > lwindx and i < upindx:
-                truncsupp.append(X_dummy.support[i])
-        truncsupp.append(supp[1])
+        for i in range(len(pdf_random_variable.func)):
+            if support_interval[0] >= pdf_random_variable.support[i]:
+                if support_interval[0] <= pdf_random_variable.support[i + 1]:
+                    lower_piece_index = i
+            if support_interval[1] >= pdf_random_variable.support[i]:
+                if support_interval[1] <= pdf_random_variable.support[i + 1]:
+                    upper_piece_index = i
+        truncated_functions = []
+        for i in range(len(pdf_random_variable.func)):
+            if i >= lower_piece_index and i <= upper_piece_index:
+                truncated_functions.append(simplify(pdf_random_variable.func[i] / truncation_area))
+        truncated_support = [support_interval[0]]
+        upper_piece_index += 1
+        for i in range(len(pdf_random_variable.support)):
+            if i > lower_piece_index and i < upper_piece_index:
+                truncated_support.append(pdf_random_variable.support[i])
+        truncated_support.append(support_interval[1])
         # Return the truncated random variable
-        return RV(truncfunc, truncsupp, ["continuous", "pdf"])
+        return RV(truncated_functions, truncated_support, ["continuous", "pdf"])
 
     # If the random variable is a discrete function, find and return
     #   the truncated random variable
     if random_variable.is_discrete_functional():
         # Find the area of the truncated random variable
-        area = cdf(cdf_dummy, supp[1]) - cdf(cdf_dummy, supp[0])
+        truncation_area = cdf(cdf_random_variable, support_interval[1]) - cdf(
+            cdf_random_variable, support_interval[0]
+        )
         # Cut out parts of the distribution that don't fall
         #   within the new limits
-        for i in range(len(X_dummy.func)):
-            if supp[0] >= X_dummy.support[i]:
-                if supp[0] <= X_dummy.support[i + 1]:
-                    lwindx = i
-            if supp[1] >= X_dummy.support[i]:
-                if supp[1] <= X_dummy.support[i + 1]:
-                    upindx = i
-        truncfunc = []
-        for i in range(len(X_dummy.func)):
-            if i >= lwindx and i <= upindx:
-                truncfunc.append(X_dummy.func[i] / area)
-        truncsupp = [supp[0]]
-        upindx += 1
-        for i in range(len(X_dummy.support)):
-            if i > lwindx and i < upindx:
-                truncsupp.append(X_dummy.support[i])
-        truncsupp.append(supp[1])
+        for i in range(len(pdf_random_variable.func)):
+            if support_interval[0] >= pdf_random_variable.support[i]:
+                if support_interval[0] <= pdf_random_variable.support[i + 1]:
+                    lower_piece_index = i
+            if support_interval[1] >= pdf_random_variable.support[i]:
+                if support_interval[1] <= pdf_random_variable.support[i + 1]:
+                    upper_piece_index = i
+        truncated_functions = []
+        for i in range(len(pdf_random_variable.func)):
+            if i >= lower_piece_index and i <= upper_piece_index:
+                truncated_functions.append(pdf_random_variable.func[i] / truncation_area)
+        truncated_support = [support_interval[0]]
+        upper_piece_index += 1
+        for i in range(len(pdf_random_variable.support)):
+            if i > lower_piece_index and i < upper_piece_index:
+                truncated_support.append(pdf_random_variable.support[i])
+        truncated_support.append(support_interval[1])
         # Return the truncated random variable
-        return RV(truncfunc, truncsupp, ["discrete_functional", "pdf"])
+        return RV(truncated_functions, truncated_support, ["discrete_functional", "pdf"])
 
     # If the distribution is discrete, find and return the
     #   truncated random variable
     if random_variable.is_discrete():
         # Find the area of the truncated random variable
-        area = 0
-        for i in range(len(X_dummy.support)):
-            if X_dummy.support[i] >= supp[0]:
-                if X_dummy.support[i] <= supp[1]:
-                    area += X_dummy.func[i]
+        truncation_area = 0
+        for i in range(len(pdf_random_variable.support)):
+            if pdf_random_variable.support[i] >= support_interval[0]:
+                if pdf_random_variable.support[i] <= support_interval[1]:
+                    truncation_area += pdf_random_variable.func[i]
         # Truncate the random variable and find the probability
         #   at each point
-        truncfunc = []
-        truncsupp = []
-        for i in range(len(X_dummy.support)):
-            if X_dummy.support[i] >= supp[0]:
-                if X_dummy.support[i] <= supp[1]:
-                    truncfunc.append(X_dummy.func[i] / area)
-                    truncsupp.append(X_dummy.support[i])
+        truncated_functions = []
+        truncated_support = []
+        for i in range(len(pdf_random_variable.support)):
+            if pdf_random_variable.support[i] >= support_interval[0]:
+                if pdf_random_variable.support[i] <= support_interval[1]:
+                    truncated_functions.append(pdf_random_variable.func[i] / truncation_area)
+                    truncated_support.append(pdf_random_variable.support[i])
         # Return the truncated random variable
-        return RV(truncfunc, truncsupp, ["discrete", "pdf"])
+        return RV(truncated_functions, truncated_support, ["discrete", "pdf"])
 
 
-def mixture(MixParameters, MixRVs):
+def mixture(mix_parameters, mix_random_variables):
     """
     Procedure Name: Mixture
     Purpose: Mixes random variables X1,X2,...,Xn
-    Arguments:   1. MixParameters: A mix of probability weights
-                 2. MixRVs: RV's X1,X2,...,Xn
+    Arguments:   1. mix_parameters: A mix of probability weights
+                 2. mix_random_variables: RV's X1,X2,...,Xn
     Output:      1. The mixture RV
     """
 
     # Check to make sure that the arguments are lists
-    if not isinstance(MixParameters, list) or not isinstance(MixRVs, list):
+    if not isinstance(mix_parameters, list) or not isinstance(mix_random_variables, list):
         raise RVError("Both arguments must be in list format")
     # Check to make sure the lists are of equal length
-    if len(MixParameters) != len(MixRVs):
+    if len(mix_parameters) != len(mix_random_variables):
         raise RVError("Mix parameter and RV lists must be the same length")
     # Check to ensure that the mix rv's are all of the same type
     #   (discrete or continuous)
-    for i in range(len(MixRVs)):
-        if MixRVs[0].domain_type != MixRVs[i].domain_type:
+    for i in range(len(mix_random_variables)):
+        if mix_random_variables[0].domain_type != mix_random_variables[i].domain_type:
             raise RVError("Mix RVs must be all continuous or discrete")
     # Convert the Mix RVs to their PDF form
-    Mixfx = []
-    for i in range(len(MixRVs)):
-        Mixfx.append(pdf(MixRVs[i]))
+    mixture_pdf_random_variables = []
+    for i in range(len(mix_random_variables)):
+        mixture_pdf_random_variables.append(pdf(mix_random_variables[i]))
 
     # If the distributions are continuous, find and return the
     #   mixture pdf
-    if Mixfx[0].is_continuous():
+    if mixture_pdf_random_variables[0].is_continuous():
         # Compute the support of the mixture as the union of the supports
         #   of the mix rvs
-        MixSupp = []
-        for i in range(len(Mixfx)):
-            for j in range(len(Mixfx[i].support)):
-                if Mixfx[i].support[j] not in MixSupp:
-                    MixSupp.append(Mixfx[i].support[j])
-        MixSupp.sort()
+        mixture_support = []
+        for i in range(len(mixture_pdf_random_variables)):
+            for j in range(len(mixture_pdf_random_variables[i].support)):
+                if mixture_pdf_random_variables[i].support[j] not in mixture_support:
+                    mixture_support.append(mixture_pdf_random_variables[i].support[j])
+        mixture_support.sort()
         # Compute and return the mixed PDF
-        fxnew = []
-        for i in range(len(MixSupp) - 1):
-            newMixfx = 0
-            for j in range(len(MixParameters)):
-                m = len(Mixfx[j].support) - 1
-                for k in range(m):
-                    if Mixfx[j].support[k] <= MixSupp[i]:
-                        if MixSupp[i + 1] <= Mixfx[j].support[k + 1]:
-                            buildfx = Mixfx[j].func[k] * MixParameters[j]
-                            newMixfx += buildfx
-            simplify(newMixfx)
-            fxnew.append(newMixfx)
+        mixture_functions = []
+        for i in range(len(mixture_support) - 1):
+            interval_mixture_function = 0
+            for j in range(len(mix_parameters)):
+                segment_count = len(mixture_pdf_random_variables[j].support) - 1
+                for k in range(segment_count):
+                    if mixture_pdf_random_variables[j].support[k] <= mixture_support[i]:
+                        if mixture_support[i + 1] <= mixture_pdf_random_variables[j].support[k + 1]:
+                            weighted_piece = mixture_pdf_random_variables[j].func[k] * mix_parameters[j]
+                            interval_mixture_function += weighted_piece
+            simplify(interval_mixture_function)
+            mixture_functions.append(interval_mixture_function)
         # Return the mixture rv
-        return RV(fxnew, MixSupp, ["continuous", "pdf"])
+        return RV(mixture_functions, mixture_support, ["continuous", "pdf"])
 
     # If the two random variables are discrete in functinonal form,
     #   find and return the mixture of the two random variables
-    for i in range(len(Mixfx)):
-        if Mixfx[i].is_discrete_functional():
-            for num in Mixfx[i].support:
-                if not isinstance(num, (int, float)):
+    for i in range(len(mixture_pdf_random_variables)):
+        if mixture_pdf_random_variables[i].is_discrete_functional():
+            for support_value in mixture_pdf_random_variables[i].support:
+                if not isinstance(support_value, (int, float)):
                     err_string = "Mixture does not currently work with"
                     err_string = " RVs that have symbolic or infinite support"
                     raise RVError(err_string)
-            Mixfx[i] = Convert(Mixfx[i])
+            mixture_pdf_random_variables[i] = convert(mixture_pdf_random_variables[i])
 
     # If the distributions are discrete, find and return the
     #   mixture pdf
-    if Mixfx[0].is_discrete():
+    if mixture_pdf_random_variables[0].is_discrete():
         # Compute the mixture rv by summing over the weights
-        MixSupp = []
-        fxnew = []
-        for i in range(len(Mixfx)):
-            for j in range(len(Mixfx[i].support)):
-                if Mixfx[i].support[j] not in MixSupp:
-                    MixSupp.append(Mixfx[i].support[j])
-                    fxnew.append(Mixfx[i].func[j] * MixParameters[i])
+        mixture_support = []
+        mixture_functions = []
+        for i in range(len(mixture_pdf_random_variables)):
+            for j in range(len(mixture_pdf_random_variables[i].support)):
+                if mixture_pdf_random_variables[i].support[j] not in mixture_support:
+                    mixture_support.append(mixture_pdf_random_variables[i].support[j])
+                    mixture_functions.append(mixture_pdf_random_variables[i].func[j] * mix_parameters[i])
                 else:
-                    indx = MixSupp.index(Mixfx[i].support[j])
-                    val = Mixfx[i].func[j] * MixParameters[i]
-                    fxnew[indx] += val
+                    support_index = mixture_support.index(mixture_pdf_random_variables[i].support[j])
+                    weighted_value = mixture_pdf_random_variables[i].func[j] * mix_parameters[i]
+                    mixture_functions[support_index] += weighted_value
         # Sort the values
-        zip_list = list(zip(MixSupp, fxnew))
-        zip_list.sort()
-        fxnew = []
-        MixSupp = []
-        for i in range(len(zip_list)):
-            fxnew.append(zip_list[i][1])
-            MixSupp.append(zip_list[i][0])
-        return RV(fxnew, MixSupp, ["discrete", "pdf"])
+        sorted_support_function_pairs = list(zip(mixture_support, mixture_functions))
+        sorted_support_function_pairs.sort()
+        mixture_functions = []
+        mixture_support = []
+        for i in range(len(sorted_support_function_pairs)):
+            mixture_functions.append(sorted_support_function_pairs[i][1])
+            mixture_support.append(sorted_support_function_pairs[i][0])
+        return RV(mixture_functions, mixture_support, ["discrete", "pdf"])
 
 
 # Backward-compatible aliases for legacy APPLPy function names.
