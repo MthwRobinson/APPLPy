@@ -26,7 +26,7 @@ from .rv import (
     RVError,
     mean,
     convolution,
-    Mixture,
+    mixture,
 )
 from .distributions.continuous import ErlangRV
 
@@ -95,7 +95,7 @@ def Queue(X, Y, n, k=0, s=1):
     for element in probs:
         sub_element = element.subs(rho, rho_subs)
         sub_probs.append(sub_element)
-    TIS = Mixture(sub_probs, lst)
+    TIS = mixture(sub_probs, lst)
     return TIS
 
 

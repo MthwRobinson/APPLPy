@@ -8,12 +8,12 @@ Main Random Variable Module
 5. Plots
 
 Procedures On One Random Variable:
-    Transform(random_variable,gX)
-    Truncate(random_variable,[lw,up])
+    transform(random_variable,gX)
+    truncate(random_variable,[lw,up])
     VerifyPDF(random_variable)
 
 Procedures On Two Random Variables:
-    Mixture(MixParameters,MixRVs)
+    mixture(MixParameters,MixRVs)
 
 Plotting Procedures:
     Histogram(sample,bins)
@@ -292,7 +292,7 @@ class RV:
         Output:     1. The negative transformation of the random variable
         """
         gX = [[-x], [-oo, oo]]
-        neg = Transform(self, gX)
+        neg = transform(self, gX)
         return neg
 
     def __abs__(self):
@@ -304,7 +304,7 @@ class RV:
         Output:     1. The absolute value of the random variable
         """
         gX = [[abs(x)], [-oo, oo]]
-        abs_rv = Transform(self, gX)
+        abs_rv = transform(self, gX)
         return abs_rv
 
     def __add__(self, other):
@@ -331,7 +331,7 @@ class RV:
         # the random variable
         if isinstance(other, (float, int)):
             gX = [[x + other], [-oo, oo]]
-            return Transform(self, gX)
+            return transform(self, gX)
 
     def __radd__(self, other):
         """
@@ -364,13 +364,13 @@ class RV:
         #   return the difference of the two random variables
         if "RV" in other.__class__.__name__:
             gX = [[-x], [-oo, oo]]
-            random_variable = Transform(other, gX)
+            random_variable = transform(other, gX)
             return convolution(self, random_variable)
         # If the random variable is subtracted by a constant, shift
         # the random variable
         if isinstance(other, (float, int)):
             gX = [[x - other], [-oo, oo]]
-            return Transform(self, gX)
+            return transform(self, gX)
 
     def __rsub__(self, other):
         """
@@ -412,7 +412,7 @@ class RV:
         # the random variable
         if isinstance(other, (float, int)):
             gX = [[x * other], [-oo, oo]]
-            return Transform(self, gX)
+            return transform(self, gX)
 
     def __rmul__(self, other):
         """
@@ -442,13 +442,13 @@ class RV:
         #   return the quotient of the two random variables
         if "RV" in other.__class__.__name__:
             gX = [[1 / x, 1 / x], [-oo, 0, oo]]
-            random_variable = Transform(other, gX)
+            random_variable = transform(other, gX)
             return product(self, random_variable)
         # If the random variable is divided by a constant, scale
         # the random variable by theinverse of the constant
         if isinstance(other, (float, int)):
             gX = [[x / other], [-oo, oo]]
-            return Transform(self, gX)
+            return transform(self, gX)
 
     def __rtruediv__(self, other):
         """
@@ -463,7 +463,7 @@ class RV:
         """
         ## Invert the random variable
         gX = [[1 / x, 1 / x], [-oo, 0, oo]]
-        invert = Transform(self, gX)
+        invert = transform(self, gX)
         ## Call the multiplication function
         div_rv = invert.__mul__(other)
         return div_rv
@@ -1046,8 +1046,8 @@ def Convert(random_variable, inc=1):
 #     product_iid(random_variable,n)
 #     skewness(random_variable)
 #     SqRt(random_variable)
-#     Transform(random_variable,gX)
-#     Truncate(random_variable,[lw,up])
+#     transform(random_variable,gX)
+#     truncate(random_variable,[lw,up])
 #     variance(random_variable)
 
 
@@ -1133,7 +1133,7 @@ def Pow(random_variable, n):
     # If n is odd, the g is a one-to-one transformation
     elif n % 2 == 1:
         g = [[x**n], [-oo, oo]]
-    return Transform(random_variable, g)
+    return transform(random_variable, g)
 
 
 def product_iid(random_variable, n):
@@ -1161,20 +1161,20 @@ def Sqrt(random_variable):
             err_string += " random variable."
             raise RVError(err_string)
     u = [[sqrt(x)], [0, oo]]
-    NewRvar = Transform(random_variable, u)
+    NewRvar = transform(random_variable, u)
     return NewRvar
 
 
-def Transform(random_variable, gXt):
-    from .transform import Transform as _Transform
+def transform(random_variable, gXt):
+    from .transform import transform as _transform
 
-    return _Transform(random_variable, gXt)
+    return _transform(random_variable, gXt)
 
 
-def Truncate(random_variable, supp):
-    from .transform import Truncate as _Truncate
+def truncate(random_variable, supp):
+    from .transform import truncate as _truncate
 
-    return _Truncate(random_variable, supp)
+    return _truncate(random_variable, supp)
 
 
 def VerifyPDF(random_variable):
@@ -1192,7 +1192,7 @@ def VerifyPDF(random_variable):
 #
 # Procedures:
 #     convolution(random_variable_1,random_variable_2)
-#     Mixture(MixParameters,MixRVs)
+#     mixture(MixParameters,MixRVs)
 #     product(random_variable_1,random_variable_2)
 
 
@@ -1202,10 +1202,10 @@ def convolution(random_variable_1, random_variable_2):
     return _Convolution(random_variable_1, random_variable_2)
 
 
-def Mixture(MixParameters, MixRVs):
-    from .transform import Mixture as _Mixture
+def mixture(MixParameters, MixRVs):
+    from .transform import mixture as _mixture
 
-    return _Mixture(MixParameters, MixRVs)
+    return _mixture(MixParameters, MixRVs)
 
 
 def product(random_variable_1, random_variable_2):
@@ -1219,6 +1219,9 @@ ConvolutionIID = convolution_iid
 ProductIID = product_iid
 Convolution = convolution
 Product = product
+Transform = transform
+Truncate = truncate
+Mixture = mixture
 
 
 def ProductDiscrete(random_variable_1, random_variable_2):

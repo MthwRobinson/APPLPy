@@ -4,7 +4,7 @@ Algebraic operations on one or two random variables.
 
 from sympy import Symbol, exp, expand, integrate, ln, nan, oo, simplify
 
-from .rv import RV, RVError, Convert, Transform, pdf, x
+from .rv import RV, RVError, Convert, pdf, transform, x
 
 
 def convolution_iid(random_variable, n):
@@ -112,10 +112,10 @@ def convolution(random_variable_1, random_variable_2):
         else:
             log_transform = [[ln(x)], [0, oo]]
             exp_transform = [[exp(x), exp(x)], [-oo, 0, oo]]
-            transformed_left_rv = Transform(left_pdf_rv, exp_transform)
-            transformed_right_rv = Transform(right_pdf_rv, exp_transform)
+            transformed_left_rv = transform(left_pdf_rv, exp_transform)
+            transformed_right_rv = transform(right_pdf_rv, exp_transform)
             transformed_product_rv = product(transformed_left_rv, transformed_right_rv)
-            convolution_rv = Transform(transformed_product_rv, log_transform)
+            convolution_rv = transform(transformed_product_rv, log_transform)
             simplified_functions = []
             for index in range(len(convolution_rv.func)):
                 simplified_functions.append(simplify(convolution_rv.func[index]))

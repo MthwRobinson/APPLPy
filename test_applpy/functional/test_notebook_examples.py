@@ -14,13 +14,13 @@ from applpy import (
     Maximum,
     MaximumIID,
     mean,
-    Mixture,
+    mixture,
     Minimum,
     pdf,
     skewness,
-    Transform,
+    transform,
     TriangularRV,
-    Truncate,
+    truncate,
     UniformRV,
     variance,
     x,
@@ -120,7 +120,7 @@ def test_examples_py_expected_value_and_moment_cases():
 
 
 def test_examples_py_mixture_and_algebra_cases():
-    mixture_rv = Mixture(
+    mixture_rv = mixture(
         [Rational(1, 4), Rational(1, 4), Rational(1, 2)],
         [TriangularRV(2, 4, 6), TriangularRV(3, 5, 7), TriangularRV(1, 5, 9)],
     )
@@ -132,8 +132,8 @@ def test_examples_py_mixture_and_algebra_cases():
 
 
 def test_examples_py_transform_and_truncate_cases():
-    transformed = Transform(TriangularRV(2, 4, 5), [[x**2, x**2], [-float("inf"), 0, float("inf")]])
-    truncated = Truncate(BetaRV(2, 2), [Rational(1, 4), Rational(3, 4)])
+    transformed = transform(TriangularRV(2, 4, 5), [[x**2, x**2], [-float("inf"), 0, float("inf")]])
+    truncated = truncate(BetaRV(2, 2), [Rational(1, 4), Rational(3, 4)])
 
     assert mean(transformed) == Rational(83, 6)
     assert mean(truncated) == Rational(1, 2)

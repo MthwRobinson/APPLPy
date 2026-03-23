@@ -1,11 +1,11 @@
 import pytest
 from sympy import Integer, Rational
 
-from applpy import Mixture as TopLevelMixture
-from applpy import Transform as TopLevelTransform
-from applpy import Truncate as TopLevelTruncate
+from applpy import mixture as top_level_mixture
+from applpy import transform as top_level_transform
+from applpy import truncate as top_level_truncate
 from applpy.rv import RV, RVError, x
-from applpy.transform import Mixture, Transform, Truncate
+from applpy.transform import mixture, transform, truncate
 
 
 def _uniform_continuous_pdf():
@@ -25,9 +25,9 @@ def _discrete_pdf_bernoulli():
 
 
 def test_top_level_imports_still_work():
-    assert TopLevelTransform is not None
-    assert TopLevelTruncate is not None
-    assert TopLevelMixture is not None
+    assert top_level_transform is not None
+    assert top_level_truncate is not None
+    assert top_level_mixture is not None
 
 
 def test_transform_and_truncate_happy_paths():
@@ -35,10 +35,10 @@ def test_transform_and_truncate_happy_paths():
     piecewise = _piecewise_continuous_pdf()
     discrete = _discrete_pdf()
 
-    assert isinstance(Transform(discrete, [[x + 1, x + 2], [0, 1, 2]]), RV)
-    assert isinstance(Transform(piecewise, [[x, x**2], [0, 1, 2]]), RV)
-    assert isinstance(Truncate(continuous, [Rational(1, 4), Rational(3, 4)]), RV)
-    assert isinstance(Truncate(discrete, [1, 1]), RV)
+    assert isinstance(transform(discrete, [[x + 1, x + 2], [0, 1, 2]]), RV)
+    assert isinstance(transform(piecewise, [[x, x**2], [0, 1, 2]]), RV)
+    assert isinstance(truncate(continuous, [Rational(1, 4), Rational(3, 4)]), RV)
+    assert isinstance(truncate(discrete, [1, 1]), RV)
 
 
 def test_mixture_happy_paths():
@@ -47,8 +47,8 @@ def test_mixture_happy_paths():
     discrete = _discrete_pdf()
     bernoulli = _discrete_pdf_bernoulli()
 
-    assert isinstance(Mixture([Rational(1, 3), Rational(2, 3)], [continuous, piecewise]), RV)
-    assert isinstance(Mixture([Rational(1, 2), Rational(1, 2)], [discrete, bernoulli]), RV)
+    assert isinstance(mixture([Rational(1, 3), Rational(2, 3)], [continuous, piecewise]), RV)
+    assert isinstance(mixture([Rational(1, 2), Rational(1, 2)], [discrete, bernoulli]), RV)
 
 
 def test_transform_and_mixture_error_paths():
@@ -56,9 +56,8 @@ def test_transform_and_mixture_error_paths():
     discrete = _discrete_pdf()
 
     with pytest.raises(RVError, match="not in ascending order"):
-        Transform(_uniform_continuous_pdf(), [[x], [1, 0]])
+        transform(_uniform_continuous_pdf(), [[x], [1, 0]])
     with pytest.raises(RVError, match="same length"):
-        Mixture([Rational(1, 2)], [continuous, continuous])
+        mixture([Rational(1, 2)], [continuous, continuous])
     with pytest.raises(RVError, match="all continuous or discrete"):
-        Mixture([Rational(1, 2), Rational(1, 2)], [continuous, discrete])
-
+        mixture([Rational(1, 2), Rational(1, 2)], [continuous, discrete])

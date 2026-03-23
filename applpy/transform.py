@@ -7,7 +7,7 @@ from sympy import Float, Symbol, diff, limit, oo, simplify, solve, zoo
 from .rv import Convert, RV, RVError, cdf, pdf, t, x
 
 
-def Transform(random_variable, gXt):
+def transform(random_variable, gXt):
     """
     Procedure Name: Transform
     Purpose: Compute the transformation of a random variable
@@ -194,7 +194,7 @@ def Transform(random_variable, gXt):
                 err_string += "support"
                 raise RVError(err_string)
         X_dummy = Convert(random_variable)
-        return Transform(X_dummy, gXt)
+        return transform(X_dummy, gXt)
 
     # If the distribution is discrete, find and return the transformation
     if random_variable.is_discrete():
@@ -235,7 +235,7 @@ def Transform(random_variable, gXt):
         return RV(funclist2, translist2, ["discrete", "pdf"])
 
 
-def Truncate(random_variable, supp):
+def truncate(random_variable, supp):
     """
     Procedure Name: Truncate
     Purpose: Truncate a random variable
@@ -328,7 +328,7 @@ def Truncate(random_variable, supp):
         return RV(truncfunc, truncsupp, ["discrete", "pdf"])
 
 
-def Mixture(MixParameters, MixRVs):
+def mixture(MixParameters, MixRVs):
     """
     Procedure Name: Mixture
     Purpose: Mixes random variables X1,X2,...,Xn
@@ -416,3 +416,8 @@ def Mixture(MixParameters, MixRVs):
             MixSupp.append(zip_list[i][0])
         return RV(fxnew, MixSupp, ["discrete", "pdf"])
 
+
+# Backward-compatible aliases for legacy APPLPy function names.
+Transform = transform
+Mixture = mixture
+Truncate = truncate
