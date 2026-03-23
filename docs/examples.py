@@ -1,8 +1,32 @@
-from sympy import *
+from sympy import Rational, Symbol, init_session, oo
+import matplotlib.pyplot as plt
 
 init_session()
-from applpy import *
-from applpy.conversion import cdf, hf
+from applpy import (
+    MarkovChain,
+    Maximum,
+    MaximumIID,
+    Minimum,
+    OrderStat,
+    RV,
+    cdf,
+    convolution,
+    convolution_iid,
+    plot_dist,
+    product,
+    product_iid,
+    x,
+)
+from applpy.bayes import CredibleSet, Posterior
+from applpy.distributions.continuous import (
+    BetaRV,
+    ExponentialRV,
+    NormalRV,
+    TriangularRV,
+    UniformRV,
+    WeibullRV,
+)
+from applpy.distributions.discrete import BinomialRV
 from applpy.moments import (
     coef_of_var,
     expected_value,
@@ -12,7 +36,13 @@ from applpy.moments import (
     skewness,
     variance,
 )
+from applpy.queue_dist import Queue
 from applpy.rv import bootstrap_rv
+from applpy.stats import KSTest, MLE, MOM
+from applpy.transform import convert as Convert
+from applpy.transform import mixture as Mixture
+from applpy.transform import transform as Transform
+from applpy.transform import truncate as Truncate
 
 # Bayes
 theta = Symbol("theta")
@@ -100,9 +130,7 @@ X = ExponentialRV(1 / 3)
 Y = ExponentialRV(1 / 2)
 plot_dist(X, color="red")
 plot_dist(Y, color="blue")
-PlotLimits([0, 12], axis="x")
 
-PlotClear()
 Xstar = bootstrap_rv(X.variate(n=100))
 plot_dist(cdf(X))
 plot_dist(cdf(Xstar))
@@ -180,8 +208,8 @@ Y = ExponentialRV(Rational(1, 4))
 Z = X + Y
 Z.save("conv.rv")
 
-X = LoadRV("conv.rv")
-X.display()
+# Loading serialized RVs is not demonstrated because a top-level loader API
+# is not currently exposed in this package version.
 
 # Statistics
 
