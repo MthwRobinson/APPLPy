@@ -2,6 +2,7 @@
 
 use std::fmt;
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
+use std::{collections::BTreeMap, f64::consts::E};
 
 use num_rational::Rational64;
 use num_traits::cast::ToPrimitive;
@@ -23,6 +24,30 @@ impl Number {
             Number::Float(x) => x == 0.0,
             Number::Integer(x) => x == 0,
             Number::Rational(x) => *x.numer() == 0,
+        }
+    }
+
+    fn is_one(self) -> bool {
+        match self {
+            Number::Float(x) => x == 1.0,
+            Number::Integer(x) => x == 1,
+            Number::Rational(x) => x == Rational64::from_integer(1),
+        }
+    }
+
+    fn is_positive(self) -> bool {
+        match self {
+            Number::Float(x) => x.is_finite() && x > 0.0,
+            Number::Integer(x) => x > 0,
+            Number::Rational(x) => x > Rational64::from_integer(0),
+        }
+    }
+
+    fn to_positive_rational_for_log(self) -> Option<Rational64> {
+        match self {
+            Number::Integer(value) if value > 0 => Some(Rational64::from_integer(value)),
+            Number::Rational(value) if value > Rational64::from_integer(0) => Some(value),
+            _ => None,
         }
     }
 
@@ -274,6 +299,136 @@ impl Number {
         self.root(2)
     }
 
+    fn factor_u64(mut value: u64) -> BTreeMap<u64, i32> {
+        let mut factors = BTreeMap::new();
+        if value <= 1 {
+            return factors;
+        }
+
+        let mut count = 0_i32;
+        while value.is_multiple_of(2) {
+            value /= 2;
+            count += 1;
+        }
+        if count > 0 {
+            factors.insert(2, count);
+        }
+
+        let mut divisor = 3_u64;
+        while divisor <= value / divisor {
+            let mut power = 0_i32;
+            while value.is_multiple_of(divisor) {
+                value /= divisor;
+                power += 1;
+            }
+            if power > 0 {
+                factors.insert(divisor, power);
+            }
+            divisor += 2;
+        }
+
+        if value > 1 {
+            factors.insert(value, 1);
+        }
+
+        factors
+    }
+
+    fn rational_prime_exponents(value: Rational64) -> BTreeMap<u64, i32> {
+        let mut exponents = BTreeMap::new();
+        for (prime, power) in Number::factor_u64(value.numer().unsigned_abs()) {
+            exponents.insert(prime, power);
+        }
+        for (prime, power) in Number::factor_u64(value.denom().unsigned_abs()) {
+            *exponents.entry(prime).or_insert(0) -= power;
+        }
+        exponents.retain(|_, power| *power != 0);
+        exponents
+    }
+
+    fn exact_log_rational(value: Rational64, base: Rational64) -> Option<Number> {
+        if value == Rational64::from_integer(1) {
+            return Some(Number::Integer(0));
+        }
+
+        let value_exponents = Number::rational_prime_exponents(value);
+        let base_exponents = Number::rational_prime_exponents(base);
+
+        if base_exponents.is_empty() {
+            return None;
+        }
+
+        let mut numerator: Option<i32> = None;
+        let mut denominator: Option<i32> = None;
+
+        for (&prime, &base_power) in &base_exponents {
+            let value_power = *value_exponents.get(&prime).unwrap_or(&0);
+            if let (Some(num), Some(den)) = (numerator, denominator) {
+                if i128::from(value_power) * i128::from(den)
+                    != i128::from(base_power) * i128::from(num)
+                {
+                    return None;
+                }
+            } else {
+                numerator = Some(value_power);
+                denominator = Some(base_power);
+            }
+        }
+
+        for (&prime, &value_power) in &value_exponents {
+            if !base_exponents.contains_key(&prime) && value_power != 0 {
+                return None;
+            }
+        }
+
+        let ratio = Rational64::new(i64::from(numerator?), i64::from(denominator?));
+        Some(Number::number_from_rational(ratio))
+    }
+
+    /// Computes the logarithm of a `Number` with a chosen base.
+    ///
+    /// ```
+    /// use applpy_rust::algorithms::number::Number;
+    ///
+    /// let result = Number::Integer(8).log(Number::Integer(2)).unwrap();
+    /// assert_eq!(result, Number::Integer(3));
+    /// ```
+    pub fn log(&self, base: Number) -> Result<Number, String> {
+        if !self.is_positive() {
+            return Err("logarithm is undefined for non-positive values".to_string());
+        }
+        if !base.is_positive() || base.is_one() {
+            return Err("logarithm base must be positive and not equal to 1".to_string());
+        }
+
+        if self.is_one() {
+            return Ok(Number::Integer(0));
+        }
+
+        if let (Some(value), Some(base)) = (
+            (*self).to_positive_rational_for_log(),
+            base.to_positive_rational_for_log(),
+        ) {
+            if let Some(exact) = Number::exact_log_rational(value, base) {
+                return Ok(exact);
+            }
+        }
+
+        Ok(Number::Float(self.to_f64().log(base.to_f64())))
+    }
+
+    /// Computes the natural logarithm (`log_e`) of a `Number`.
+    ///
+    /// ```
+    /// use applpy_rust::algorithms::number::Number;
+    ///
+    /// let result = Number::Integer(1).ln().unwrap();
+    /// assert_eq!(result, Number::Integer(0));
+    /// ```
+    pub fn ln(&self) -> Result<Number, String> {
+        self.log(Number::Float(E))
+    }
+
     fn promote(self, other: Self) -> (Self, Self) {
         match (&self, &other) {
             (Number::Float(_), _) | (_, Number::Float(_)) => {
@@ -514,5 +669,61 @@ mod tests {
     fn negative_exact_rational_root_returns_exact_reciprocal() {
         let result = Number::Rational(Rational64::new(1, 16)).root(-2).unwrap();
         assert_eq!(result, Number::Integer(4));
+    }
+
+    #[test]
+    fn exact_integer_log_returns_integer() {
+        let result = Number::Integer(8).log(Number::Integer(2)).unwrap();
+        assert_eq!(result, Number::Integer(3));
+    }
+
+    #[test]
+    fn exact_integer_log_can_return_rational() {
+        let result = Number::Integer(2).log(Number::Integer(8)).unwrap();
+        assert_eq!(result, Number::Rational(Rational64::new(1, 3)));
+    }
+
+    #[test]
+    fn exact_rational_log_can_return_negative_integer() {
+        let result = Number::Rational(Rational64::new(1, 8))
+            .log(Number::Integer(2))
+            .unwrap();
+        assert_eq!(result, Number::Integer(-3));
+    }
+
+    #[test]
+    fn non_exact_log_falls_back_to_float() {
+        let result = Number::Integer(3).log(Number::Integer(2)).unwrap();
+        assert!(matches!(result, Number::Float(x) if x > 1.58 && x < 1.59));
+    }
+
+    #[test]
+    fn log_of_one_is_exact_zero() {
+        let result = Number::Integer(1).log(Number::Float(10.0)).unwrap();
+        assert_eq!(result, Number::Integer(0));
+    }
+
+    #[test]
+    fn log_rejects_non_positive_values() {
+        let err = Number::Integer(0).log(Number::Integer(2)).unwrap_err();
+        assert_eq!(err, "logarithm is undefined for non-positive values");
+    }
+
+    #[test]
+    fn log_rejects_invalid_bases() {
+        let err = Number::Integer(4).log(Number::Integer(1)).unwrap_err();
+        assert_eq!(err, "logarithm base must be positive and not equal to 1");
+    }
+
+    #[test]
+    fn ln_of_one_is_exact_zero() {
+        let result = Number::Integer(1).ln().unwrap();
+        assert_eq!(result, Number::Integer(0));
+    }
+
+    #[test]
+    fn ln_uses_float_for_non_exact_results() {
+        let result = Number::Float(E.powi(2)).ln().unwrap();
+        assert!(matches!(result, Number::Float(x) if x > 1.99 && x < 2.01));
     }
 }
