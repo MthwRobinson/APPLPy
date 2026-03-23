@@ -416,6 +416,24 @@ where
     Ok(expectation)
 }
 
+/// Computes the entropy of a discrete random variable
+///
+/// # Arguments
+/// * `random_variable`: a discrete random variable
+///
+/// # Returns
+/// * `entropy`: the entropy of the random variable
+///
+/// # Examples
+pub fn discrete_entropy(random_variable: &RandomVariable) -> Result<Number, String> {
+    let two = Number::Integer(2);
+    let entropy = discrete_expected_value(
+        random_variable,
+        |x| x.log(two).expect("failed to compute log_2(x)"),
+    )?;
+    Ok(entropy)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
