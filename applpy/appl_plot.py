@@ -85,7 +85,8 @@ def plot_dist(random_variable, suplist=None, opt=None, color="r", display=True):
     """
     # Local import to avoid circular import with applpy.rv.
     from applpy.conversion import pdf
-    from applpy.rv import Convert, RV, RVError
+    from applpy.rv import RV, RVError
+    from applpy.transform import Convert
 
     # Keep argument for backward compatibility.
     _ = display

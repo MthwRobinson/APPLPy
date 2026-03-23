@@ -6,8 +6,8 @@ import numpy as np
 from sympy import Symbol, exp, expand, integrate, ln, nan, oo, simplify
 
 from .conversion import pdf
-from .rv import RV, RVError, Convert, x
-from .transform import transform
+from .rv import RV, RVError, x
+from .transform import Convert, transform
 
 
 def _product_discrete(random_variable_1, random_variable_2):

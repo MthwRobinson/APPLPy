@@ -19,9 +19,16 @@ from sympy import (
     Sum,
 )
 
-from .rv import RV, RVError, Convert
+from .rv import RV, RVError
 
 x, y, z, t = symbols("x y z t")
+
+
+def _convert(random_variable, inc=1):
+    # Local import avoids circular import with applpy.transform.
+    from .transform import convert
+
+    return convert(random_variable, inc)
 
 
 # Procedures for changing functional form
@@ -159,7 +166,7 @@ def cdf(random_variable, value=x, cache=False):
         #   the cdf
         if oo not in random_variable.support:
             if -oo not in random_variable.support:
-                random_variable_2 = Convert(random_variable)
+                random_variable_2 = _convert(random_variable)
                 return cdf(random_variable_2, value)
         # If the random variable is already a cdf, nothing needs to
         #   be done
@@ -340,7 +347,7 @@ def chf(random_variable, value=x, cache=False):
         #   the chf
         if oo not in random_variable.support:
             if -oo not in random_variable.support:
-                random_variable_2 = Convert(random_variable)
+                random_variable_2 = _convert(random_variable)
                 return chf(random_variable_2, value)
         # Otherwise, find and return the chf
         else:
@@ -489,7 +496,7 @@ def hf(random_variable, value=x, cache=False):
         #   the hf
         if oo not in random_variable.support:
             if -oo not in random_variable.support:
-                random_variable_2 = Convert(random_variable)
+                random_variable_2 = _convert(random_variable)
                 return hf(random_variable_2, value)
         # In all other cases, use the pdf and the sf to find the hf
         else:
@@ -631,7 +638,7 @@ def idf(random_variable, value=x, cache=False):
         #   the idf
         if oo not in random_variable.support:
             if -oo not in random_variable.support:
-                random_variable_2 = Convert(random_variable)
+                random_variable_2 = _convert(random_variable)
                 return idf(random_variable_2, value)
         if value == x:
             if random_variable.is_idf():
@@ -831,7 +838,7 @@ def pdf(random_variable, value=x, cache=False):
         #   the pdf
         if oo not in random_variable.support:
             if -oo not in random_variable.support:
-                random_variable_2 = Convert(random_variable)
+                random_variable_2 = _convert(random_variable)
                 return pdf(random_variable_2, value)
         # If the distribution is a hf or chf, use summation to find the pdf
         if random_variable.is_hf() or random_variable.is_chf():
@@ -970,7 +977,7 @@ def sf(random_variable, value=x, cache=False):
     if random_variable.is_discrete_functional():
         if oo not in random_variable.support:
             if -oo not in random_variable.support:
-                random_variable_2 = Convert(random_variable)
+                random_variable_2 = _convert(random_variable)
                 return sf(random_variable_2, value)
         # If the distribution is already a sf, nothing needs to be done
         if random_variable.is_sf():

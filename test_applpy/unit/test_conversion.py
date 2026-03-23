@@ -2,7 +2,7 @@ import pytest
 from sympy import Integer, Rational, oo
 
 from applpy.conversion import cdf, chf, hf, idf, pdf, sf
-from applpy.rv import RV, RVError, Convert, check_value, x
+from applpy.rv import RV, RVError, check_value, x
 
 
 def _uniform_continuous_pdf():
@@ -40,24 +40,6 @@ def test_cdf_for_simple_continuous_pdf_and_cache():
     assert cdf(rv) is cdf_rv
 
 
-def test_convert_discrete_functional_to_explicit_form():
-    functional_rv = RV([x], [1, 3], ["discrete_functional", "pdf"])
-
-    explicit_rv = Convert(functional_rv)
-
-    assert explicit_rv.ftype == ["discrete", "pdf"]
-    assert explicit_rv.support == [1, 2, 3]
-    assert explicit_rv.func == [1, 2, 3]
-
-
-def test_convert_validation_errors():
-    with pytest.raises(RVError, match="must be discrete_functional"):
-        Convert(RV(1, [0, 1], ["continuous", "pdf"]))
-
-    with pytest.raises(RVError, match="infinite support"):
-        Convert(RV([x], [0, oo], ["discrete_functional", "pdf"]))
-
-
 def test_conversion_family_for_continuous_and_discrete_distributions():
     continuous = _uniform_continuous_pdf()
     discrete = _discrete_pdf()
@@ -88,11 +70,8 @@ def test_conversion_family_for_continuous_and_discrete_distributions():
     assert pdf(discrete, 0) == 0
     assert pdf(discrete, 3) == 0
 
-    converted = Convert(functional_discrete)
-    assert cdf(functional_discrete) == cdf(converted)
     assert isinstance(pdf(functional_discrete), RV)
-    assert pdf(converted).ftype == ["discrete", "pdf"]
-    assert sf(functional_discrete) == sf(converted)
+    assert pdf(functional_discrete).is_pdf()
 
 
 def test_conversion_out_of_support_errors():

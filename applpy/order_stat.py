@@ -4,7 +4,8 @@ from sympy import Symbol, factorial, integrate, oo, simplify
 
 from . import rust_bindings
 from .conversion import cdf, pdf, sf
-from .rv import Convert, RV, RVError, x
+from .rv import RV, RVError, x
+from .transform import Convert
 
 
 def maximum_iid(random_variable, n=Symbol("n")):

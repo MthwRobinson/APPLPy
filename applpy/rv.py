@@ -22,7 +22,6 @@ from sympy import (
     oo,
     integrate,
     summation,
-    sqrt,
     simplify,
     pprint,
     expand,
@@ -471,7 +470,9 @@ class RV:
             error_string += " integer value"
             raise RVError(error_string)
 
-        pow_rv = Pow(self, n)
+        from .transform import pow
+
+        pow_rv = pow(self, n)
         return pow_rv
 
     def __eq__(self, other):
@@ -915,78 +916,6 @@ def BootstrapRV(varlist, symbolic=False):
     return RV(funclist, supplist, ["discrete", "pdf"])
 
 
-def Convert(random_variable, inc=1):
-    """
-    Procedure Name: Convert
-    Purpose: Convert a discrete random variable from functional to
-                explicit form
-    Arguments:  1. random_variable: A functional discrete random variable
-                2. inc: An increment value
-    Output:     1. A discrete random variable in explicit form
-    """
-    # If the random variable is not in functional form, return
-    #   an error
-    if not random_variable.is_discrete_functional():
-        raise RVError("The random variable must be discrete_functional")
-    # If the rv has infinite support, return an error
-    if (oo or -oo) in random_variable.support:
-        raise RVError("Convert does not work for infinite support")
-    # Create the support of explicit discrete rv
-    i = random_variable.support[0]
-    discrete_supp = []
-    while i <= random_variable.support[1]:
-        discrete_supp.append(i)
-        i += inc
-    # Create the function values for the explicit rv
-    discrete_func = []
-    for i in range(len(discrete_supp)):
-        val = random_variable.func[0].subs(x, discrete_supp[i])
-        discrete_func.append(val)
-    # Return the random variable in discrete form
-    return RV(discrete_func, discrete_supp, ["discrete", random_variable.functional_form])
-
-
-def Pow(random_variable, n):
-    """
-    Procedure Name: Pow
-    Purpose: Compute the transformation of a random variable by an exponent
-    Arguments:  1. random_variable: A random variable
-                2. n: an integer
-    Output:     1. The transformation of the RV by x**n
-    """
-    if not isinstance(n, int):
-        err_str = "n must be an integer"
-        raise RVError(err_str)
-    # If n is even, then g is a two-to-one transformation
-    if n % 2 == 0:
-        g = [[x**n, x**n], [-oo, 0, oo]]
-    # If n is odd, the g is a one-to-one transformation
-    elif n % 2 == 1:
-        g = [[x**n], [-oo, oo]]
-    from .transform import transform
-
-    return transform(random_variable, g)
-
-
-def Sqrt(random_variable):
-    """
-    Procedure Name: Sqrt
-    Purpose: Computes the transformation of a random variable by sqrt(x)
-    Arguments:  1. random_variable: A random variable
-    Output:     1. The random variable transformed by sqrt(x)
-    """
-    for element in random_variable.support:
-        if element < 0:
-            err_string = "A negative value appears in the support of the"
-            err_string += " random variable."
-            raise RVError(err_string)
-    from .transform import transform
-
-    u = [[sqrt(x)], [0, oo]]
-    NewRvar = transform(random_variable, u)
-    return NewRvar
-
-
 def VerifyPDF(random_variable):
     """
     Procedure Name: VerifyPDF
@@ -996,4 +925,3 @@ def VerifyPDF(random_variable):
     Output:     1. A function call to self.verify_pdf()
     """
     return random_variable.verify_pdf()
-

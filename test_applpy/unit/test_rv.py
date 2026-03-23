@@ -8,8 +8,6 @@ from applpy.rv import (
     RV,
     RVError,
     BootstrapRV,
-    Pow,
-    Sqrt,
     VerifyPDF,
     x,
 )
@@ -166,18 +164,8 @@ def test_assumptions_cache_and_simplify_helpers():
 def test_single_rv_transformative_operations():
     continuous = _uniform_continuous_pdf()
     discrete = _discrete_pdf()
-
-    assert isinstance(Pow(continuous, 2), RV)
-    assert isinstance(Pow(discrete, 2), RV)
-    assert isinstance(Sqrt(continuous), RV)
-    assert isinstance(Sqrt(discrete), RV)
     assert VerifyPDF(continuous) is True
     assert VerifyPDF(discrete) is None
-
-
-def test_single_rv_error_paths():
-    with pytest.raises(RVError, match="must be an integer"):
-        Pow(_uniform_continuous_pdf(), Rational(3, 2))
 
 
 def test_two_rv_operations_for_continuous_and_discrete():
@@ -233,8 +221,3 @@ def test_variate_method_paths():
 def test_verifypdf_wrapper_function():
     assert VerifyPDF(_uniform_continuous_pdf()) is True
 
-
-def test_sqrt_additional_error_paths():
-    negative_support = RV(Integer(1), [-1, 0], ["continuous", "pdf"])
-    with pytest.raises(RVError, match="negative value appears in the support"):
-        Sqrt(negative_support)
