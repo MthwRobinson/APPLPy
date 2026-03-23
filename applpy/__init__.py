@@ -19,6 +19,7 @@ A Probability Progamming Language (APPL) -- Python Edition
 from sympy import *
 
 from .rv import *
+from .algebra import *
 from .conversion import *
 from .order_stat import *
 from .moments import *
