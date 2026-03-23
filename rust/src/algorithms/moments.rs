@@ -110,13 +110,54 @@ pub fn discrete_variance(random_variable: &RandomVariable) -> Result<Number, Str
 
     // Now find E(X^2)
     let two = Number::Integer(2);
-    let expected_x_squared = expected_value(random_variable, |x: Number| {
+    let expected_x_squared = discrete_expected_value(random_variable, |x: Number| {
         x.pow(two).expect("failed to computer the square")
     })?;
 
     // Var(X) = E(X^2) - E(X)^2
     let variance = expected_x_squared - mean.pow(two)?;
     Ok(variance)
+}
+
+/// Computes the kurtosis of a discrete random variable
+///
+/// # Arguments
+/// * `random_variable`: a discrete random variable
+///
+/// # Returns
+/// * `kurtosis`: the kurtosis of the random variable
+///
+/// # Examples
+pub fn discrete_kurtosis(random_variable: &RandomVariable) -> Result<Number, String> {
+    let mean = discrete_mean(random_variable)?;
+    let variance = discrete_variance(random_variable)?;
+    let standard_deviation = variance.sqrt()?;
+
+    let two = Number::Integer(2);
+    let three = Number::Integer(3);
+    let four = Number::Integer(4);
+    let six = Number::Integer(6);
+
+    let term_1 = discrete_expected_value(random_variable, |x| {
+        x.pow(four).expect("failed to compute x^4")
+    })?;
+    let term_2 = four
+        * mean
+        * discrete_expected_value(random_variable, |x| {
+            x.pow(three).expect("failed to compute x^3")
+        })?;
+    let term_3 = six
+        * mean.pow(two).expect("failed to compute x^2")
+        * discrete_expected_value(random_variable, |x| {
+            x.pow(two).expect("failed to compute x^2")
+        })?;
+    let term_4 = three * mean.pow(four).expect("failed to compute x^4");
+
+    let numerator = term_1 + term_2 + term_3 + term_4;
+    let denominator = standard_deviation.pow(four).expect("failed to comput x^4");
+
+    let kurtosis = numerator / denominator;
+    Ok(kurtosis)
 }
 
 /// Computes the variance of a discrete random variable using the relationships
@@ -188,12 +229,55 @@ pub fn discrete_coefficient_of_variance(
 ///   For example, |x| x.pow(2) for E(X^2)
 ///
 /// # Returns
-/// * `expected_value`: the expected value for the random variable with the
+/// * `discrete_expected_value`: the expected value for the random variable with the
 ///   transformation applied
 ///
 /// # Examples
+/// ```
+/// use applpy_rust::algorithms::moments::discrete_expected_value;
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+/// use num_rational::Rational64;
 ///
-pub fn expected_value<F>(
+/// let rv = RandomVariable {
+///     function: vec![Number::Rational(Rational64::new(1, 6)); 6],
+///     support: vec![
+///         Number::Integer(1),
+///         Number::Integer(2),
+///         Number::Integer(3),
+///         Number::Integer(4),
+///         Number::Integer(5),
+///         Number::Integer(6),
+///     ],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let expectation = discrete_expected_value(&rv, |x| x).unwrap();
+/// assert_eq!(expectation, Number::Rational(Rational64::new(7, 2)));
+/// ```
+///
+/// ```
+/// use applpy_rust::algorithms::moments::discrete_expected_value;
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+///
+/// // For PDF [0.2, 0.5, 0.3] over [1, 2, 4], E[X^2] = 7.0
+/// let rv = RandomVariable {
+///     function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
+///     support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(4)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let two = Number::Integer(2);
+/// let expectation = discrete_expected_value(&rv, |x| {
+///     x.pow(two).expect("failed to compute square")
+/// }).unwrap();
+/// assert!((expectation.to_f64() - 7.0).abs() < 1e-12);
+/// ```
+///
+pub fn discrete_expected_value<F>(
     random_variable: &RandomVariable,
     transformation: F,
 ) -> Result<Number, String>
@@ -222,7 +306,7 @@ mod tests {
     use num_rational::Rational64;
 
     #[test]
-    fn discrete_mean_computes_expected_value_for_discrete_pdf() {
+    fn discrete_mean_computes_discrete_expected_value_for_discrete_pdf() {
         // Fair die: E[X] = (1+2+3+4+5+6)/6 = 7/2
         let rv = RandomVariable {
             function: vec![Number::Rational(Rational64::new(1, 6)); 6],
@@ -274,7 +358,7 @@ mod tests {
     }
 
     #[test]
-    fn discrete_variance_computes_expected_value_for_discrete_pdf() {
+    fn discrete_variance_computes_discrete_expected_value_for_discrete_pdf() {
         // Fair die: E[X] = 7/2, E[X^2] = 91/6, so Var(X) = 35/12
         let rv = RandomVariable {
             function: vec![Number::Rational(Rational64::new(1, 6)); 6],
@@ -295,7 +379,7 @@ mod tests {
     }
 
     #[test]
-    fn discrete_variance_computes_expected_value_for_float_pdf() {
+    fn discrete_variance_computes_discrete_expected_value_for_float_pdf() {
         // E[X] = 2.4 and E[X^2] = 7.0 for this distribution
         let rv = RandomVariable {
             function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
@@ -326,7 +410,7 @@ mod tests {
     }
 
     #[test]
-    fn discrete_coefficient_of_variance_computes_expected_value_for_rational_pdf() {
+    fn discrete_coefficient_of_variance_computes_discrete_expected_value_for_rational_pdf() {
         // Fair die: CV = sqrt(35/12) / (7/2)
         let rv = RandomVariable {
             function: vec![Number::Rational(Rational64::new(1, 6)); 6],
@@ -347,7 +431,7 @@ mod tests {
     }
 
     #[test]
-    fn discrete_coefficient_of_variance_computes_expected_value_for_float_pdf() {
+    fn discrete_coefficient_of_variance_computes_discrete_expected_value_for_float_pdf() {
         // mean = 2.4, variance = 1.24, so CV = sqrt(1.24)/2.4
         let rv = RandomVariable {
             function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
@@ -378,7 +462,7 @@ mod tests {
     }
 
     #[test]
-    fn expected_value_computes_mean_for_identity_transformation() {
+    fn discrete_expected_value_computes_mean_for_identity_transformation() {
         // Fair die: E[X] = (1+2+3+4+5+6)/6 = 7/2
         let rv = RandomVariable {
             function: vec![Number::Rational(Rational64::new(1, 6)); 6],
@@ -394,12 +478,12 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let expectation = expected_value(&rv, |x| x).unwrap();
+        let expectation = discrete_expected_value(&rv, |x| x).unwrap();
         assert_eq!(expectation, Number::Rational(Rational64::new(7, 2)));
     }
 
     #[test]
-    fn expected_value_applies_transformation_to_support() {
+    fn discrete_expected_value_applies_transformation_to_support() {
         // For PDF [0.2, 0.5, 0.3] over [1, 2, 4], E[X^2] = 0.2*1 + 0.5*4 + 0.3*16 = 7.0
         let rv = RandomVariable {
             function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
@@ -410,12 +494,13 @@ mod tests {
 
         let two = Number::Integer(2);
         let expectation =
-            expected_value(&rv, |x| x.pow(two).expect("failed to compute square")).unwrap();
+            discrete_expected_value(&rv, |x| x.pow(two).expect("failed to compute square"))
+                .unwrap();
         assert!((expectation.to_f64() - 7.0).abs() < 1e-12);
     }
 
     #[test]
-    fn expected_value_returns_zero_for_empty_distribution() {
+    fn discrete_expected_value_returns_zero_for_empty_distribution() {
         let rv = RandomVariable {
             function: vec![],
             support: vec![],
@@ -423,7 +508,7 @@ mod tests {
             domain_type: DomainType::Discrete,
         };
 
-        let expectation = expected_value(&rv, |x| x).unwrap();
+        let expectation = discrete_expected_value(&rv, |x| x).unwrap();
         assert_eq!(expectation, Number::default());
     }
 }
