@@ -201,16 +201,56 @@ pub fn discrete_kurtosis(random_variable: &RandomVariable) -> Result<Number, Str
     Ok(kurtosis)
 }
 
-/// Computes the kurtosis of a discrete random variable
+/// Computes the skewness of a discrete random variable
 ///
 /// # Arguments
 /// * `random_variable`: a discrete random variable
 ///
 /// # Returns
-/// * `kurtosis`: the kurtosis of the random variable
+/// * `skewness`: the skewness of the random variable
 ///
 /// # Examples
+/// ```
+/// use applpy_rust::algorithms::moments::discrete_skewness;
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+/// use num_rational::Rational64;
 ///
+/// // Fair die is symmetric, so skewness = 0
+/// let rv = RandomVariable {
+///     function: vec![Number::Rational(Rational64::new(1, 6)); 6],
+///     support: vec![
+///         Number::Integer(1),
+///         Number::Integer(2),
+///         Number::Integer(3),
+///         Number::Integer(4),
+///         Number::Integer(5),
+///         Number::Integer(6),
+///     ],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let skewness = discrete_skewness(&rv).unwrap();
+/// assert!(skewness.to_f64().abs() < 1e-12);
+/// ```
+///
+/// ```
+/// use applpy_rust::algorithms::moments::discrete_skewness;
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+///
+/// // PDF [0.2, 0.5, 0.3] over support [1, 2, 4]
+/// let rv = RandomVariable {
+///     function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
+///     support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(4)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let skewness = discrete_skewness(&rv).unwrap();
+/// assert!((skewness.to_f64() - 0.4692912730377045).abs() < 1e-12);
+/// ```
 pub fn discrete_skewness(random_variable: &RandomVariable) -> Result<Number, String> {
     let mean = discrete_mean(random_variable)?;
     let variance = discrete_variance(random_variable)?;
@@ -532,6 +572,58 @@ mod tests {
         };
 
         let result = discrete_kurtosis(&rv);
+        assert!(result.is_err());
+        assert_eq!(
+            result.err().unwrap(),
+            "cannot compute the pdf. function is empty"
+        );
+    }
+
+    #[test]
+    fn discrete_skewness_computes_skewness_for_rational_pdf() {
+        // Fair die is symmetric, so skewness = 0
+        let rv = RandomVariable {
+            function: vec![Number::Rational(Rational64::new(1, 6)); 6],
+            support: vec![
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+                Number::Integer(5),
+                Number::Integer(6),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let skewness = discrete_skewness(&rv).unwrap();
+        assert!(skewness.to_f64().abs() < 1e-12);
+    }
+
+    #[test]
+    fn discrete_skewness_computes_skewness_for_float_pdf() {
+        // For PDF [0.2, 0.5, 0.3] over [1, 2, 4], skewness ~= 0.4692912730377045
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(4)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let skewness = discrete_skewness(&rv).unwrap();
+        assert!((skewness.to_f64() - 0.4692912730377045).abs() < 1e-12);
+    }
+
+    #[test]
+    fn discrete_skewness_returns_error_when_mean_computation_fails() {
+        let rv = RandomVariable {
+            function: vec![],
+            support: vec![],
+            functional_form: FunctionalForm::Cdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = discrete_skewness(&rv);
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap(),
