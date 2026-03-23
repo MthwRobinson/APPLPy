@@ -78,7 +78,9 @@ def test_plot_dist_validation_and_plot_calls(monkeypatch):
     calls = {"plot": 0, "title": []}
     rv = _uniform_continuous_pdf()
 
-    monkeypatch.setattr(appl_plot, "plot", lambda *args, **kwargs: calls.__setitem__("plot", calls["plot"] + 1))
+    monkeypatch.setattr(
+        appl_plot, "plot", lambda *args, **kwargs: calls.__setitem__("plot", calls["plot"] + 1)
+    )
     monkeypatch.setattr(appl_plot, "title", lambda value: calls["title"].append(value))
 
     appl_plot.plot_dist(rv, suplist=[0, 1], display=False)
