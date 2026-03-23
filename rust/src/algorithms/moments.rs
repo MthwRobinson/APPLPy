@@ -107,19 +107,12 @@ pub fn discrete_mean(random_variable: &RandomVariable) -> Result<Number, String>
 pub fn discrete_variance(random_variable: &RandomVariable) -> Result<Number, String> {
     // E(X) is the mean of X
     let mean = random_variable.mean()?;
-    let two = Number::Integer(2);
 
-    // Now fine E(X^2)
-    let function = &random_variable.function;
-    let support = &random_variable.support;
-    let expected_x_squared =
-        function
-            .iter()
-            .zip(support.iter())
-            .fold(Number::default(), |ex2, (&f, &s)| {
-                let s_squared = s.pow(two).expect("failed to compute support^2");
-                ex2 + (f * s_squared)
-            });
+    // Now find E(X^2)
+    let two = Number::Integer(2);
+    let expected_x_squared = expected_value(random_variable, |x: Number| {
+        x.pow(two).expect("failed to computer the square")
+    })?;
 
     // Var(X) = E(X^2) - E(X)^2
     let variance = expected_x_squared - mean.pow(two)?;
@@ -185,6 +178,41 @@ pub fn discrete_coefficient_of_variance(
     let standard_deviation = discrete_variance(random_variable)?.sqrt()?;
     let coefficient_of_variation = standard_deviation / mean;
     Ok(coefficient_of_variation)
+}
+
+/// Computes the expected value of a random variable with a transformation applied
+///
+/// # Arguments
+/// * `random_variable`: a discrete random variable
+/// * `transformation`: a function describing the transformation of X.
+///   For example, |x| x.pow(2) for E(X^2)
+///
+/// # Returns
+/// * `expected_value`: the expected value for the random variable with the
+///   transformation applied
+///
+/// # Examples
+///
+pub fn expected_value<F>(
+    random_variable: &RandomVariable,
+    transformation: F,
+) -> Result<Number, String>
+where
+    F: Fn(Number) -> Number,
+{
+    let function = &random_variable.function;
+    let support = &random_variable.support;
+
+    let expectation =
+        function
+            .iter()
+            .zip(support.iter())
+            .fold(Number::default(), |ex, (&f, &s)| {
+                let transformed_support_value = transformation(s);
+                ex + (f * transformed_support_value)
+            });
+
+    Ok(expectation)
 }
 
 #[cfg(test)]
