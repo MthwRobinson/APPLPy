@@ -25,6 +25,15 @@ def coef_of_var(random_variable, cache=False):
     if random_variable.cache is not None and "cov" in random_variable.cache:
         return random_variable.cache["cov"]
 
+    if random_variable.is_discrete():
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type="discrete",
+        )
+        return fast_rv.coefficient_of_variation()
+
     # Compute the coefficient of varation
     expect = mean(random_variable)
     sig = variance(random_variable)
@@ -86,6 +95,15 @@ def entropy(random_variable, cache=False):
     if random_variable.cache is not None and "entropy" in random_variable.cache:
         return random_variable.cache["entropy"]
 
+    if random_variable.is_discrete():
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type="discrete",
+        )
+        return fast_rv.entropy()
+
     entropy = expected_value(random_variable, log(x, 2))
     entropy = simplify(entropy)
     if cache:
@@ -106,6 +124,15 @@ def kurtosis(random_variable, cache=False):
 
     if random_variable.cache is not None and "kurtosis" in random_variable.cache:
         return random_variable.cache["kurtosis"]
+
+    if random_variable.is_discrete():
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type="discrete",
+        )
+        return fast_rv.kurtosis()
 
     # Compute the kurtosis
     expect = mean(random_variable)
@@ -136,39 +163,43 @@ def mean(random_variable, cache=False):
     if random_variable.cache is not None and "mean" in random_variable.cache:
         return random_variable.cache["mean"]
 
-    X_dummy = pdf(random_variable)
+    pdf_random_variable = pdf(random_variable)
 
-    if X_dummy.is_continuous():
+    if pdf_random_variable.is_continuous():
         # Create list of x*f(x)
         meanfunc = []
-        for i in range(len(X_dummy.func)):
-            meanfunc.append(x * X_dummy.func[i])
+        for i in range(len(pdf_random_variable.func)):
+            meanfunc.append(x * pdf_random_variable.func[i])
         # Integrate to find the mean
         meanval = 0
-        for i in range(len(X_dummy.func)):
-            val = integrate(meanfunc[i], (x, X_dummy.support[i], X_dummy.support[i + 1]))
+        for i in range(len(pdf_random_variable.func)):
+            val = integrate(
+                meanfunc[i], (x, pdf_random_variable.support[i], pdf_random_variable.support[i + 1])
+            )
             meanval += val
         meanval = simplify(meanval)
         if cache:
             random_variable.add_to_cache("mean", meanval)
         return simplify(meanval)
 
-    if X_dummy.is_discrete_functional():
+    if pdf_random_variable.is_discrete_functional():
         # Create list of x*f(x)
         meanfunc = []
-        for i in range(len(X_dummy.func)):
-            meanfunc.append(x * X_dummy.func[i])
+        for i in range(len(pdf_random_variable.func)):
+            meanfunc.append(x * pdf_random_variable.func[i])
         # Sum to find the mean
         meanval = 0
-        for i in range(len(X_dummy.func)):
-            val = Sum(meanfunc[i], (x, X_dummy.support[i], X_dummy.support[i + 1])).doit()
+        for i in range(len(pdf_random_variable.func)):
+            val = Sum(
+                meanfunc[i], (x, pdf_random_variable.support[i], pdf_random_variable.support[i + 1])
+            ).doit()
             meanval += val
         meanval = simplify(meanval)
         if cache:
             random_variable.add_to_cache("mean", meanval)
         return simplify(meanval)
 
-    if X_dummy.is_discrete():
+    if pdf_random_variable.is_discrete():
         fast_rv = FastRV(
             function=random_variable.func,
             support=random_variable.support,
@@ -209,6 +240,15 @@ def skewness(random_variable, cache=False):
     if random_variable.cache is not None and "skewness" in random_variable.cache:
         return random_variable.cache["skewness"]
 
+    if random_variable.is_discrete():
+        fast_rv = FastRV(
+            function=random_variable.func,
+            support=random_variable.support,
+            functional_form=random_variable.functional_form,
+            domain_type="discrete",
+        )
+        return fast_rv.skewness()
+
     # Compute the skewness
     expect = mean(random_variable)
     sig = sqrt(variance(random_variable))
@@ -236,20 +276,22 @@ def variance(random_variable, cache=False):
     if random_variable.cache is not None and "variance" in random_variable.cache:
         return random_variable.cache["variance"]
 
-    X_dummy = pdf(random_variable)
+    pdf_random_variable = pdf(random_variable)
 
-    if X_dummy.is_continuous():
+    if pdf_random_variable.is_continuous():
         # Find the mean of the random variable
-        EX = mean(X_dummy)
+        EX = mean(pdf_random_variable)
         # Find E(X^2)
         # Create list of (x**2)*f(x)
         varfunc = []
-        for i in range(len(X_dummy.func)):
-            varfunc.append((x**2) * X_dummy.func[i])
+        for i in range(len(pdf_random_variable.func)):
+            varfunc.append((x**2) * pdf_random_variable.func[i])
         # Integrate to find E(X^2)
         exxval = 0
-        for i in range(len(X_dummy.func)):
-            val = integrate(varfunc[i], (x, X_dummy.support[i], X_dummy.support[i + 1]))
+        for i in range(len(pdf_random_variable.func)):
+            val = integrate(
+                varfunc[i], (x, pdf_random_variable.support[i], pdf_random_variable.support[i + 1])
+            )
             exxval += val
         # Find Var(X)=E(X^2)-E(X)^2
         var = exxval - (EX**2)
@@ -258,17 +300,19 @@ def variance(random_variable, cache=False):
             random_variable.add_to_cache("variance", var)
         return simplify(var)
 
-    if X_dummy.is_discrete_functional():
-        EX = mean(X_dummy)
+    if pdf_random_variable.is_discrete_functional():
+        EX = mean(pdf_random_variable)
         # Find E(X^2)
         # Create list of (x**2)*f(x)
         varfunc = []
-        for i in range(len(X_dummy.func)):
-            varfunc.append((x**2) * X_dummy.func[i])
+        for i in range(len(pdf_random_variable.func)):
+            varfunc.append((x**2) * pdf_random_variable.func[i])
         # Sum to find E(X^2)
         exxval = 0
-        for i in range(len(X_dummy.func)):
-            val = summation(varfunc[i], (x, X_dummy.support[i], X_dummy.support[i + 1]))
+        for i in range(len(pdf_random_variable.func)):
+            val = summation(
+                varfunc[i], (x, pdf_random_variable.support[i], pdf_random_variable.support[i + 1])
+            )
             exxval += val
         # Find Var(X)=E(X^2)-E(X)^2
         var = exxval - (EX**2)
@@ -277,7 +321,7 @@ def variance(random_variable, cache=False):
             random_variable.add_to_cache("variance", var)
         return simplify(var)
 
-    if X_dummy.is_discrete():
+    if pdf_random_variable.is_discrete():
         fast_rv = FastRV(
             function=random_variable.func,
             support=random_variable.support,

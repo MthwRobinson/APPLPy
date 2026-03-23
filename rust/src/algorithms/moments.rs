@@ -105,12 +105,13 @@ pub fn discrete_mean(random_variable: &RandomVariable) -> Result<Number, String>
 /// assert!((variance.to_f64() - 1.24).abs() < 1e-12);
 /// ```
 pub fn discrete_variance(random_variable: &RandomVariable) -> Result<Number, String> {
+    let pdf_random_variable = random_variable.to_pdf()?;
     // E(X) is the mean of X
     let mean = random_variable.mean()?;
 
     // Now find E(X^2)
     let two = Number::Integer(2);
-    let expected_x_squared = discrete_expected_value(random_variable, |x: Number| {
+    let expected_x_squared = discrete_expected_value(&pdf_random_variable, |x: Number| {
         x.pow(two).expect("failed to computer the square")
     })?;
 
@@ -401,8 +402,9 @@ pub fn discrete_expected_value<F>(
 where
     F: Fn(Number) -> Number,
 {
-    let function = &random_variable.function;
-    let support = &random_variable.support;
+    let pdf_random_variable = random_variable.to_pdf()?;
+    let function = &pdf_random_variable.function;
+    let support = &pdf_random_variable.support;
 
     let expectation =
         function
