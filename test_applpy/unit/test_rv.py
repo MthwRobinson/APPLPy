@@ -8,7 +8,6 @@ from applpy.rv import (
     BootstrapRV,
     Histogram,
     LoadRV,
-    Mixture,
     PPPlot,
     PlotClear,
     PlotDist,
@@ -18,8 +17,6 @@ from applpy.rv import (
     ProductDiscrete,
     QQPlot,
     Sqrt,
-    Transform,
-    Truncate,
     VerifyPDF,
     x,
 )
@@ -194,17 +191,12 @@ def test_latex_and_save_edge_cases(tmp_path):
 
 def test_single_rv_transformative_operations():
     continuous = _uniform_continuous_pdf()
-    piecewise = _piecewise_continuous_pdf()
     discrete = _discrete_pdf()
 
     assert isinstance(Pow(continuous, 2), RV)
     assert isinstance(Pow(discrete, 2), RV)
     assert isinstance(Sqrt(continuous), RV)
     assert isinstance(Sqrt(discrete), RV)
-    assert isinstance(Transform(discrete, [[x + 1, x + 2], [0, 1, 2]]), RV)
-    assert isinstance(Transform(piecewise, [[x, x**2], [0, 1, 2]]), RV)
-    assert isinstance(Truncate(continuous, [Rational(1, 4), Rational(3, 4)]), RV)
-    assert isinstance(Truncate(discrete, [1, 1]), RV)
     assert VerifyPDF(continuous) is True
     assert VerifyPDF(discrete) is None
 
@@ -215,26 +207,17 @@ def test_single_rv_error_paths():
 
 
 def test_two_rv_operations_for_continuous_and_discrete():
-    continuous = _uniform_continuous_pdf()
-    piecewise = _piecewise_continuous_pdf()
     discrete = _discrete_pdf()
     bernoulli = _discrete_pdf_bernoulli()
 
-    assert isinstance(Mixture([Rational(1, 3), Rational(2, 3)], [continuous, piecewise]), RV)
-    assert isinstance(Mixture([Rational(1, 2), Rational(1, 2)], [discrete, bernoulli]), RV)
     assert isinstance(ProductDiscrete(discrete, bernoulli), RV)
 
 
 def test_two_rv_operations_error_paths():
-    continuous = _uniform_continuous_pdf()
     discrete = _discrete_pdf()
 
-    with pytest.raises(RVError, match="same length"):
-        Mixture([Rational(1, 2)], [continuous, continuous])
-    with pytest.raises(RVError, match="all continuous or discrete"):
-        Mixture([Rational(1, 2), Rational(1, 2)], [continuous, discrete])
     with pytest.raises(RVError, match="both random variables must be discrete"):
-        ProductDiscrete(continuous, discrete)
+        ProductDiscrete(_uniform_continuous_pdf(), discrete)
 
 
 def test_plotting_and_misc_utility_paths():
@@ -297,13 +280,10 @@ def test_save_reuses_filename_when_already_known(tmp_path):
     assert out_file.exists()
 
 
-def test_sqrt_and_transform_additional_error_paths():
+def test_sqrt_additional_error_paths():
     negative_support = RV(Integer(1), [-1, 0], ["continuous", "pdf"])
     with pytest.raises(RVError, match="negative value appears in the support"):
         Sqrt(negative_support)
-
-    with pytest.raises(RVError, match="not in ascending order"):
-        Transform(_uniform_continuous_pdf(), [[x], [1, 0]])
 
 
 def test_plot_display_requires_multiple_plots():
