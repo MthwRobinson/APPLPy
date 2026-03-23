@@ -193,9 +193,9 @@ def plot_emp_cdf(data):
     Output:     1. An empirical cdf of the data
     """
     from applpy.conversion import cdf
-    from applpy.rv import BootstrapRV
+    from applpy.rv import bootstrap_rv
 
-    xstar = BootstrapRV(data)
+    xstar = bootstrap_rv(data)
     plot_dist(cdf(xstar), opt="EMPCDF")
 
 
@@ -210,7 +210,7 @@ def pp_plot(random_variable, sample):
                     model
     """
     from applpy.conversion import cdf
-    from applpy.rv import BootstrapRV, RVError
+    from applpy.rv import bootstrap_rv, RVError
 
     if not isinstance(sample, list):
         raise RVError("The data sample must be given as a list")
@@ -223,7 +223,7 @@ def pp_plot(random_variable, sample):
         plist.append(p)
 
     fx = cdf(random_variable)
-    fxstar = BootstrapRV(sample)
+    fxstar = bootstrap_rv(sample)
     fxstar_cdf = cdf(fxstar)
 
     fitted_cdf = []

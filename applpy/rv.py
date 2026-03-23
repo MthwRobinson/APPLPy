@@ -891,7 +891,7 @@ def check_value(value, sup):
             return True
 
 
-def BootstrapRV(varlist, symbolic=False):
+def bootstrap_rv(varlist, symbolic=False):
     """
     Procedure Name: Bootstrap RV
     Purpose: Generate a discrete random variable from a list of variates
@@ -916,12 +916,17 @@ def BootstrapRV(varlist, symbolic=False):
     return RV(funclist, supplist, ["discrete", "pdf"])
 
 
-def VerifyPDF(random_variable):
+def verify_pdf(random_variable):
     """
-    Procedure Name: VerifyPDF
+    Procedure Name: verify_pdf
     Purpose: Calls self.verify_pdf(). For compatibility with
                 original APPL syntax
     Arguments:  1. random_variable: a discrete random variable
     Output:     1. A function call to self.verify_pdf()
     """
     return random_variable.verify_pdf()
+
+
+# Backward-compatible aliases for legacy APPLPy function names.
+BootstrapRV = bootstrap_rv
+VerifyPDF = verify_pdf

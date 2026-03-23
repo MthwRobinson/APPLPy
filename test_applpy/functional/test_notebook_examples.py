@@ -3,7 +3,7 @@ from sympy import Rational, exp
 
 from applpy import (
     BetaRV,
-    BootstrapRV,
+    bootstrap_rv,
     cdf,
     convolution,
     convolution_iid,
@@ -74,12 +74,12 @@ def test_maximum_and_minimum_compositions_from_notebook():
 
 
 def test_bootstrap_examples_from_notebook():
-    bootstrap_rv = BootstrapRV(BALL_BEARING_SAMPLE)
-    max_2 = MaximumIID(bootstrap_rv, 2)
-    conv_3 = convolution_iid(bootstrap_rv, 3)
+    boot_rv = bootstrap_rv(BALL_BEARING_SAMPLE)
+    max_2 = MaximumIID(boot_rv, 2)
+    conv_3 = convolution_iid(boot_rv, 3)
 
-    assert float(mean(bootstrap_rv).evalf()) == pytest.approx(72.2243478260870)
-    assert pdf(bootstrap_rv, 68.64) == Rational(2, 23)
+    assert float(mean(boot_rv).evalf()) == pytest.approx(72.2243478260870)
+    assert pdf(boot_rv, 68.64) == Rational(2, 23)
     assert float(mean(max_2).evalf()) == pytest.approx(92.1683931947070)
     assert float(mean(conv_3).evalf()) == pytest.approx(216.673043478261)
 

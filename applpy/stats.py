@@ -25,7 +25,7 @@ from sympy import (
 )
 from .conversion import cdf, chf, hf, pdf
 from .moments import expected_value, mean, variance
-from .rv import RVError, BootstrapRV
+from .rv import RVError, bootstrap_rv
 
 x, y, z, t = symbols("x y z t")
 
@@ -60,7 +60,7 @@ def KSTest(RVar, data):
     Output:     1. The Kolmogorov-Smirnoff test statistics
     """
     # Create an empirical cdf from the data sample
-    EmpCDF = cdf(BootstrapRV(data))
+    EmpCDF = cdf(bootstrap_rv(data))
     m = len(EmpCDF.support)
     # Compute fitted cdf values
     FX = cdf(RVar)
@@ -95,7 +95,7 @@ def MOM(RVar, data, parameters, guess=None, numeric=False):
     # Convert the random variable to pdf form
     fx = pdf(RVar)
     # Creat a bootstrap random variable from the sample
-    xstar = BootstrapRV(data)
+    xstar = bootstrap_rv(data)
     # Create a list of equations to solve
     soln_eqn = []
     for i in range(len(parameters)):
@@ -234,7 +234,7 @@ def MLEExponential(data):
     Input:  1. data: a data set
     Output: 1. soln: an estimation for the unknown parameter
     """
-    Xstar = BootstrapRV(data)
+    Xstar = bootstrap_rv(data)
     theta = 1 / mean(Xstar)
     soln = [theta]
     return soln
@@ -253,7 +253,7 @@ def MLENormal(data, mu=None, sigma=None):
     Output: 1. soln: a list of estimates for the unknown parameters
                 in the form [mu,sigma]
     """
-    Xstar = BootstrapRV(data)
+    Xstar = bootstrap_rv(data)
     if mu is None:
         mu = mean(Xstar)
     if sigma is None:
@@ -271,7 +271,7 @@ def MLEPoisson(data):
     Output: 1. soln: a list of estimates for the unknown parameter
                 in the form [theta]
     """
-    Xstar = BootstrapRV(data)
+    Xstar = bootstrap_rv(data)
     meanX = mean(Xstar)
     soln = [meanX]
     return soln

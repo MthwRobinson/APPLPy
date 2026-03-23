@@ -65,7 +65,7 @@ def Menu():
 
     print("Functional Form Conversion")
     print("cdf(X,{x}),chf(X,{x}),hf(X,{x}),idf(X,{x})")
-    print("pdf(X,{x}),sf(X,{x}),BootstrapRV([data])")
+    print("pdf(X,{x}),sf(X,{x}),bootstrap_rv([data])")
     print("Convert(X,{x})")
     print("")
 

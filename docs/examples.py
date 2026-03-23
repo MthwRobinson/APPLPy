@@ -12,7 +12,7 @@ from applpy.moments import (
     skewness,
     variance,
 )
-from applpy.rv import BootstrapRV
+from applpy.rv import bootstrap_rv
 
 # Bayes
 theta = Symbol("theta")
@@ -33,7 +33,7 @@ P.display()
 
 X = NormalRV(2, 2)
 data = X.variate(n=10)
-Xstar = BootstrapRV(data)
+Xstar = bootstrap_rv(data)
 Xstar.display()
 
 # Converting RV Type
@@ -103,7 +103,7 @@ plot_dist(Y, color="blue")
 PlotLimits([0, 12], axis="x")
 
 PlotClear()
-Xstar = BootstrapRV(X.variate(n=100))
+Xstar = bootstrap_rv(X.variate(n=100))
 plot_dist(cdf(X))
 plot_dist(cdf(Xstar))
 plt.title("Comparison of Exponential CDF and Bootstrapped EDF")

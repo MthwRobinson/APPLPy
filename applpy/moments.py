@@ -5,7 +5,7 @@ Moment and summary statistics utilities for APPLPy random variables.
 from applpy_rust import FastRV
 from sympy import Sum, exp, integrate, log, simplify, sqrt, summation, symbols
 
-from applpy.rv import BootstrapRV
+from applpy.rv import bootstrap_rv
 from applpy.conversion import pdf
 
 x, y, z, t = symbols("x y z t")
@@ -19,8 +19,8 @@ def coef_of_var(random_variable, cache=False):
     Output:     1. The coefficient of variation
     """
     if isinstance(random_variable, list):
-        bootstrap_rv = BootstrapRV(random_variable)
-        return coef_of_var(bootstrap_rv)
+        boot_rv = bootstrap_rv(random_variable)
+        return coef_of_var(boot_rv)
 
     if random_variable.cache is not None and "cov" in random_variable.cache:
         return random_variable.cache["cov"]
@@ -53,8 +53,8 @@ def expected_value(random_variable, gX=x):
     Output:     1. E(gX)
     """
     if isinstance(random_variable, list):
-        bootstrap_rv = BootstrapRV(random_variable)
-        return expected_value(bootstrap_rv, gX)
+        boot_rv = bootstrap_rv(random_variable)
+        return expected_value(boot_rv, gX)
 
     fx = pdf(random_variable)
 
@@ -89,8 +89,8 @@ def entropy(random_variable, cache=False):
     Output:     1. The entropy of a random variable
     """
     if isinstance(random_variable, list):
-        bootstrap_rv = BootstrapRV(random_variable)
-        return entropy(bootstrap_rv)
+        boot_rv = bootstrap_rv(random_variable)
+        return entropy(boot_rv)
 
     if random_variable.cache is not None and "entropy" in random_variable.cache:
         return random_variable.cache["entropy"]
@@ -119,8 +119,8 @@ def kurtosis(random_variable, cache=False):
     Output:     1. The kurtosis of a random variable
     """
     if isinstance(random_variable, list):
-        bootstrap_rv = BootstrapRV(random_variable)
-        return kurtosis(bootstrap_rv)
+        boot_rv = bootstrap_rv(random_variable)
+        return kurtosis(boot_rv)
 
     if random_variable.cache is not None and "kurtosis" in random_variable.cache:
         return random_variable.cache["kurtosis"]
@@ -157,8 +157,8 @@ def mean(random_variable, cache=False):
     Output:    1. The mean of a random variable
     """
     if isinstance(random_variable, list):
-        bootstrap_rv = BootstrapRV(random_variable)
-        return mean(bootstrap_rv)
+        boot_rv = bootstrap_rv(random_variable)
+        return mean(boot_rv)
 
     if random_variable.cache is not None and "mean" in random_variable.cache:
         return random_variable.cache["mean"]
@@ -234,8 +234,8 @@ def skewness(random_variable, cache=False):
     Output:     1. The skewness of the random variable
     """
     if isinstance(random_variable, list):
-        bootstrap_rv = BootstrapRV(random_variable)
-        return skewness(bootstrap_rv)
+        boot_rv = bootstrap_rv(random_variable)
+        return skewness(boot_rv)
 
     if random_variable.cache is not None and "skewness" in random_variable.cache:
         return random_variable.cache["skewness"]
@@ -270,8 +270,8 @@ def variance(random_variable, cache=False):
     Output:    1. The variance of a random variable
     """
     if isinstance(random_variable, list):
-        bootstrap_rv = BootstrapRV(random_variable)
-        return variance(bootstrap_rv)
+        boot_rv = bootstrap_rv(random_variable)
+        return variance(boot_rv)
 
     if random_variable.cache is not None and "variance" in random_variable.cache:
         return random_variable.cache["variance"]

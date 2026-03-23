@@ -7,8 +7,8 @@ from applpy import rust_bindings
 from applpy.rv import (
     RV,
     RVError,
-    BootstrapRV,
-    VerifyPDF,
+    bootstrap_rv,
+    verify_pdf,
     x,
 )
 
@@ -99,7 +99,7 @@ def test_add_to_cache_initializes_and_updates_cache():
 
 
 def test_bootstrap_rv_creates_discrete_pdf_with_frequencies():
-    rv = BootstrapRV([3, 1, 3, 2])
+    rv = bootstrap_rv([3, 1, 3, 2])
 
     assert rv.ftype == ["discrete", "pdf"]
     assert rv.support == [1, 2, 3]
@@ -164,8 +164,8 @@ def test_assumptions_cache_and_simplify_helpers():
 def test_single_rv_transformative_operations():
     continuous = _uniform_continuous_pdf()
     discrete = _discrete_pdf()
-    assert VerifyPDF(continuous) is True
-    assert VerifyPDF(discrete) is None
+    assert verify_pdf(continuous) is True
+    assert verify_pdf(discrete) is None
 
 
 def test_two_rv_operations_for_continuous_and_discrete():
@@ -219,5 +219,5 @@ def test_variate_method_paths():
 
 
 def test_verifypdf_wrapper_function():
-    assert VerifyPDF(_uniform_continuous_pdf()) is True
+    assert verify_pdf(_uniform_continuous_pdf()) is True
 
