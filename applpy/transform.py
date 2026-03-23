@@ -63,7 +63,7 @@ def convert(random_variable, inc=1):
     return RV(discrete_func, discrete_supp, ["discrete", random_variable.functional_form])
 
 
-def pow(random_variable, n):
+def power(random_variable, n):
     """
     Procedure Name: Pow
     Purpose: Compute the transformation of a random variable by an exponent
@@ -548,7 +548,7 @@ def _mixture_discrete(mix_parameters, mixture_pdf_random_variables):
 
 # Backward-compatible aliases for legacy APPLPy function names.
 Convert = convert
-Pow = pow
+Pow = power
 Sqrt = sqrt
 Transform = transform
 Mixture = mixture

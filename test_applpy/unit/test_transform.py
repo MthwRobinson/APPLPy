@@ -11,7 +11,7 @@ from applpy.transform import (
     Sqrt,
     convert,
     mixture,
-    pow,
+    power,
     sqrt,
     transform,
     truncate,
@@ -99,15 +99,15 @@ def test_pow_and_sqrt_happy_paths():
     continuous = _uniform_continuous_pdf()
     discrete = _discrete_pdf()
 
-    assert isinstance(pow(continuous, 2), RV)
-    assert isinstance(pow(discrete, 2), RV)
+    assert isinstance(power(continuous, 2), RV)
+    assert isinstance(power(discrete, 2), RV)
     assert isinstance(sqrt(continuous), RV)
     assert isinstance(sqrt(discrete), RV)
 
 
 def test_pow_requires_integer():
     with pytest.raises(RVError, match="must be an integer"):
-        pow(_uniform_continuous_pdf(), Rational(3, 2))
+        power(_uniform_continuous_pdf(), Rational(3, 2))
 
 
 def test_sqrt_negative_support_error():
@@ -121,5 +121,5 @@ def test_legacy_aliases_for_convert_pow_sqrt():
     functional_rv = _functional_discrete_pdf()
 
     assert Convert(functional_rv) == convert(functional_rv)
-    assert Pow(continuous, 2) == pow(continuous, 2)
+    assert Pow(continuous, 2) == power(continuous, 2)
     assert Sqrt(continuous) == sqrt(continuous)

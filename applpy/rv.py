@@ -470,9 +470,9 @@ class RV:
             error_string += " integer value"
             raise RVError(error_string)
 
-        from .transform import pow
+        from .transform import power
 
-        pow_rv = pow(self, n)
+        pow_rv = power(self, n)
         return pow_rv
 
     def __eq__(self, other):
