@@ -376,4 +376,54 @@ mod tests {
             "cannot compute the pdf. function is empty"
         );
     }
+
+    #[test]
+    fn expected_value_computes_mean_for_identity_transformation() {
+        // Fair die: E[X] = (1+2+3+4+5+6)/6 = 7/2
+        let rv = RandomVariable {
+            function: vec![Number::Rational(Rational64::new(1, 6)); 6],
+            support: vec![
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+                Number::Integer(5),
+                Number::Integer(6),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let expectation = expected_value(&rv, |x| x).unwrap();
+        assert_eq!(expectation, Number::Rational(Rational64::new(7, 2)));
+    }
+
+    #[test]
+    fn expected_value_applies_transformation_to_support() {
+        // For PDF [0.2, 0.5, 0.3] over [1, 2, 4], E[X^2] = 0.2*1 + 0.5*4 + 0.3*16 = 7.0
+        let rv = RandomVariable {
+            function: vec![Number::Float(0.2), Number::Float(0.5), Number::Float(0.3)],
+            support: vec![Number::Integer(1), Number::Integer(2), Number::Integer(4)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let two = Number::Integer(2);
+        let expectation =
+            expected_value(&rv, |x| x.pow(two).expect("failed to compute square")).unwrap();
+        assert!((expectation.to_f64() - 7.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn expected_value_returns_zero_for_empty_distribution() {
+        let rv = RandomVariable {
+            function: vec![],
+            support: vec![],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let expectation = expected_value(&rv, |x| x).unwrap();
+        assert_eq!(expectation, Number::default());
+    }
 }
