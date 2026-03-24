@@ -25,7 +25,14 @@ pub fn truncate_discrete(
     let function = pdf_random_variable.function;
     let support = pdf_random_variable.support;
 
-    let first_support = *support.first().expect("could not extract the first item");
+    if min_support >= max_support {
+        return Err(
+            "max_support must be greater than the min_support"
+            .to_string()
+        );
+    }
+
+    let first_support = *support.first().ok_or("support is empty")?;
     if min_support < first_support {
         return Err(
             "min support must be greater than or equal to the lowest support value"
@@ -33,10 +40,10 @@ pub fn truncate_discrete(
         );
     }
 
-    let last_support = *support.last().expect("could not extract the first item");
+    let last_support = *support.last().ok_or("support is empty")?;
     if max_support > last_support {
         return Err(
-            "min support must be less than or equal to the highest support value"
+            "max support must be less than or equal to the highest support value"
             .to_string()
         );
     }
@@ -46,6 +53,14 @@ pub fn truncate_discrete(
         if support_value >= min_support && support_value <= max_support {
             truncation_area += function_value;
         }
+    }
+
+    let zero = Number::Integer(0);
+    if truncation_area == zero {
+        return Err(
+            "there is no probability mass within the specified support range"
+            .to_string()
+        );
     }
 
     let mut truncated_function = Vec::new();
