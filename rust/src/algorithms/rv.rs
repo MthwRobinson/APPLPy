@@ -224,6 +224,57 @@ pub fn verify_pdf(function: &[Number], tolerance: Option<f64>) -> Result<bool, S
     Ok((area > 1.0 - tolerance) && (area < 1.0 + tolerance))
 }
 
+/// Constructs a discrete random variable from an array of variates
+///
+/// # Arguments
+/// * `variates` - a list of numbers, which represent data observations
+///
+/// # Returns
+/// * `support` - the support of the random variable, which is a sorted
+///   and deduplicated vector of variates
+/// * `function` - the probability of each variate, assuming each is equally likely
+///
+/// # Examples
+pub fn bootstrap_rv(variates: &[Number]) -> Result<(Vec<Number>, Vec<Number>), String> {
+    let mut sorted_variates = variates.to_vec();
+    sorted_variates.sort_by(|a, b| {
+        let first = a.to_f64();
+        let second = b.to_f64();
+        first.total_cmp(&second)
+    });
+
+    let mut variate_counts = Vec::<u32>::new();
+    let mut support = Vec::<Number>::new();
+
+    let num_items = variates.len();
+    let mut current_count = 0;
+    for i in 0..num_items {
+        if i == 0 || sorted_variates[i] == sorted_variates[i - 1] {
+            current_count += 1;
+        } else {
+            support.push(sorted_variates[i - 1]);
+            let _current_count = current_count;
+            variate_counts.push(_current_count);
+            current_count = 1;
+        }
+    }
+
+    let num_items_number = Number::Integer(
+        num_items
+            .try_into()
+            .expect("failed to convert to integer number"),
+    );
+    let function = variate_counts
+        .iter()
+        .map(|count| {
+            let count_number = Number::Integer(*count as i64);
+            count_number / num_items_number
+        })
+        .collect();
+
+    Ok((support, function))
+}
+
 /// Evaluates a random variable at a specific value. Used to compute F(x) for
 /// the random variable
 ///
