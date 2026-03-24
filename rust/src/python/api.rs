@@ -9,6 +9,7 @@ use crate::algorithms::number::Number;
 use crate::algorithms::order_stat;
 use crate::algorithms::rv;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+use crate::algorithms::transform;
 
 #[pyfunction(name = "discrete_order_stat", signature = (random_variable, n, r, replace="w"))]
 pub fn discrete_order_stat_py(
@@ -148,6 +149,23 @@ pub fn bootstrap_rv_py(variates: Vec<Number>) -> PyResult<FastRV> {
         random_variable.domain_type,
     );
     Ok(fast_rv)
+}
+
+#[pyfunction(name = "truncate_discrete", signature = (random_variable, min_support, max_support))]
+pub fn truncate_discrete_py(
+    random_variable: &Bound<'_, PyAny>,
+    min_support: Number,
+    max_support: Number,
+) -> PyResult<FastRV> {
+    let random_variable: FastRV = random_variable.extract()?;
+    let truncated_rv = transform::truncate_discrete(&random_variable.inner, min_support, max_support)
+        .map_err(PyValueError::new_err)?;
+    Ok(FastRV::new(
+        truncated_rv.function,
+        truncated_rv.support,
+        truncated_rv.functional_form,
+        truncated_rv.domain_type,
+    ))
 }
 
 #[pyclass]
