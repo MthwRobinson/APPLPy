@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use std::fmt;
+use std::iter::once;
 
 use num_traits::cast::ToPrimitive;
 
@@ -243,6 +244,7 @@ pub fn bootstrap_rv(variates: &[Number]) -> Result<(Vec<Number>, Vec<Number>), S
         first.total_cmp(&second)
     });
 
+    let zero = Number::Integer(0);
     let one = Number::Integer(1);
     let num_items = sorted_variates.len();
     let num_observations = Number::Integer(
@@ -255,9 +257,12 @@ pub fn bootstrap_rv(variates: &[Number]) -> Result<(Vec<Number>, Vec<Number>), S
     let mut function: Vec<Number> = Vec::new();
     let mut support: Vec<Number> = Vec::new();
 
-    // TODO - fix this to currently account for the last iteration over the window
+    // Iterate over buffered variates to ensure that the window function
+    // makes it to the last value in the variates list
+    let buffered_variates: Vec<Number> = sorted_variates.into_iter().chain(once(zero)).collect();
+
     let mut current_probability = base_probability;
-    for window in sorted_variates.windows(2) {
+    for window in buffered_variates.windows(2) {
         let current_variate = window[0];
         let next_variate = window[1];
 
