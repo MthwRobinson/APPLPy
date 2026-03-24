@@ -2,6 +2,7 @@
 
 use std::fmt;
 
+use num_rational::Rational64;
 use num_traits::cast::ToPrimitive;
 
 use crate::algorithms::conversion;
@@ -235,6 +236,30 @@ pub fn verify_pdf(function: &[Number], tolerance: Option<f64>) -> Result<bool, S
 /// * `function` - the probability of each variate, assuming each is equally likely
 ///
 /// # Examples
+/// ```
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{bootstrap_rv, FunctionalForm};
+/// use num_rational::Rational64;
+///
+/// let variates = vec![
+///     Number::Integer(2),
+///     Number::Integer(1),
+///     Number::Integer(1),
+///     Number::Integer(2),
+/// ];
+///
+/// let rv = bootstrap_rv(&variates).unwrap();
+///
+/// assert_eq!(rv.support, vec![Number::Integer(1), Number::Integer(2)]);
+/// assert_eq!(
+///     rv.function,
+///     vec![
+///         Number::Rational(Rational64::new(1, 2)),
+///         Number::Rational(Rational64::new(1, 2))
+///     ]
+/// );
+/// assert_eq!(rv.functional_form, FunctionalForm::Pdf);
+/// ```
 pub fn bootstrap_rv(variates: &[Number]) -> Result<RandomVariable, String> {
     if variates.is_empty() {
         return Err("at least one variate is required to construct the bootstrap rv".to_string());
@@ -247,14 +272,11 @@ pub fn bootstrap_rv(variates: &[Number]) -> Result<RandomVariable, String> {
         first.total_cmp(&second)
     });
 
-    let one = Number::Integer(1);
     let num_items = sorted_variates.len();
-    let num_observations = Number::Integer(
-        num_items
-            .try_into()
-            .expect("could not convert sorted variate length to number"),
-    );
-    let base_probability = one / num_observations;
+    let num_observations: i64 = num_items
+        .try_into()
+        .expect("could not convert sorted variate length to number");
+    let base_probability = Number::Rational(Rational64::new(1, num_observations));
 
     let mut function = Vec::new();
     let mut support = Vec::new();
@@ -426,6 +448,54 @@ mod tests {
             domain_type: DomainType::Continuous,
         };
         assert!(!rv.verify_pdf(None).unwrap());
+    }
+
+    #[test]
+    fn bootstrap_rv_returns_error_for_empty_input() {
+        let result = bootstrap_rv(&[]);
+
+        assert!(matches!(
+            result,
+            Err(msg) if msg == "at least one variate is required to construct the bootstrap rv"
+        ));
+    }
+
+    #[test]
+    fn bootstrap_rv_sorts_support_and_aggregates_duplicates() {
+        let variates = vec![
+            Number::Integer(3),
+            Number::Integer(1),
+            Number::Integer(3),
+            Number::Integer(2),
+            Number::Integer(1),
+        ];
+
+        let rv = bootstrap_rv(&variates).unwrap();
+
+        assert_eq!(
+            rv.support,
+            vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)]
+        );
+        assert_eq!(
+            rv.function,
+            vec![
+                Number::Rational(Rational64::new(2, 5)),
+                Number::Rational(Rational64::new(1, 5)),
+                Number::Rational(Rational64::new(2, 5)),
+            ]
+        );
+        assert!(matches!(rv.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(rv.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
+    fn bootstrap_rv_handles_single_observation() {
+        let rv = bootstrap_rv(&[Number::Integer(7)]).unwrap();
+
+        assert_eq!(rv.support, vec![Number::Integer(7)]);
+        assert_eq!(rv.function, vec![Number::Rational(Rational64::new(1, 1))]);
+        assert!(matches!(rv.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(rv.domain_type, DomainType::Discrete));
     }
 
     #[test]
