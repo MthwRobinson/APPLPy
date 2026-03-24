@@ -5,17 +5,55 @@ use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 
 
 /// Truncates a discrete random variable by cutting off a portion of the support
-/// and normalizng total probability of the distribution to 1
+/// and normalizing total probability of the distribution to 1.
 ///
 /// # Arguments
 /// * `random_variable` - the random variable to truncate
 /// * `min_support` - the minimum support of the new random variable.
 ///   Must be greater than or equal to the current minimum support.
 /// * `max_support` - the maximum support of the new random variable.
-///   Must be less than or equal to the current minimum support.
+///   Must be less than or equal to the current maximum support.
 ///
 /// # Returns
 /// * `truncated_rv` - the truncated random variable
+///
+/// # Examples
+/// ```
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+/// use applpy_rust::algorithms::transform::truncate_discrete;
+/// use num_rational::Rational64;
+///
+/// let rv = RandomVariable {
+///     function: vec![
+///         Number::Rational(Rational64::new(1, 10)),
+///         Number::Rational(Rational64::new(2, 10)),
+///         Number::Rational(Rational64::new(3, 10)),
+///         Number::Rational(Rational64::new(4, 10)),
+///     ],
+///     support: vec![
+///         Number::Integer(1),
+///         Number::Integer(2),
+///         Number::Integer(3),
+///         Number::Integer(4),
+///     ],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let truncated = truncate_discrete(&rv, Number::Integer(2), Number::Integer(3)).unwrap();
+///
+/// assert_eq!(truncated.support, vec![Number::Integer(2), Number::Integer(3)]);
+/// assert_eq!(
+///     truncated.function,
+///     vec![
+///         Number::Rational(Rational64::new(2, 5)),
+///         Number::Rational(Rational64::new(3, 5)),
+///     ]
+/// );
+/// assert!(matches!(truncated.functional_form, FunctionalForm::Pdf));
+/// assert!(matches!(truncated.domain_type, DomainType::Discrete));
+/// ```
 pub fn truncate_discrete(
     random_variable: &RandomVariable,
     min_support: Number,
@@ -81,4 +119,57 @@ pub fn truncate_discrete(
         domain_type: DomainType::Discrete,
     };
     Ok(truncated_rv)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use num_rational::Rational64;
+
+    fn sample_discrete_rv() -> RandomVariable {
+        RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 10)),
+                Number::Rational(Rational64::new(2, 10)),
+                Number::Rational(Rational64::new(3, 10)),
+                Number::Rational(Rational64::new(4, 10)),
+            ],
+            support: vec![
+                Number::Integer(1),
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        }
+    }
+
+    #[test]
+    fn truncate_discrete_renormalizes_probabilities_within_range() {
+        let rv = sample_discrete_rv();
+        let truncated = truncate_discrete(&rv, Number::Integer(2), Number::Integer(3)).unwrap();
+
+        assert_eq!(truncated.support, vec![Number::Integer(2), Number::Integer(3)]);
+        assert_eq!(
+            truncated.function,
+            vec![
+                Number::Rational(Rational64::new(2, 5)),
+                Number::Rational(Rational64::new(3, 5))
+            ]
+        );
+        assert!(matches!(truncated.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(truncated.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
+    fn truncate_discrete_returns_error_when_min_support_exceeds_bounds() {
+        let rv = sample_discrete_rv();
+        let result = truncate_discrete(&rv, Number::Integer(0), Number::Integer(3));
+
+        assert!(matches!(
+            result,
+            Err(msg) if msg == "min support must be greater than or equal to the lowest support value"
+        ));
+    }
 }
