@@ -3,7 +3,6 @@
 use crate::algorithms::number::Number;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 
-
 /// Truncates a discrete random variable by cutting off a portion of the support
 /// and normalizing total probability of the distribution to 1.
 ///
@@ -64,25 +63,20 @@ pub fn truncate_discrete(
     let support = pdf_random_variable.support;
 
     if min_support >= max_support {
-        return Err(
-            "max_support must be greater than the min_support"
-            .to_string()
-        );
+        return Err("max_support must be greater than the min_support".to_string());
     }
 
     let first_support = *support.first().ok_or("support is empty")?;
     if min_support < first_support {
         return Err(
-            "min support must be greater than or equal to the lowest support value"
-            .to_string()
+            "min support must be greater than or equal to the lowest support value".to_string(),
         );
     }
 
     let last_support = *support.last().ok_or("support is empty")?;
     if max_support > last_support {
         return Err(
-            "max support must be less than or equal to the highest support value"
-            .to_string()
+            "max support must be less than or equal to the highest support value".to_string(),
         );
     }
 
@@ -95,10 +89,7 @@ pub fn truncate_discrete(
 
     let zero = Number::Integer(0);
     if truncation_area == zero {
-        return Err(
-            "there is no probability mass within the specified support range"
-            .to_string()
-        );
+        return Err("there is no probability mass within the specified support range".to_string());
     }
 
     let mut truncated_function = Vec::new();
@@ -150,7 +141,10 @@ mod tests {
         let rv = sample_discrete_rv();
         let truncated = truncate_discrete(&rv, Number::Integer(2), Number::Integer(3)).unwrap();
 
-        assert_eq!(truncated.support, vec![Number::Integer(2), Number::Integer(3)]);
+        assert_eq!(
+            truncated.support,
+            vec![Number::Integer(2), Number::Integer(3)]
+        );
         assert_eq!(
             truncated.function,
             vec![

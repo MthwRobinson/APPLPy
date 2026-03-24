@@ -35,6 +35,9 @@ fn applpy_rust(_py: Python<'_>, module: &Bound<'_, PyModule>) -> PyResult<()> {
     )?)?;
     module.add_function(wrap_pyfunction!(python::api::bootstrap_rv_py, module)?)?;
 
+    // transformation functions
+    module.add_function(wrap_pyfunction!(python::api::truncate_discrete_py, module)?)?;
+
     // dummy function to validate imports
     module.add_function(wrap_pyfunction!(dummy_ping, module)?)?;
 

@@ -158,8 +158,9 @@ pub fn truncate_discrete_py(
     max_support: Number,
 ) -> PyResult<FastRV> {
     let random_variable: FastRV = random_variable.extract()?;
-    let truncated_rv = transform::truncate_discrete(&random_variable.inner, min_support, max_support)
-        .map_err(PyValueError::new_err)?;
+    let truncated_rv =
+        transform::truncate_discrete(&random_variable.inner, min_support, max_support)
+            .map_err(PyValueError::new_err)?;
     Ok(FastRV::new(
         truncated_rv.function,
         truncated_rv.support,
