@@ -220,4 +220,3 @@ def test_variate_method_paths():
 
 def test_verifypdf_wrapper_function():
     assert verify_pdf(_uniform_continuous_pdf()) is True
-

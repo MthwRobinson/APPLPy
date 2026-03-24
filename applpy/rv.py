@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from applpy import rust_bindings
+from enum import Enum
+from typing import List
+from random import random
 
 from sympy import (
     Symbol,
@@ -26,10 +28,19 @@ from sympy import (
     pprint,
     expand,
     latex,
-    Rational,
 )
-from random import random
-from enum import Enum
+
+from applpy.types import Number
+
+try:
+    import applpy_rust
+except ImportError:
+    raise ImportError(
+        "applpy_rust extension is not built. "
+        "Run `uv sync --extra rust` then "
+        "`uv run --no-sync maturin develop -m rust/Cargo.toml`."
+    )
+
 
 x, y, z, t = symbols("x y z t")
 
@@ -783,7 +794,7 @@ class RV:
         # If the random variable is discrete, verify the PDF
         if self.is_discrete():
             X_dummy = pdf(self)
-            is_valid = rust_bindings.verify_discrete_pdf(X_dummy.func)
+            is_valid = applpy_rust.verify_discrete_pdf(X_dummy.func)
             if is_valid:
                 print("is valid")
             else:
@@ -891,7 +902,7 @@ def check_value(value, sup):
             return True
 
 
-def bootstrap_rv(varlist, symbolic=False):
+def bootstrap_rv(varlist: List[Number]) -> RV:
     """
     Procedure Name: Bootstrap RV
     Purpose: Generate a discrete random variable from a list of variates
@@ -899,21 +910,13 @@ def bootstrap_rv(varlist, symbolic=False):
     Output:    1. A discrete random variable, where each element in the
                     given variate list is equally probable
     """
-    # Sort the list of variables
-    varlist.sort()
-    # Find the number of elements in the list of variates
-    numel = len(varlist)
-    # Use varlist to generate the function and support for the random variable
-    #   Count number of times element appears in varlist, divide by number
-    #   of elements
-    funclist = []
-    supplist = []
-    for i in range(len(varlist)):
-        if varlist[i] not in supplist:
-            supplist.append(varlist[i])
-            funclist.append(Rational(varlist.count(varlist[i]), numel))
-    # Return the result as a discrete random variable
-    return RV(funclist, supplist, ["discrete", "pdf"])
+    fast_rv = applpy_rust.bootstrap_rv(varlist)
+    return RV(
+        func=fast_rv.function,
+        support=fast_rv.support,
+        functional_form=fast_rv.functional_form,
+        domain_type=fast_rv.domain_type,
+    )
 
 
 def verify_pdf(random_variable):
