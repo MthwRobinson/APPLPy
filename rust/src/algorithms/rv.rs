@@ -243,34 +243,32 @@ pub fn bootstrap_rv(variates: &[Number]) -> Result<(Vec<Number>, Vec<Number>), S
         first.total_cmp(&second)
     });
 
-    let mut variate_counts = Vec::<u32>::new();
-    let mut support = Vec::<Number>::new();
-
-    let num_items = variates.len();
-    let mut current_count = 0;
-    for i in 0..num_items {
-        if i == 0 || sorted_variates[i] == sorted_variates[i - 1] {
-            current_count += 1;
-        } else {
-            support.push(sorted_variates[i - 1]);
-            let _current_count = current_count;
-            variate_counts.push(_current_count);
-            current_count = 1;
-        }
-    }
-
-    let num_items_number = Number::Integer(
+    let one = Number::Integer(1);
+    let num_items = sorted_variates.len();
+    let num_observations = Number::Integer(
         num_items
             .try_into()
-            .expect("failed to convert to integer number"),
+            .expect("could not converted sorted variate length to number"),
     );
-    let function = variate_counts
-        .iter()
-        .map(|count| {
-            let count_number = Number::Integer(*count as i64);
-            count_number / num_items_number
-        })
-        .collect();
+    let base_probability = one / num_observations;
+
+    let mut function: Vec<Number> = Vec::new();
+    let mut support: Vec<Number> = Vec::new();
+
+    // TODO - fix this to currently account for the last iteration over the window
+    let mut current_probability = base_probability;
+    for window in sorted_variates.windows(2) {
+        let current_variate = window[0];
+        let next_variate = window[1];
+
+        if current_variate == next_variate {
+            current_probability += base_probability;
+        } else {
+            support.push(current_variate);
+            function.push(current_probability);
+            current_probability = base_probability;
+        }
+    }
 
     Ok((support, function))
 }
