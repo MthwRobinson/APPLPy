@@ -1,0 +1,4 @@
+interface:
+  display_name: "APPLPy"
+  short_description: "Build APPLPy probability models from natural language"
+  default_prompt: "Build an APPLPy probability model from the user request and provide runnable code plus key computed outputs."

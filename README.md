@@ -224,3 +224,19 @@ See the following documentation for a list of distributions that are available i
 
 - [Continuous Distributions](applpy/distributions/continuous/README.md)
 - [Discrete Distributions](applpy/distributions/discrete/README.md)
+
+## Using The APPLPy Codex Skill
+
+This repository includes a local Codex skill at `.agents/skills/applpy` for translating natural-language probability questions into APPLPy models and runnable code.
+
+Invoke it directly in your prompt with:
+
+```text
+$applpy Model a 3-component reliability system where each component lifetime is Exponential(1/7), compute the system mean lifetime.
+```
+
+You can also call it with an explicit path:
+
+```text
+Use $applpy at /home/matt/repos/applpy/.agents/skills/applpy to build a Markov chain model from this transition matrix and compute long-run probabilities.
+```
