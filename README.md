@@ -225,9 +225,9 @@ See the following documentation for a list of distributions that are available i
 - [Continuous Distributions](applpy/distributions/continuous/README.md)
 - [Discrete Distributions](applpy/distributions/discrete/README.md)
 
-## Using The APPLPy Codex Skill
+## Using The APPLPy Agent Skill
 
-This repository includes a local Codex skill at `.agents/skills/applpy` for translating natural-language probability questions into APPLPy models and runnable code.
+This repository includes a local agent skill at `.agents/skills/applpy` for translating natural-language probability questions into APPLPy models and runnable code.
 
 Invoke it directly in your prompt with:
 
