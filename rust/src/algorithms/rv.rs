@@ -235,7 +235,7 @@ pub fn verify_pdf(function: &[Number], tolerance: Option<f64>) -> Result<bool, S
 /// * `function` - the probability of each variate, assuming each is equally likely
 ///
 /// # Examples
-pub fn bootstrap_rv(variates: &[Number]) -> Result<(Vec<Number>, Vec<Number>), String> {
+pub fn bootstrap_rv(variates: &[Number]) -> Result<RandomVariable, String> {
     if variates.is_empty() {
         return Err("at least one variate is required to construct the bootstrap rv".to_string());
     }
@@ -273,10 +273,16 @@ pub fn bootstrap_rv(variates: &[Number]) -> Result<(Vec<Number>, Vec<Number>), S
         }
     }
 
-    support.push(current_variate);
     function.push(current_probability);
+    support.push(current_variate);
 
-    Ok((support, function))
+    let random_variable = RandomVariable {
+        function,
+        support,
+        functional_form: FunctionalForm::Pdf,
+        domain_type: DomainType::Discrete,
+    };
+    Ok(random_variable)
 }
 
 /// Evaluates a random variable at a specific value. Used to compute F(x) for
