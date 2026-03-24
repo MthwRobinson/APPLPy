@@ -33,6 +33,7 @@ fn applpy_rust(_py: Python<'_>, module: &Bound<'_, PyModule>) -> PyResult<()> {
         python::api::verify_discrete_pdf_py,
         module
     )?)?;
+    module.add_function(wrap_pyfunction!(python::api::bootstrap_rv_py, module)?)?;
 
     // dummy function to validate imports
     module.add_function(wrap_pyfunction!(dummy_ping, module)?)?;
