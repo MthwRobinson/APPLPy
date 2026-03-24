@@ -138,6 +138,18 @@ pub fn verify_discrete_pdf_py(function: Vec<Number>, tolerance: Option<f64>) -> 
     ))
 }
 
+#[pyfunction(name = "bootstrap_rv", signature = (variates))]
+pub fn bootstrap_rv(variates: Vec<Number>) -> PyResult<FastRV> {
+    let random_variable = rv::bootstrap_rv(&variates).map_err(PyValueError::new_err)?;
+    let fast_rv = FastRV::new(
+        random_variable.function,
+        random_variable.support,
+        random_variable.functional_form,
+        random_variable.domain_type,
+    );
+    Ok(fast_rv)
+}
+
 #[pyclass]
 pub struct FastRV {
     inner: RandomVariable,
