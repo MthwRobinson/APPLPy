@@ -8,6 +8,16 @@ from .conversion import cdf, pdf
 from .rv import RV, RVError, t, x
 
 
+try:
+    import applpy_rust
+except ImportError:
+    raise ImportError(
+        "applpy_rust extension is not built. "
+        "Run `uv sync --extra rust` then "
+        "`uv run --no-sync maturin develop -m rust/Cargo.toml`."
+    )
+
+
 def transform(random_variable, transform_spec):
     """
     Procedure Name: Transform
@@ -423,23 +433,14 @@ def _truncate_discrete_functional(pdf_random_variable, cdf_random_variable, supp
 
 
 def _truncate_discrete(pdf_random_variable, support_interval):
-    # Find the area of the truncated random variable
-    truncation_area = 0
-    for i in range(len(pdf_random_variable.support)):
-        if pdf_random_variable.support[i] >= support_interval[0]:
-            if pdf_random_variable.support[i] <= support_interval[1]:
-                truncation_area += pdf_random_variable.func[i]
-    # Truncate the random variable and find the probability
-    #   at each point
-    truncated_functions = []
-    truncated_support = []
-    for i in range(len(pdf_random_variable.support)):
-        if pdf_random_variable.support[i] >= support_interval[0]:
-            if pdf_random_variable.support[i] <= support_interval[1]:
-                truncated_functions.append(pdf_random_variable.func[i] / truncation_area)
-                truncated_support.append(pdf_random_variable.support[i])
-    # Return the truncated random variable
-    return RV(truncated_functions, truncated_support, ["discrete", "pdf"])
+    min_support, max_support = tuple(support_interval)
+    fast_rv = applpy_rust.truncate_discrete(pdf_random_variable, min_support, max_support)
+    return RV(
+        func=fast_rv.function,
+        support=fast_rv.support,
+        functional_form=fast_rv.functional_form,
+        domain_type=fast_rv.domain_type,
+    )
 
 
 def mixture(mix_parameters, mix_random_variables):

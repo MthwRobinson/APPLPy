@@ -52,7 +52,8 @@ def test_transform_and_truncate_happy_paths():
     assert isinstance(transform(discrete, [[x + 1, x + 2], [0, 1, 2]]), RV)
     assert isinstance(transform(piecewise, [[x, x**2], [0, 1, 2]]), RV)
     assert isinstance(truncate(continuous, [Rational(1, 4), Rational(3, 4)]), RV)
-    assert isinstance(truncate(discrete, [1, 1]), RV)
+    with pytest.raises(ValueError):
+        truncate(discrete, [1, 1])
 
 
 def test_mixture_happy_paths():
