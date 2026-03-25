@@ -139,18 +139,22 @@ pub fn mixture_discrete(
     let mut raw_mixture_support = Vec::new();
 
     for (&random_variable, &mix_weight) in random_variables.iter().zip(mix_weights.iter()) {
-        let function = &random_variable.function;
-        let support = &random_variable.support;
+        let function = &random_variable.to_pdf()?.function;
+        let support = &random_variable.to_pdf()?.support;
 
         for (&function_value, &support_value) in function.iter().zip(support.iter()) {
             let partial_probability = function_value * mix_weight;
-            if let Some(support_index) =
-                raw_mixture_support.iter().position(|&x| x == support_value)
-            {
-                raw_mixture_function[support_index] += partial_probability;
-            } else {
-                raw_mixture_support.push(support_value);
-                raw_mixture_function.push(partial_probability);
+
+            let support_index = raw_mixture_support.iter().position(|&x| x == support_value);
+
+            match support_index {
+                Some(idx) => {
+                    raw_mixture_function[idx] += partial_probability;
+                }
+                None => {
+                    raw_mixture_support.push(support_value);
+                    raw_mixture_function.push(partial_probability);
+                }
             }
         }
     }
