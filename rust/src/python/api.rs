@@ -169,6 +169,31 @@ pub fn truncate_discrete_py(
     ))
 }
 
+#[pyfunction(name = "mixture_discrete", signature = (random_variables, mix_weights))]
+pub fn mixture_discrete_py(
+    random_variables: Vec<Bound<'_, PyAny>>,
+    mix_weights: Vec<Number>,
+) -> PyResult<FastRV> {
+    let extracted: PyResult<Vec<FastRV>> = random_variables
+        .into_iter()
+        .map(|rv| rv.extract::<FastRV>())
+        .collect();
+    let extracted: Vec<FastRV> = extracted?;
+
+    let extracted_rvs: Vec<&RandomVariable> =
+        extracted.iter().map(|fast_rv| &fast_rv.inner).collect();
+
+    let mixed_rv =
+        transform::mixture_discrete(&extracted_rvs, &mix_weights).map_err(PyValueError::new_err)?;
+
+    Ok(FastRV::new(
+        mixed_rv.function,
+        mixed_rv.support,
+        mixed_rv.functional_form,
+        mixed_rv.domain_type,
+    ))
+}
+
 #[pyclass]
 pub struct FastRV {
     inner: RandomVariable,
