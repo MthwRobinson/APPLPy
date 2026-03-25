@@ -120,6 +120,50 @@ pub fn truncate_discrete(
 ///
 /// # Returns
 /// * `mixed_rv` - the weighted mixture of the random variables
+///
+/// # Examples
+/// ```
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+/// use applpy_rust::algorithms::transform::mixture_discrete;
+/// use num_rational::Rational64;
+///
+/// let rv1 = RandomVariable {
+///     function: vec![
+///         Number::Rational(Rational64::new(1, 2)),
+///         Number::Rational(Rational64::new(1, 2)),
+///     ],
+///     support: vec![Number::Integer(1), Number::Integer(2)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let rv2 = RandomVariable {
+///     function: vec![
+///         Number::Rational(Rational64::new(1, 4)),
+///         Number::Rational(Rational64::new(3, 4)),
+///     ],
+///     support: vec![Number::Integer(2), Number::Integer(3)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let mixed = mixture_discrete(
+///     &[&rv1, &rv2],
+///     &[Number::Float(0.25), Number::Float(0.75)],
+/// )
+/// .unwrap();
+///
+/// assert_eq!(
+///     mixed.support,
+///     vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)]
+/// );
+/// assert!((mixed.function[0].to_f64() - 0.125).abs() < 1e-12);
+/// assert!((mixed.function[1].to_f64() - 0.3125).abs() < 1e-12);
+/// assert!((mixed.function[2].to_f64() - 0.5625).abs() < 1e-12);
+/// assert!(matches!(mixed.functional_form, FunctionalForm::Pdf));
+/// assert!(matches!(mixed.domain_type, DomainType::Discrete));
+/// ```
 pub fn mixture_discrete(
     random_variables: &[&RandomVariable],
     mix_weights: &[Number],
@@ -205,6 +249,30 @@ mod tests {
         }
     }
 
+    fn sample_mixture_rv_1() -> RandomVariable {
+        RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        }
+    }
+
+    fn sample_mixture_rv_2() -> RandomVariable {
+        RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(3, 4)),
+            ],
+            support: vec![Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        }
+    }
+
     #[test]
     fn truncate_discrete_renormalizes_probabilities_within_range() {
         let rv = sample_discrete_rv();
@@ -233,6 +301,57 @@ mod tests {
         assert!(matches!(
             result,
             Err(msg) if msg == "min support must be greater than or equal to the lowest support value"
+        ));
+    }
+
+    #[test]
+    fn mixture_discrete_combines_duplicate_support_and_sorts_output() {
+        let rv1 = sample_mixture_rv_1();
+        let rv2 = sample_mixture_rv_2();
+
+        let mixed =
+            mixture_discrete(&[&rv1, &rv2], &[Number::Float(0.25), Number::Float(0.75)]).unwrap();
+
+        assert_eq!(
+            mixed.support,
+            vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)]
+        );
+        assert!((mixed.function[0].to_f64() - 0.125).abs() < 1e-12);
+        assert!((mixed.function[1].to_f64() - 0.3125).abs() < 1e-12);
+        assert!((mixed.function[2].to_f64() - 0.5625).abs() < 1e-12);
+        assert!(matches!(mixed.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(mixed.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
+    fn mixture_discrete_returns_error_when_lengths_do_not_match() {
+        let rv1 = sample_mixture_rv_1();
+        let rv2 = sample_mixture_rv_2();
+
+        let result = mixture_discrete(&[&rv1, &rv2], &[Number::Rational(Rational64::new(1, 1))]);
+
+        assert!(matches!(
+            result,
+            Err(msg) if msg == "the number of random variables and mix weights must be equal"
+        ));
+    }
+
+    #[test]
+    fn mixture_discrete_returns_error_when_weights_do_not_sum_to_one() {
+        let rv1 = sample_mixture_rv_1();
+        let rv2 = sample_mixture_rv_2();
+
+        let result = mixture_discrete(
+            &[&rv1, &rv2],
+            &[
+                Number::Rational(Rational64::new(1, 3)),
+                Number::Rational(Rational64::new(1, 3)),
+            ],
+        );
+
+        assert!(matches!(
+            result,
+            Err(msg) if msg == "the mix weights must sum to one"
         ));
     }
 }
