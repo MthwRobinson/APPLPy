@@ -124,6 +124,19 @@ pub fn mixture_discrete(
     random_variables: &[&RandomVariable],
     mix_weights: &[Number],
 ) -> Result<RandomVariable, String> {
+    if random_variables.len() != mix_weights.len() {
+        return Err("the number of random variables and mix weights must be equal".to_string());
+    }
+
+    let weight_sum = mix_weights
+        .iter()
+        .fold(Number::default(), |acc, x| acc + *x);
+
+    let one = Number::Integer(1);
+    let tolerance = Number::Float(1e-6);
+    if weight_sum < one - tolerance || weight_sum > one + tolerance {
+        return Err("the mix weights must sum to one".to_string());
+    }
 
     let mut raw_mixture_function = Vec::new();
     let mut raw_mixture_support = Vec::new();
@@ -138,14 +151,17 @@ pub fn mixture_discrete(
                 raw_mixture_support.push(support_value);
                 raw_mixture_function.push(partial_probability);
             } else {
-                let support_index = support.iter().position(|&x| x == support_value)
+                let support_index = support
+                    .iter()
+                    .position(|&x| x == support_value)
                     .expect("support value not found in mixture support");
                 raw_mixture_function[support_index] += partial_probability;
             }
         }
     }
 
-    let mut raw_mixture_pair: Vec<_> = raw_mixture_support.into_iter()
+    let mut raw_mixture_pair: Vec<_> = raw_mixture_support
+        .into_iter()
         .zip(raw_mixture_function)
         .collect();
 
@@ -155,9 +171,7 @@ pub fn mixture_discrete(
         first_value.total_cmp(&second_value)
     });
 
-    let (mixture_support, mixture_function) = raw_mixture_pair
-        .into_iter()
-        .unzip();
+    let (mixture_support, mixture_function) = raw_mixture_pair.into_iter().unzip();
 
     let mix_rv = RandomVariable {
         function: mixture_function,
