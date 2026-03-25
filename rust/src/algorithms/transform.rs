@@ -172,10 +172,11 @@ pub fn mixture_discrete(
         return Err("the number of random variables and mix weights must be equal".to_string());
     }
 
-    let weight_sum: Number = mix_weights.iter().copied().sum();
-    let one = Number::Integer(1);
-    let tolerance = Number::Float(1e-6);
-    if weight_sum < one - tolerance || weight_sum > one + tolerance {
+    let weight_sum: f64 = mix_weights.iter().copied().sum::<Number>().to_f64();
+    let tolerance = 1e-6;
+    let upper_bound = 1.0 + tolerance;
+    let lower_bound = 1.0 - tolerance;
+    if weight_sum < lower_bound || weight_sum > upper_bound {
         return Err("the mix weights must sum to one".to_string());
     }
 

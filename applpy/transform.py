@@ -522,29 +522,16 @@ def _mixture_discrete_functional(mixture_pdf_random_variables):
 
 
 def _mixture_discrete(mix_parameters, mixture_pdf_random_variables):
-    # Compute the mixture rv by summing over the weights
-    mixture_support = []
-    mixture_functions = []
-    for i in range(len(mixture_pdf_random_variables)):
-        for j in range(len(mixture_pdf_random_variables[i].support)):
-            if mixture_pdf_random_variables[i].support[j] not in mixture_support:
-                mixture_support.append(mixture_pdf_random_variables[i].support[j])
-                mixture_functions.append(
-                    mixture_pdf_random_variables[i].func[j] * mix_parameters[i]
-                )
-            else:
-                support_index = mixture_support.index(mixture_pdf_random_variables[i].support[j])
-                weighted_value = mixture_pdf_random_variables[i].func[j] * mix_parameters[i]
-                mixture_functions[support_index] += weighted_value
-    # Sort the values
-    sorted_support_function_pairs = list(zip(mixture_support, mixture_functions))
-    sorted_support_function_pairs.sort()
-    mixture_functions = []
-    mixture_support = []
-    for i in range(len(sorted_support_function_pairs)):
-        mixture_functions.append(sorted_support_function_pairs[i][1])
-        mixture_support.append(sorted_support_function_pairs[i][0])
-    return RV(mixture_functions, mixture_support, ["discrete", "pdf"])
+    fast_rv = applpy_rust.mixture_discrete(
+        random_variables=mixture_pdf_random_variables,
+        mix_weights=mix_parameters,
+    )
+    return RV(
+        func=fast_rv.function,
+        support=fast_rv.support,
+        functional_form=fast_rv.functional_form,
+        domain_type=fast_rv.domain_type,
+    )
 
 
 # Backward-compatible aliases for legacy APPLPy function names.
