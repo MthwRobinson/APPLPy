@@ -112,6 +112,62 @@ pub fn truncate_discrete(
     Ok(truncated_rv)
 }
 
+/// Computes the mixture of two random variables
+///
+/// # Arguments
+/// * `random_variables` - a list of random variables to mix
+/// * `mix_weights` - the weight for each random variable. Must sum to 1
+///
+/// # Returns
+/// * `mixed_rv` - the weighted mixture of the random variables
+pub fn mixture_discrete(
+    random_variables: &[&RandomVariable],
+    mix_weights: &[Number],
+) -> Result<RandomVariable, String> {
+
+    let mut raw_mixture_function = Vec::new();
+    let mut raw_mixture_support = Vec::new();
+
+    for (&random_variable, &mix_weight) in random_variables.iter().zip(mix_weights.iter()) {
+        let function = &random_variable.function;
+        let support = &random_variable.support;
+
+        for (&function_value, &support_value) in function.iter().zip(support.iter()) {
+            let partial_probability = function_value * mix_weight;
+            if raw_mixture_support.contains(&support_value) {
+                raw_mixture_support.push(support_value);
+                raw_mixture_function.push(partial_probability);
+            } else {
+                let support_index = support.iter().position(|&x| x == support_value)
+                    .expect("support value not found in mixture support");
+                raw_mixture_function[support_index] += partial_probability;
+            }
+        }
+    }
+
+    let mut raw_mixture_pair: Vec<_> = raw_mixture_support.into_iter()
+        .zip(raw_mixture_function)
+        .collect();
+
+    raw_mixture_pair.sort_by(|a, b| {
+        let first_value = a.0.to_f64();
+        let second_value = b.0.to_f64();
+        first_value.total_cmp(&second_value)
+    });
+
+    let (mixture_support, mixture_function) = raw_mixture_pair
+        .into_iter()
+        .unzip();
+
+    let mix_rv = RandomVariable {
+        function: mixture_function,
+        support: mixture_support,
+        functional_form: FunctionalForm::Pdf,
+        domain_type: DomainType::Discrete,
+    };
+    Ok(mix_rv)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
