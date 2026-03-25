@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use std::fmt;
+use std::iter::Sum;
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
 use std::{collections::BTreeMap, f64::consts::E};
 
@@ -530,6 +531,12 @@ impl Div for Number {
             (Number::Integer(a), Number::Integer(b)) => Number::Integer(a / b),
             _ => unreachable!(),
         }
+    }
+}
+
+impl Sum for Number {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Number::default(), |acc, x| acc + x)
     }
 }
 

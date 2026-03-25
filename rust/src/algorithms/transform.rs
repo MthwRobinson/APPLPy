@@ -128,10 +128,7 @@ pub fn mixture_discrete(
         return Err("the number of random variables and mix weights must be equal".to_string());
     }
 
-    let weight_sum = mix_weights
-        .iter()
-        .fold(Number::default(), |acc, x| acc + *x);
-
+    let weight_sum: Number = mix_weights.iter().copied().sum();
     let one = Number::Integer(1);
     let tolerance = Number::Float(1e-6);
     if weight_sum < one - tolerance || weight_sum > one + tolerance {
