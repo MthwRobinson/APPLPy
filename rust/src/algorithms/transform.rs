@@ -144,15 +144,13 @@ pub fn mixture_discrete(
 
         for (&function_value, &support_value) in function.iter().zip(support.iter()) {
             let partial_probability = function_value * mix_weight;
-            if raw_mixture_support.contains(&support_value) {
+            if let Some(support_index) =
+                raw_mixture_support.iter().position(|&x| x == support_value)
+            {
+                raw_mixture_function[support_index] += partial_probability;
+            } else {
                 raw_mixture_support.push(support_value);
                 raw_mixture_function.push(partial_probability);
-            } else {
-                let support_index = support
-                    .iter()
-                    .position(|&x| x == support_value)
-                    .expect("support value not found in mixture support");
-                raw_mixture_function[support_index] += partial_probability;
             }
         }
     }
