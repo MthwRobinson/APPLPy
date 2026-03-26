@@ -3,7 +3,7 @@
 use crate::algorithms::number::Number;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
 
-/// Computes the product of two discrete random variables
+/// Computes the product of two independent discrete random variables
 ///
 /// # Arguments
 /// * `random_variable_1` - the first random variable
@@ -62,7 +62,9 @@ pub fn product_discrete(
     let mut product_function = Vec::new();
     let mut product_support = Vec::new();
     for (&s, &probability) in sorted_support.iter().zip(sorted_function.iter()) {
-        let support_index = product_support.iter().position(|&x| x == s);
+        let support_index = product_support
+            .iter()
+            .position(|&x: &Number| x.to_f64() == s.to_f64());
 
         match support_index {
             Some(index) => {
