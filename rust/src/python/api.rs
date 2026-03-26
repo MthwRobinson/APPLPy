@@ -5,6 +5,7 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyAny;
 
+use crate::algorithms::algebra;
 use crate::algorithms::number::Number;
 use crate::algorithms::order_stat;
 use crate::algorithms::rv;
@@ -109,6 +110,25 @@ pub fn discrete_minimum_py(
         min_rv.support,
         min_rv.functional_form,
         min_rv.domain_type,
+    ))
+}
+
+#[pyfunction(name = "product_discrete", signature = (random_variable_1, random_variable_2))]
+pub fn product_discrete_py(
+    random_variable_1: &Bound<'_, PyAny>,
+    random_variable_2: &Bound<'_, PyAny>,
+) -> PyResult<FastRV> {
+    let random_variable_1: FastRV = random_variable_1.extract()?;
+    let random_variable_2: FastRV = random_variable_2.extract()?;
+
+    let product_rv = algebra::product_discrete(&random_variable_1.inner, &random_variable_2.inner)
+        .map_err(PyValueError::new_err)?;
+
+    Ok(FastRV::new(
+        product_rv.function,
+        product_rv.support,
+        product_rv.functional_form,
+        product_rv.domain_type,
     ))
 }
 

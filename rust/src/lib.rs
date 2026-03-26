@@ -35,6 +35,9 @@ fn applpy_rust(_py: Python<'_>, module: &Bound<'_, PyModule>) -> PyResult<()> {
     )?)?;
     module.add_function(wrap_pyfunction!(python::api::bootstrap_rv_py, module)?)?;
 
+    // random variable algebra functions
+    module.add_function(wrap_pyfunction!(python::api::product_discrete_py, module)?)?;
+
     // transformation functions
     module.add_function(wrap_pyfunction!(python::api::truncate_discrete_py, module)?)?;
     module.add_function(wrap_pyfunction!(python::api::mixture_discrete_py, module)?)?;
