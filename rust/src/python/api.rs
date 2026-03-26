@@ -1,6 +1,8 @@
 #![allow(clippy::useless_conversion)]
 #![allow(dead_code)]
 
+use std::ops::Mul;
+
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyAny;
@@ -217,6 +219,21 @@ pub fn mixture_discrete_py(
 #[pyclass]
 pub struct FastRV {
     inner: RandomVariable,
+}
+
+impl Mul for FastRV {
+    type Output = Result<FastRV, String>;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        let product_rv = algebra::product_discrete(&self.inner, &rhs.inner)?;
+        let fast_rv = Self::new(
+            product_rv.function,
+            product_rv.support,
+            product_rv.functional_form,
+            product_rv.domain_type,
+        );
+        Ok(fast_rv)
+    }
 }
 
 fn format_number_list(values: &[Number]) -> String {
