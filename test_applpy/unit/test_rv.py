@@ -1,7 +1,8 @@
 import pytest
 from sympy import Integer, Rational
 
-from applpy.algebra import _product_discrete as ProductDiscrete
+from applpy_rust import product_discrete
+
 from applpy.appl_plot import plot_dist, plot_emp_cdf, pp_plot, qq_plot
 from applpy import rust_bindings
 from applpy.rv import (
@@ -186,14 +187,14 @@ def test_two_rv_operations_for_continuous_and_discrete():
     discrete = _discrete_pdf()
     bernoulli = _discrete_pdf_bernoulli()
 
-    assert isinstance(ProductDiscrete(discrete, bernoulli), RV)
+    assert isinstance(product_discrete(discrete, bernoulli), RV)
 
 
 def test_two_rv_operations_error_paths():
     discrete = _discrete_pdf()
 
     with pytest.raises(RVError, match="both random variables must be discrete"):
-        ProductDiscrete(_uniform_continuous_pdf(), discrete)
+        product_discrete(_uniform_continuous_pdf(), discrete)
 
 
 def test_plotting_and_misc_utility_paths():

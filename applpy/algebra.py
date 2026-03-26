@@ -2,61 +2,11 @@
 Algebraic operations on one or two random variables.
 """
 
-import numpy as np
 from sympy import Symbol, exp, expand, integrate, ln, nan, oo, simplify
 
 from .conversion import pdf
 from .rv import RV, RVError, x
 from .transform import Convert, transform
-
-
-def _product_discrete(random_variable_1, random_variable_2):
-    """
-    Procedure Name: _product_discrete
-    Purpose: Compute the product of two independent
-                discrete random variables
-    Arguments:  1. random_variable_1: A random variable
-                2. random_variable_2: A random variable
-    Output:     1. The product of random_variable_1 and random_variable_2
-    """
-    # Ensure that both random variables are discrete
-    if not random_variable_1.is_discrete() or not random_variable_2.is_discrete():
-        raise RVError("both random variables must be discrete")
-    # Convert both random variables to pdf form
-    left_pdf_rv = pdf(random_variable_1)
-    right_pdf_rv = pdf(random_variable_2)
-    # Convert the support and the value of each random variable
-    #   into numpy arrays
-    support1 = np.asarray(left_pdf_rv.support, dtype=object)
-    support2 = np.asarray(right_pdf_rv.support, dtype=object)
-    pdf1 = np.asarray(left_pdf_rv.func, dtype=object)
-    pdf2 = np.asarray(right_pdf_rv.func, dtype=object)
-    # Find all possible values of support1*support2 and val1*val2
-    #   via the pairwise outer product, flatten into vectors
-    prodsupport = np.outer(support1, support2).flatten()
-    prodpdf = np.outer(pdf1, pdf2).flatten()
-    # Convert the resulting vectors into lists
-    supportlist = prodsupport.tolist()
-    pdflist = prodpdf.tolist()
-    # Sort the function and support lists for the product
-    sortlist = list(zip(supportlist, pdflist))
-    sortlist.sort()
-    prodlist2 = []
-    funclist2 = []
-    for i in range(len(sortlist)):
-        prodlist2.append(sortlist[i][0])
-        funclist2.append(sortlist[i][1])
-    # Remove redundant elements in the support list
-    prodlist3 = []
-    funclist3 = []
-    for i in range(len(prodlist2)):
-        if prodlist2[i] not in prodlist3:
-            prodlist3.append(prodlist2[i])
-            funclist3.append(funclist2[i])
-        else:
-            funclist3[prodlist3.index(prodlist2[i])] += funclist2[i]
-    # Create and return the new random variable
-    return RV(funclist3, prodlist3, ["discrete", "pdf"])
 
 
 def convolution_iid(random_variable, n):
@@ -239,8 +189,9 @@ def product(random_variable_1, random_variable_2):
                 2. random_variable_2: A random variable
     Output:     1. The product of random_variable_1 and random_variable_2
     """
-    # If the random variable is continuous, find and return the
-    #   product of the two random variables
+    if random_variable_1.functional_form != random_variable_2.functional_form:
+        raise RVError("both random variables must have the same functional form")
+
     if random_variable_1.is_continuous():
         # left_pdf_rv.drop_assumptions()
         # right_pdf_rv.drop_assumptions()
@@ -574,8 +525,6 @@ def product(random_variable_1, random_variable_2):
                 product_functions_final.append(product_functions[i])
         return RV(product_functions_final, product_support, ["continuous", "pdf"])
 
-    # If the two random variables are discrete in functinonal form,
-    #   find and return the product of the two random variables
     if random_variable_1.is_discrete_functional():
         for num in random_variable_1.support:
             if not isinstance(num, (int, float)):
@@ -591,10 +540,10 @@ def product(random_variable_1, random_variable_2):
                 raise RVError(err_string)
         random_variable_2 = Convert(random_variable_2)
 
-    # If the distributions are discrete, find and return the product
-    #   of the two random variables.
     if random_variable_1.is_discrete():
-        return _product_discrete(random_variable_1, random_variable_2)
+        fast_rv_1 = random_variable_1.to_fast_rv()
+        fast_rv_2 = random_variable_2.to_fast_rv()
+        return RV.from_fast_rv(fast_rv_1 * fast_rv_2)
 
 
 # Backward-compatible aliases for legacy APPLPy function names.

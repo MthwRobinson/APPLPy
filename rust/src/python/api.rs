@@ -224,7 +224,7 @@ pub struct FastRV {
 impl Mul for FastRV {
     type Output = Result<FastRV, String>;
 
-    fn mul(self, rhs: Self) -> Self::Output {
+    fn mul(self, rhs: FastRV) -> Self::Output {
         let product_rv = algebra::product_discrete(&self.inner, &rhs.inner)?;
         let fast_rv = Self::new(
             product_rv.function,
@@ -273,6 +273,22 @@ impl FastRV {
         )
     }
 
+    pub fn __mul__(&self, rhs: FastRV) -> PyResult<FastRV> {
+        let self_rv = self.inner.clone();
+        let rhs_rv = rhs.inner.clone();
+
+        let product_rv = self_rv * rhs_rv;
+
+        match product_rv {
+            Ok(rv) => {
+                let fast_rv =
+                    FastRV::new(rv.function, rv.support, rv.functional_form, rv.domain_type);
+                Ok(fast_rv)
+            }
+            Err(s) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(s)),
+        }
+    }
+
     #[getter]
     pub fn function(&self) -> Vec<Number> {
         self.inner.function.clone()
@@ -317,7 +333,7 @@ impl FastRV {
         }
 
         Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-            "converstion to pdf failed",
+            "conversion to pdf failed",
         ))
     }
 
@@ -329,7 +345,7 @@ impl FastRV {
         }
 
         Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-            "converstion to cdf failed",
+            "conversion to cdf failed",
         ))
     }
 
@@ -341,7 +357,7 @@ impl FastRV {
         }
 
         Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-            "converstion to sf failed",
+            "conversion to sf failed",
         ))
     }
 
@@ -353,7 +369,7 @@ impl FastRV {
         }
 
         Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-            "converstion to idf failed",
+            "conversion to idf failed",
         ))
     }
 
@@ -365,7 +381,7 @@ impl FastRV {
         }
 
         Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-            "converstion to chf failed",
+            "conversion to chf failed",
         ))
     }
 
