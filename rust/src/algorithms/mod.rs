@@ -1,3 +1,4 @@
+pub mod algebra;
 pub mod conversion;
 pub mod moments;
 pub mod number;
