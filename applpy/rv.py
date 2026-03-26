@@ -225,6 +225,29 @@ class RV:
     def is_discrete_functional(self):
         return self._has_domain_type(DomainType.DISCRETE_FUNCTIONAL)
 
+    def to_fast_rv(self):
+        """
+        Convert this APPLPy RV into the Rust-backed FastRV representation.
+        """
+        return applpy_rust.FastRV(
+            function=self.func,
+            support=self.support,
+            functional_form=self.functional_form,
+            domain_type=self.domain_type,
+        )
+
+    @classmethod
+    def from_fast_rv(cls, fast_rv):
+        """
+        Build an APPLPy RV from a Rust-backed FastRV instance.
+        """
+        return cls(
+            func=fast_rv.function,
+            support=fast_rv.support,
+            functional_form=fast_rv.functional_form,
+            domain_type=fast_rv.domain_type,
+        )
+
     def __repr__(self):
         """
         Procedure Name: __repr__
@@ -911,12 +934,7 @@ def bootstrap_rv(varlist: List[Number]) -> RV:
                     given variate list is equally probable
     """
     fast_rv = applpy_rust.bootstrap_rv(varlist)
-    return RV(
-        func=fast_rv.function,
-        support=fast_rv.support,
-        functional_form=fast_rv.functional_form,
-        domain_type=fast_rv.domain_type,
-    )
+    return RV.from_fast_rv(fast_rv)
 
 
 def verify_pdf(random_variable):

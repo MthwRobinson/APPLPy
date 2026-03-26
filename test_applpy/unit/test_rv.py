@@ -105,6 +105,20 @@ def test_bootstrap_rv_creates_discrete_pdf_with_frequencies():
     assert rv.support == [1, 2, 3]
     assert rv.func == [Rational(1, 4), Rational(1, 4), Rational(1, 2)]
 
+def test_fast_rv_round_trip_conversion_methods():
+    rv = _discrete_pdf_bernoulli()
+
+    fast_rv = rv.to_fast_rv()
+    assert fast_rv.__class__.__name__ == "FastRV"
+    assert fast_rv.function == rv.func
+    assert fast_rv.support == rv.support
+    assert fast_rv.functional_form == rv.functional_form
+    assert fast_rv.domain_type == rv.domain_type
+
+    converted = RV.from_fast_rv(fast_rv)
+    assert isinstance(converted, RV)
+    assert converted == rv
+
 
 def test_next_combination_advances_lexicographically():
     assert rust_bindings.next_combination([1, 2, 4], 5) == [1, 2, 5]
