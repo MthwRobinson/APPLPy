@@ -1,10 +1,12 @@
 #![allow(dead_code)]
 
 use std::fmt;
+use std::ops::Mul;
 
 use num_rational::Rational64;
 use num_traits::cast::ToPrimitive;
 
+use crate::algorithms::algebra;
 use crate::algorithms::conversion;
 use crate::algorithms::moments;
 use crate::algorithms::number::Number;
@@ -59,6 +61,15 @@ pub struct RandomVariable {
     pub support: Vec<Number>,
     pub functional_form: FunctionalForm,
     pub domain_type: DomainType,
+}
+
+impl Mul for RandomVariable {
+    type Output = Result<RandomVariable, String>;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        let product_rv = algebra::product_discrete(&self, &rhs)?;
+        Ok(product_rv)
+    }
 }
 
 impl RandomVariable {
