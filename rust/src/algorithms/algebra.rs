@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 
-// use crate::algorithms::number::Number;
+use crate::algorithms::number::Number;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
-
 
 /// Computes the product of two discrete random variables
 ///
@@ -26,6 +25,8 @@ pub fn product_discrete(
     let function_2 = pdf_random_variable_2.function;
     let support_2 = pdf_random_variable_2.support;
 
+    // Compute support1 x support2 and the associated probability
+    // for all combinations of support values
     let mut raw_product_support = Vec::new();
     for &s1 in support_1.iter() {
         for &s2 in support_2.iter() {
@@ -42,7 +43,9 @@ pub fn product_discrete(
         }
     }
 
-    let mut raw_product_pairs: Vec<_> = raw_product_support.into_iter()
+    // Sort the multiplied support and function values
+    let mut raw_product_pairs: Vec<_> = raw_product_support
+        .into_iter()
         .zip(raw_product_function)
         .collect();
     raw_product_pairs.sort_by(|a, b| {
@@ -51,7 +54,26 @@ pub fn product_discrete(
         first_value.total_cmp(&second_value)
     });
 
-    let (product_support, product_function) = raw_product_pairs.into_iter().unzip();
+    let (sorted_support, sorted_function): (Vec<Number>, Vec<Number>) =
+        raw_product_pairs.into_iter().unzip();
+
+    // De-duplicate the support. If a value appears multiple times in the
+    // support, combine the probabilities
+    let mut product_function = Vec::new();
+    let mut product_support = Vec::new();
+    for (&s, &probability) in sorted_support.iter().zip(sorted_function.iter()) {
+        let support_index = product_support.iter().position(|&x| x == s);
+
+        match support_index {
+            Some(index) => {
+                product_function[index] += probability;
+            }
+            None => {
+                product_function.push(probability);
+                product_support.push(s);
+            }
+        }
+    }
 
     let product_rv = RandomVariable {
         function: product_function,
