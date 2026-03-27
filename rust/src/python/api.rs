@@ -1,8 +1,6 @@
 #![allow(clippy::useless_conversion)]
 #![allow(dead_code)]
 
-use std::ops::Mul;
-
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyAny;
@@ -134,6 +132,25 @@ pub fn product_discrete_py(
     ))
 }
 
+#[pyfunction(name = "convolution_discrete", signature = (random_variable_1, random_variable_2))]
+pub fn convolution_discrete_py(
+    random_variable_1: &Bound<'_, PyAny>,
+    random_variable_2: &Bound<'_, PyAny>,
+) -> PyResult<FastRV> {
+    let random_variable_1: FastRV = random_variable_1.extract()?;
+    let random_variable_2: FastRV = random_variable_2.extract()?;
+
+    let sum_rv = algebra::convolution_discrete(&random_variable_1.inner, &random_variable_2.inner)
+        .map_err(PyValueError::new_err)?;
+
+    Ok(FastRV::new(
+        sum_rv.function,
+        sum_rv.support,
+        sum_rv.functional_form,
+        sum_rv.domain_type,
+    ))
+}
+
 #[pyfunction(name = "next_combination", signature = (previous, n))]
 pub fn next_combination_py(previous: Vec<usize>, n: usize) -> PyResult<Option<Vec<usize>>> {
     if previous.is_empty() {
@@ -221,21 +238,6 @@ pub struct FastRV {
     inner: RandomVariable,
 }
 
-impl Mul for FastRV {
-    type Output = Result<FastRV, String>;
-
-    fn mul(self, rhs: FastRV) -> Self::Output {
-        let product_rv = algebra::product_discrete(&self.inner, &rhs.inner)?;
-        let fast_rv = Self::new(
-            product_rv.function,
-            product_rv.support,
-            product_rv.functional_form,
-            product_rv.domain_type,
-        );
-        Ok(fast_rv)
-    }
-}
-
 fn format_number_list(values: &[Number]) -> String {
     values
         .iter()
@@ -271,6 +273,22 @@ impl FastRV {
             self.inner.functional_form,
             self.inner.domain_type
         )
+    }
+
+    pub fn __add__(&self, rhs: FastRV) -> PyResult<FastRV> {
+        let self_rv = self.inner.clone();
+        let rhs_rv = rhs.inner.clone();
+
+        let sum_rv = self_rv * rhs_rv;
+
+        match sum_rv {
+            Ok(rv) => {
+                let fast_rv =
+                    FastRV::new(rv.function, rv.support, rv.functional_form, rv.domain_type);
+                Ok(fast_rv)
+            }
+            Err(s) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(s)),
+        }
     }
 
     pub fn __mul__(&self, rhs: FastRV) -> PyResult<FastRV> {
