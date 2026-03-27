@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::fmt;
-use std::ops::Mul;
+use std::ops::{Add, AddAssign, Mul};
 
 use num_rational::Rational64;
 use num_traits::cast::ToPrimitive;
@@ -61,6 +61,22 @@ pub struct RandomVariable {
     pub support: Vec<Number>,
     pub functional_form: FunctionalForm,
     pub domain_type: DomainType,
+}
+
+impl Add for RandomVariable {
+    type Output = Result<RandomVariable, String>;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let sum_rv = algebra::convolution_discrete(&self, &rhs)?;
+        Ok(sum_rv)
+    }
+}
+
+impl AddAssign for RandomVariable {
+    fn add_assign(&mut self, rhs: Self) {
+        *self =
+            algebra::convolution_discrete(self, &rhs).expect("failed to sum the random variables");
+    }
 }
 
 impl Mul for RandomVariable {
