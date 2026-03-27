@@ -58,8 +58,6 @@ def convolution(random_variable_1, random_variable_2):
                 2. random_variable_2: A random variable
     Output:     1. The convolution of random_variable_1 and random_variable_2
     """
-    # If the two random variables are not both continuous or
-    #   both discrete, return an error
     if random_variable_1.domain_type != random_variable_2.domain_type:
         discrete_domain_types = ["discrete", "discrete_functional"]
         if (random_variable_1.domain_type not in discrete_domain_types) and (
@@ -140,44 +138,10 @@ def convolution(random_variable_1, random_variable_2):
                 raise RVError(err_string)
         random_variable_2 = Convert(random_variable_2)
 
-    # If the distributions are discrete, find and return the convolution
-    #   of the two random variables.
     if random_variable_1.is_discrete():
-        # Convert each random variable to its pdf form
-        left_pdf_rv = pdf(random_variable_1)
-        right_pdf_rv = pdf(random_variable_2)
-        # Create function and support lists for the convolution of the
-        #   two random variables
-        convolution_support_candidates = []
-        convolution_function_candidates = []
-        for i in range(len(left_pdf_rv.support)):
-            for j in range(len(right_pdf_rv.support)):
-                convolution_support_candidates.append(
-                    left_pdf_rv.support[i] + right_pdf_rv.support[j]
-                )
-                convolution_function_candidates.append(left_pdf_rv.func[i] * right_pdf_rv.func[j])
-        # Sort the function and support lists for the convolution
-        sorted_convolution_terms = list(
-            zip(convolution_support_candidates, convolution_function_candidates)
-        )
-        sorted_convolution_terms.sort()
-        sorted_convolution_support = []
-        sorted_convolution_functions = []
-        for i in range(len(sorted_convolution_terms)):
-            sorted_convolution_support.append(sorted_convolution_terms[i][0])
-            sorted_convolution_functions.append(sorted_convolution_terms[i][1])
-        # Remove redundant elements in the support list
-        unique_convolution_support = []
-        unique_convolution_functions = []
-        for i in range(len(sorted_convolution_support)):
-            if sorted_convolution_support[i] not in unique_convolution_support:
-                unique_convolution_support.append(sorted_convolution_support[i])
-                unique_convolution_functions.append(sorted_convolution_functions[i])
-            else:
-                support_index = unique_convolution_support.index(sorted_convolution_support[i])
-                unique_convolution_functions[support_index] += sorted_convolution_functions[i]
-        # Create and return the new random variable
-        return RV(unique_convolution_functions, unique_convolution_support, ["discrete", "pdf"])
+        fast_rv_1 = random_variable_1.to_fast_rv()
+        fast_rv_2 = random_variable_2.to_fast_rv()
+        return RV.from_fast_rv(fast_rv_1 + fast_rv_2)
 
 
 def product(random_variable_1, random_variable_2):

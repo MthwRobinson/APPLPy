@@ -279,7 +279,7 @@ impl FastRV {
         let self_rv = self.inner.clone();
         let rhs_rv = rhs.inner.clone();
 
-        let sum_rv = self_rv * rhs_rv;
+        let sum_rv = self_rv + rhs_rv;
 
         match sum_rv {
             Ok(rv) => {
