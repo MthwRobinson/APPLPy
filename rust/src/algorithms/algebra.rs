@@ -129,14 +129,14 @@ pub fn product_discrete(
     Ok(product_rv)
 }
 
-/// Computes the product of two independent discrete random variables
+/// Computes the sum of two independent discrete random variables
 ///
 /// # Arguments
 /// * `random_variable_1` - the first random variable
 /// * `random_variable_2` - the second random variable
 ///
 /// # Returns
-/// * `product_rv` - the product of the two random variables
+/// * `sum_rv` - the product of the two random variables
 ///
 /// # Examples
 pub fn convolution_discrete(
@@ -164,7 +164,7 @@ pub fn convolution_discrete(
     let mut raw_conv_function = Vec::new();
     for &f1 in function_1.iter() {
         for &f2 in function_2.iter() {
-            let probability = f1 + f2;
+            let probability = f1 * f2;
             raw_conv_function.push(probability);
         }
     }
@@ -202,14 +202,14 @@ pub fn convolution_discrete(
         }
     }
 
-    let conv_random_variable = RandomVariable {
+    let sum_rv = RandomVariable {
         function: conv_function,
         support: conv_support,
         functional_form: FunctionalForm::Pdf,
         domain_type: DomainType::Discrete,
     };
 
-    Ok(conv_random_variable)
+    Ok(sum_rv)
 }
 
 #[cfg(test)]
