@@ -189,7 +189,7 @@ def product(random_variable_1, random_variable_2):
                 2. random_variable_2: A random variable
     Output:     1. The product of random_variable_1 and random_variable_2
     """
-    if random_variable_1.functional_form != random_variable_2.functional_form:
+    if random_variable_1.domain_type != random_variable_2.domain_type:
         raise RVError("both random variables must have the same functional form")
 
     if random_variable_1.is_continuous():

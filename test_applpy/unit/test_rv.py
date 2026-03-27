@@ -104,6 +104,7 @@ def test_bootstrap_rv_creates_discrete_pdf_with_frequencies():
     assert rv.support == [1, 2, 3]
     assert rv.func == [Rational(1, 4), Rational(1, 4), Rational(1, 2)]
 
+
 def test_fast_rv_round_trip_conversion_methods():
     rv = _discrete_pdf_bernoulli()
 
@@ -192,8 +193,8 @@ def test_two_rv_operations_for_continuous_and_discrete():
 def test_two_rv_operations_error_paths():
     discrete = _discrete_pdf()
 
-    with pytest.raises(RVError, match="both random variables must be discrete"):
-        product_discrete(_uniform_continuous_pdf(), discrete)
+    with pytest.raises(RVError, match="both random variables must have the same functional form"):
+        _uniform_continuous_pdf() * discrete
 
 
 def test_plotting_and_misc_utility_paths():
