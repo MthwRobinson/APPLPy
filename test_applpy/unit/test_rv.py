@@ -1,8 +1,6 @@
 import pytest
 from sympy import Integer, Rational
 
-from applpy_rust import product_discrete
-
 from applpy.appl_plot import plot_dist, plot_emp_cdf, pp_plot, qq_plot
 from applpy import rust_bindings
 from applpy.rv import (
@@ -186,8 +184,9 @@ def test_single_rv_transformative_operations():
 def test_two_rv_operations_for_continuous_and_discrete():
     discrete = _discrete_pdf()
     bernoulli = _discrete_pdf_bernoulli()
+    product = discrete * bernoulli
 
-    assert isinstance(product_discrete(discrete, bernoulli), RV)
+    assert isinstance(product, RV)
 
 
 def test_two_rv_operations_error_paths():
