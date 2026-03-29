@@ -251,6 +251,59 @@ pub fn transform_discrete (
     let support = pdf_random_variable.support;
     let function = pdf_random_variable.function;
 
+    // Validate that the transformations are increasing and overlapping
+    for window in transformations.windows(2) {
+        let current_transformation = &window[0];
+        let next_transformation = &window[1];
+
+        let (trans_min, trans_max) = &current_transformation.support;
+        let (next_trans_min, next_trans_max) = &next_transformation.support;
+
+        if *trans_min >= *trans_max {
+            return Err(
+                "the max range of the transformation must exceeed the min range"
+                .to_string()
+            );
+        }
+
+        if *next_trans_min >= *next_trans_max {
+            return Err(
+                "the max range of the transformation must exceeed the min range"
+                .to_string()
+            );
+        }
+
+        if trans_max != next_trans_min {
+            return Err(
+                "the transformation ranges must be overlapping"
+                .to_string()
+            );
+        }
+    }
+
+    // Validate that the transformations cover the support
+    let lowest_support = support.first().expect("unable to extract lowest support");
+    let lowest_transform = transformations.first()
+        .expect("unable to extract lowest transform")
+        .support.0;
+    if *lowest_support > lowest_transform {
+        return Err(
+            "the minimum transformation support is higher than the minimum rv support"
+            .to_string()
+        );
+    }
+
+    let highest_support = support.last().expect("unable to extract highest support");
+    let highest_transform = transformations.last()
+        .expect("unable to extract highest transform")
+        .support.1;
+    if *highest_support > highest_transform {
+        return Err(
+            "the maxium transformation support is lower than the maximum rv support"
+            .to_string()
+        );
+    }
+
     // Compute the transformed
     let mut raw_transformed_support = Vec::new();
     for &s in support.iter() {
