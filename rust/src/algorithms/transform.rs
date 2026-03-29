@@ -226,6 +226,93 @@ pub fn mixture_discrete(
     Ok(mix_rv)
 }
 
+pub struct Transformation
+{
+    pub mapping: Box<dyn Fn(Number) -> Number>,
+    pub support: (Number, Number),
+
+}
+
+
+/// Computes a transformation of a discrete random variable
+///
+/// # Arugments
+/// * `random_variable`- the random variable to transform
+/// * `transformation` - the transformation to apply to the random variable
+///
+/// # Returns
+/// * `transformed_rv` - the transformed random variable
+pub fn transform_discrete (
+    random_variable: &RandomVariable,
+    transformations: &[Transformation],
+) -> Result<RandomVariable, String>
+{
+    let pdf_random_variable = random_variable.to_pdf()?;
+    let support = pdf_random_variable.support;
+    let function = pdf_random_variable.function;
+
+    // Compute the transformed
+    let mut raw_transformed_support = Vec::new();
+    for &s in support.iter() {
+        for transformation in transformations {
+            let mapping = &transformation.mapping;
+            let (trans_min, trans_max) = &transformation.support;
+            if s >= *trans_min && s <= *trans_max {
+                let raw_transformed_support_value = mapping(s);
+                raw_transformed_support.push(raw_transformed_support_value);
+                // Break to avoid inserting multiple transformed entries for
+                // any given support value
+                break
+            }
+        }
+    }
+
+    // Sort the transformed support and functions
+    let mut raw_transformed_pairs: Vec<(Number, Number)> = raw_transformed_support
+        .into_iter()
+        .zip(function)
+        .collect();
+
+    raw_transformed_pairs.sort_by(|a, b| {
+        let first_value = a.0.to_f64();
+        let second_value = b.0.to_f64();
+        first_value.total_cmp(&second_value)
+    });
+
+    let (sorted_support, sorted_function): (Vec<Number>, Vec<Number>) =
+        raw_transformed_pairs.into_iter().unzip();
+
+    // De-duplicate the support. If a a vlue appears multiple times in the
+    // support, combine the probabilities
+    let mut transformed_function = Vec::new();
+    let mut transformed_support = Vec::new();
+    for (&s, &probability) in sorted_support.iter().zip(sorted_function.iter()) {
+        let support_index = transformed_support
+            .iter()
+            .position(|&x: &Number| x.to_f64() == s.to_f64());
+
+        match support_index {
+            Some(index) => {
+                transformed_function[index] += probability;
+            }
+            None => {
+                transformed_support.push(s);
+                transformed_function.push(probability);
+            }
+        }
+    }
+
+    let transformed_rv = RandomVariable {
+        function: transformed_function,
+        support: transformed_support,
+        functional_form: FunctionalForm::Pdf,
+        domain_type: DomainType::Discrete,
+    };
+
+    Ok(transformed_rv)
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
