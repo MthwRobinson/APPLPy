@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::fmt;
-use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use num_rational::Rational64;
 use num_traits::cast::ToPrimitive;
@@ -100,6 +100,16 @@ impl Div for RandomVariable {
         let inverse_rhs = transform::transform_discrete(&rhs, &[transformation])?;
         let div_rv = algebra::product_discrete(&self, &inverse_rhs)?;
         Ok(div_rv)
+    }
+}
+
+impl DivAssign for RandomVariable {
+    fn div_assign(&mut self, rhs: Self) {
+        let div_rv = self
+            .clone()
+            .div(rhs)
+            .expect("failed to divide the random variables");
+        *self = div_rv;
     }
 }
 
@@ -231,6 +241,16 @@ impl Mul for RandomVariable {
     fn mul(self, rhs: Self) -> Self::Output {
         let product_rv = algebra::product_discrete(&self, &rhs)?;
         Ok(product_rv)
+    }
+}
+
+impl MulAssign for RandomVariable {
+    fn mul_assign(&mut self, rhs: Self) {
+        let product_rv = self
+            .clone()
+            .mul(rhs)
+            .expect("failed to multiply the random variables");
+        *self = product_rv;
     }
 }
 
@@ -673,6 +693,52 @@ mod tests {
     }
 
     #[test]
+    fn div_assign_updates_random_variable_in_place() {
+        let mut lhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(2), Number::Integer(4)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+        let rhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![
+                Number::Rational(Rational64::new(2, 1)),
+                Number::Rational(Rational64::new(4, 1)),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        lhs /= rhs;
+
+        assert_eq!(
+            lhs.support,
+            vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 1)),
+                Number::Rational(Rational64::new(2, 1)),
+            ]
+        );
+        assert_eq!(
+            lhs.function,
+            vec![
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 4)),
+            ]
+        );
+        assert!(matches!(lhs.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(lhs.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
     fn sub_returns_difference_distribution() {
         let lhs = RandomVariable {
             function: vec![
@@ -793,6 +859,51 @@ mod tests {
         );
         assert!(matches!(result.functional_form, FunctionalForm::Pdf));
         assert!(matches!(result.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
+    fn mul_assign_updates_random_variable_in_place() {
+        let mut lhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+        let rhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        lhs *= rhs;
+
+        assert_eq!(
+            lhs.support,
+            vec![
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+                Number::Integer(6),
+            ]
+        );
+        assert_eq!(
+            lhs.function,
+            vec![
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 4)),
+            ]
+        );
+        assert!(matches!(lhs.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(lhs.domain_type, DomainType::Discrete));
     }
 
     #[test]
