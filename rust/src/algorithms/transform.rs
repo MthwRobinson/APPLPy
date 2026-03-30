@@ -2,6 +2,7 @@
 
 use crate::algorithms::number::Number;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+use crate::algorithms::shared;
 
 /// Truncates a discrete random variable by cutting off a portion of the support
 /// and normalizing total probability of the distribution to 1.
@@ -204,18 +205,8 @@ pub fn mixture_discrete(
         }
     }
 
-    let mut raw_mixture_pair: Vec<_> = raw_mixture_support
-        .into_iter()
-        .zip(raw_mixture_function)
-        .collect();
-
-    raw_mixture_pair.sort_by(|a, b| {
-        let first_value = a.0.to_f64();
-        let second_value = b.0.to_f64();
-        first_value.total_cmp(&second_value)
-    });
-
-    let (mixture_support, mixture_function) = raw_mixture_pair.into_iter().unzip();
+    let (mixture_support, mixture_function) =
+        shared::sort_by_support(raw_mixture_support, raw_mixture_function)?;
 
     let mix_rv = RandomVariable {
         function: mixture_function,

@@ -2,6 +2,7 @@
 
 use crate::algorithms::number::Number;
 use crate::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+use crate::algorithms::shared;
 
 /// Computes the product of two independent discrete random variables
 ///
@@ -86,19 +87,8 @@ pub fn product_discrete(
         }
     }
 
-    // Sort the multiplied support and function values
-    let mut raw_product_pairs: Vec<_> = raw_product_support
-        .into_iter()
-        .zip(raw_product_function)
-        .collect();
-    raw_product_pairs.sort_by(|a, b| {
-        let first_value = a.0.to_f64();
-        let second_value = b.0.to_f64();
-        first_value.total_cmp(&second_value)
-    });
-
     let (sorted_support, sorted_function): (Vec<Number>, Vec<Number>) =
-        raw_product_pairs.into_iter().unzip();
+        shared::sort_by_support(raw_product_support, raw_product_function)?;
 
     // De-duplicate the support. If a value appears multiple times in the
     // support, combine the probabilities
@@ -211,20 +201,8 @@ pub fn convolution_discrete(
         }
     }
 
-    // Sorts the results by the support values
-    let mut raw_conv_pairs: Vec<_> = raw_conv_support
-        .into_iter()
-        .zip(raw_conv_function)
-        .collect();
-
-    raw_conv_pairs.sort_by(|a, b| {
-        let first_value = a.0.to_f64();
-        let second_value = b.0.to_f64();
-        first_value.total_cmp(&second_value)
-    });
-
     let (sorted_support, sorted_function): (Vec<Number>, Vec<Number>) =
-        raw_conv_pairs.into_iter().unzip();
+        shared::sort_by_support(raw_conv_support, raw_conv_function)?;
 
     // Remove redundant elements from the support
     let mut conv_support = Vec::new();
