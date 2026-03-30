@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::fmt;
-use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 
 use num_rational::Rational64;
 use num_traits::cast::ToPrimitive;
@@ -77,6 +77,29 @@ impl AddAssign for RandomVariable {
     fn add_assign(&mut self, rhs: Self) {
         *self =
             algebra::convolution_discrete(self, &rhs).expect("failed to sum the random variables");
+    }
+}
+
+impl Div for RandomVariable {
+    type Output = Result<RandomVariable, String>;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        let min_support = rhs
+            .support
+            .first()
+            .expect("failed to extract the first number");
+        let max_support = rhs
+            .support
+            .last()
+            .expect("failed to extract the last number");
+        let transformation = transform::Transformation {
+            mapping: |x| Number::Integer(1) / x,
+            min_support: *min_support,
+            max_support: *max_support,
+        };
+        let inverse_rhs = transform::transform_discrete(&rhs, &[transformation])?;
+        let div_rv = algebra::product_discrete(&self, &inverse_rhs)?;
+        Ok(div_rv)
     }
 }
 
