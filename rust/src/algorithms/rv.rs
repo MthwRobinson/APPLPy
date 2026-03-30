@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::fmt;
-use std::ops::{Add, AddAssign, Mul, Sub};
+use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
 use num_rational::Rational64;
 use num_traits::cast::ToPrimitive;
@@ -80,13 +80,61 @@ impl AddAssign for RandomVariable {
     }
 }
 
+/// Computes the difference of two independent discrete random variables.
+///
+/// # Examples
+/// ```
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+/// use num_rational::Rational64;
+///
+/// let rv1 = RandomVariable {
+///     function: vec![
+///         Number::Rational(Rational64::new(1, 2)),
+///         Number::Rational(Rational64::new(1, 2)),
+///     ],
+///     support: vec![Number::Integer(1), Number::Integer(2)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let rv2 = RandomVariable {
+///     function: vec![
+///         Number::Rational(Rational64::new(1, 2)),
+///         Number::Rational(Rational64::new(1, 2)),
+///     ],
+///     support: vec![Number::Integer(2), Number::Integer(3)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let difference = (rv1 - rv2).unwrap();
+///
+/// assert_eq!(
+///     difference.support,
+///     vec![Number::Integer(-2), Number::Integer(-1), Number::Integer(0)]
+/// );
+/// assert_eq!(
+///     difference.function,
+///     vec![
+///         Number::Rational(Rational64::new(1, 4)),
+///         Number::Rational(Rational64::new(1, 2)),
+///         Number::Rational(Rational64::new(1, 4)),
+///     ]
+/// );
+/// assert!(difference.verify_pdf(None).unwrap());
+/// ```
 impl Sub for RandomVariable {
     type Output = Result<RandomVariable, String>;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let min_support = self.support.first()
+        let min_support = rhs
+            .support
+            .first()
             .expect("failed to extract the first number");
-        let max_support = self.support.last()
+        let max_support = rhs
+            .support
+            .last()
             .expect("failed to extract the last number");
         let transformation = transform::Transformation {
             mapping: |x| x * Number::Integer(-1),
@@ -95,6 +143,61 @@ impl Sub for RandomVariable {
         let negative_rhs = transform::transform_discrete(&rhs, &[transformation])?;
         let sub_rv = algebra::convolution_discrete(&self, &negative_rhs)?;
         Ok(sub_rv)
+    }
+}
+
+/// Updates a random variable in place with the difference of two
+/// independent discrete random variables.
+///
+/// # Examples
+/// ```
+/// use applpy_rust::algorithms::number::Number;
+/// use applpy_rust::algorithms::rv::{DomainType, FunctionalForm, RandomVariable};
+/// use num_rational::Rational64;
+///
+/// let mut rv1 = RandomVariable {
+///     function: vec![
+///         Number::Rational(Rational64::new(1, 2)),
+///         Number::Rational(Rational64::new(1, 2)),
+///     ],
+///     support: vec![Number::Integer(1), Number::Integer(2)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// let rv2 = RandomVariable {
+///     function: vec![
+///         Number::Rational(Rational64::new(1, 2)),
+///         Number::Rational(Rational64::new(1, 2)),
+///     ],
+///     support: vec![Number::Integer(2), Number::Integer(3)],
+///     functional_form: FunctionalForm::Pdf,
+///     domain_type: DomainType::Discrete,
+/// };
+///
+/// rv1 -= rv2;
+///
+/// assert_eq!(
+///     rv1.support,
+///     vec![Number::Integer(-2), Number::Integer(-1), Number::Integer(0)]
+/// );
+/// assert_eq!(
+///     rv1.function,
+///     vec![
+///         Number::Rational(Rational64::new(1, 4)),
+///         Number::Rational(Rational64::new(1, 2)),
+///         Number::Rational(Rational64::new(1, 4)),
+///     ]
+/// );
+/// assert!(rv1.verify_pdf(None).unwrap());
+/// ```
+impl SubAssign for RandomVariable {
+    fn sub_assign(&mut self, rhs: Self) {
+        let sub_rv = self
+            .clone()
+            .sub(rhs)
+            .expect("failed to subtract the random variables");
+        *self = sub_rv.clone();
     }
 }
 
@@ -420,6 +523,84 @@ pub fn evaluate_rv(
 mod tests {
     use super::*;
     use num_rational::Rational64;
+
+    #[test]
+    fn sub_returns_difference_distribution() {
+        let lhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+        let rhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = (lhs - rhs).unwrap();
+
+        assert_eq!(
+            result.support,
+            vec![Number::Integer(-2), Number::Integer(-1), Number::Integer(0)]
+        );
+        assert_eq!(
+            result.function,
+            vec![
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 4)),
+            ]
+        );
+        assert!(matches!(result.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(result.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
+    fn sub_assign_updates_random_variable_in_place() {
+        let mut lhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+        let rhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        lhs -= rhs;
+
+        assert_eq!(
+            lhs.support,
+            vec![Number::Integer(-2), Number::Integer(-1), Number::Integer(0)]
+        );
+        assert_eq!(
+            lhs.function,
+            vec![
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 4)),
+            ]
+        );
+        assert!(matches!(lhs.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(lhs.domain_type, DomainType::Discrete));
+    }
 
     #[test]
     fn verify_pdf_returns_err_for_non_pdf_functional_form() {
