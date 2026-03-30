@@ -330,13 +330,16 @@ class RV:
         from .algebra import convolution
         from .transform import transform
 
-        if "RV" in other.__class__.__name__:
+        if isinstance(other, RV):
+            if self.is_discrete() and other.is_discrete():
+                fast_rv = self.to_fast_rv()
+                other_fast_rv = other.to_fast_rv()
+                return RV.from_fast_rv(fast_rv + other_fast_rv)
+
             try:
                 return convolution(self, other)
             except Exception:
                 return convolution(other, self)
-            else:
-                raise RVError("Could not compute the convolution")
         # If the random variable is added to a constant, shift
         # the random variable
         if isinstance(other, (float, int)):
@@ -357,6 +360,11 @@ class RV:
                     2. other: a constant or random variable
         Output:     1. A new random variable
         """
+        if isinstance(other, RV):
+            if self.is_discrete() and other.is_discrete():
+                fast_rv = self.to_fast_rv()
+                other_fast_rv = other.to_fast_rv()
+                return RV.from_fast_rv(fast_rv.__radd__(other_fast_rv))
         return self.__add__(other)
 
     def __sub__(self, other):
@@ -375,7 +383,12 @@ class RV:
         from .algebra import convolution
         from .transform import transform
 
-        if "RV" in other.__class__.__name__:
+        if isinstance(other, RV):
+            if self.is_discrete() and other.is_discrete():
+                fast_rv = self.to_fast_rv()
+                other_fast_rv = other.to_fast_rv()
+                return RV.from_fast_rv(fast_rv - other_fast_rv)
+
             gX = [[-x], [-oo, oo]]
             random_variable = transform(other, gX)
             return convolution(self, random_variable)
@@ -396,6 +409,12 @@ class RV:
                     2. other: a constant or random variable
         Output:     1. A new random variable
         """
+        if isinstance(other, RV):
+            if self.is_discrete() and other.is_discrete():
+                fast_rv = self.to_fast_rv()
+                other_fast_rv = other.to_fast_rv()
+                return RV.from_fast_rv(fast_rv.__rsub__(other_fast_rv))
+
         # Perform an negative transformation of the random variable
         neg_self = -self
         # Add the two components
@@ -417,13 +436,16 @@ class RV:
         from .algebra import product
         from .transform import transform
 
-        if "RV" in other.__class__.__name__:
+        if isinstance(other, RV):
+            if self.is_discrete() and other.is_discrete():
+                fast_rv = self.to_fast_rv()
+                other_fast_rv = other.to_fast_rv()
+                return RV.from_fast_rv(fast_rv * other_fast_rv)
+
             try:
                 return product(self, other)
             except Exception:
                 return product(other, self)
-            else:
-                raise RVError("Could not compute the product")
         # If the random variable is multiplied by a constant, scale
         # the random variable
         if isinstance(other, (float, int)):
@@ -441,6 +463,11 @@ class RV:
                     2. other: a constant or random variable
         Output:     1. A new random variable
         """
+        if isinstance(other, RV):
+            if self.is_discrete() and other.is_discrete():
+                fast_rv = self.to_fast_rv()
+                other_fast_rv = other.to_fast_rv()
+                return RV.from_fast_rv(fast_rv.__rmul__(other_fast_rv))
         return self.__mul__(other)
 
     def __truediv__(self, other):
@@ -459,7 +486,12 @@ class RV:
         from .algebra import product
         from .transform import transform
 
-        if "RV" in other.__class__.__name__:
+        if isinstance(other, RV):
+            if self.is_discrete() and other.is_discrete():
+                fast_rv = self.to_fast_rv()
+                other_fast_rv = other.to_fast_rv()
+                return RV.from_fast_rv(fast_rv / other_fast_rv)
+
             gX = [[1 / x, 1 / x], [-oo, 0, oo]]
             random_variable = transform(other, gX)
             return product(self, random_variable)
@@ -480,6 +512,12 @@ class RV:
                     2. other: a constant or random variable
         Output:     1. A new random variable
         """
+        if isinstance(other, RV):
+            if self.is_discrete() and other.is_discrete():
+                fast_rv = self.to_fast_rv()
+                other_fast_rv = other.to_fast_rv()
+                return RV.from_fast_rv(fast_rv.__rtruediv__(other_fast_rv))
+
         ## Invert the random variable
         from .transform import transform
 
