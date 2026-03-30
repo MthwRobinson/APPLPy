@@ -138,7 +138,8 @@ impl Sub for RandomVariable {
             .expect("failed to extract the last number");
         let transformation = transform::Transformation {
             mapping: |x| x * Number::Integer(-1),
-            support: (*min_support, *max_support),
+            min_support: *min_support,
+            max_support: *max_support,
         };
         let negative_rhs = transform::transform_discrete(&rhs, &[transformation])?;
         let sub_rv = algebra::convolution_discrete(&self, &negative_rhs)?;

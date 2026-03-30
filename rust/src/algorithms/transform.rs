@@ -228,7 +228,8 @@ pub fn mixture_discrete(
 
 pub struct Transformation {
     pub mapping: fn(Number) -> Number,
-    pub support: (Number, Number),
+    pub min_support: Number,
+    pub max_support: Number,
 }
 
 /// Computes a transformation of a discrete random variable
@@ -269,11 +270,13 @@ pub struct Transformation {
 ///     &[
 ///         Transformation {
 ///             mapping: |x| x * Number::Integer(2),
-///             support: (Number::Integer(1), Number::Integer(3)),
+///             min_support: Number::Integer(1),
+///             max_support: Number::Integer(3),
 ///         },
 ///         Transformation {
 ///             mapping: |x| x + Number::Integer(10),
-///             support: (Number::Integer(3), Number::Integer(5)),
+///             min_support: Number::Integer(3),
+///             max_support: Number::Integer(5),
 ///         },
 ///     ],
 /// )
@@ -312,8 +315,7 @@ pub fn transform_discrete(
 
     // Validate that each transformation range is increasing.
     for transformation in transformations {
-        let (trans_min, trans_max) = &transformation.support;
-        if *trans_min >= *trans_max {
+        if transformation.min_support >= transformation.max_support {
             return Err(
                 "the max range of the transformation must exceeed the min range".to_string(),
             );
@@ -325,10 +327,7 @@ pub fn transform_discrete(
         let current_transformation = &window[0];
         let next_transformation = &window[1];
 
-        let (_, trans_max) = &current_transformation.support;
-        let (next_trans_min, _) = &next_transformation.support;
-
-        if trans_max != next_trans_min {
+        if current_transformation.max_support != next_transformation.min_support {
             return Err("the transformation ranges must be adjacent".to_string());
         }
     }
@@ -338,8 +337,7 @@ pub fn transform_discrete(
     let lowest_transform = transformations
         .first()
         .expect("unable to extract lowest transform")
-        .support
-        .0;
+        .min_support;
     if *lowest_support < lowest_transform {
         return Err(
             "the minimum transformation support is higher than the minimum rv support".to_string(),
@@ -350,8 +348,7 @@ pub fn transform_discrete(
     let highest_transform = transformations
         .last()
         .expect("unable to extract highest transform")
-        .support
-        .1;
+        .max_support;
     if *highest_support > highest_transform {
         return Err(
             "the maxium transformation support is lower than the maximum rv support".to_string(),
@@ -363,8 +360,7 @@ pub fn transform_discrete(
     for (&s, &probability) in support.iter().zip(function.iter()) {
         for transformation in transformations {
             let mapping = &transformation.mapping;
-            let (trans_min, trans_max) = &transformation.support;
-            if s >= *trans_min && s <= *trans_max {
+            if s >= transformation.min_support && s <= transformation.max_support {
                 let raw_transformed_support_value = mapping(s);
                 raw_transformed_pairs.push((raw_transformed_support_value, probability));
                 // Break to avoid inserting multiple transformed entries for
@@ -552,11 +548,13 @@ mod tests {
             &[
                 Transformation {
                     mapping: |x| x * Number::Integer(2),
-                    support: (Number::Integer(1), Number::Integer(3)),
+                    min_support: Number::Integer(1),
+                    max_support: Number::Integer(3),
                 },
                 Transformation {
                     mapping: |x| x + Number::Integer(10),
-                    support: (Number::Integer(3), Number::Integer(5)),
+                    min_support: Number::Integer(3),
+                    max_support: Number::Integer(5),
                 },
             ],
         )
@@ -602,7 +600,8 @@ mod tests {
             &rv,
             &[Transformation {
                 mapping: |x| x,
-                support: (Number::Integer(1), Number::Integer(1)),
+                min_support: Number::Integer(1),
+                max_support: Number::Integer(1),
             }],
         );
 
@@ -620,11 +619,13 @@ mod tests {
             &[
                 Transformation {
                     mapping: |x| x,
-                    support: (Number::Integer(1), Number::Integer(2)),
+                    min_support: Number::Integer(1),
+                    max_support: Number::Integer(2),
                 },
                 Transformation {
                     mapping: |x| x,
-                    support: (Number::Integer(3), Number::Integer(5)),
+                    min_support: Number::Integer(3),
+                    max_support: Number::Integer(5),
                 },
             ],
         );
@@ -642,7 +643,8 @@ mod tests {
             &rv,
             &[Transformation {
                 mapping: |x| x,
-                support: (Number::Integer(2), Number::Integer(5)),
+                min_support: Number::Integer(2),
+                max_support: Number::Integer(5),
             }],
         );
 
@@ -659,7 +661,8 @@ mod tests {
             &rv,
             &[Transformation {
                 mapping: |x| x,
-                support: (Number::Integer(1), Number::Integer(3)),
+                min_support: Number::Integer(1),
+                max_support: Number::Integer(3),
             }],
         );
 
