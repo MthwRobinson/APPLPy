@@ -227,7 +227,7 @@ pub fn mixture_discrete(
 }
 
 pub struct Transformation {
-    pub mapping: Box<dyn Fn(Number) -> Number>,
+    pub mapping: fn(Number) -> Number,
     pub support: (Number, Number),
 }
 
@@ -268,11 +268,11 @@ pub struct Transformation {
 ///     &rv,
 ///     &[
 ///         Transformation {
-///             mapping: Box::new(|x| x * Number::Integer(2)),
+///             mapping: |x| x * Number::Integer(2),
 ///             support: (Number::Integer(1), Number::Integer(3)),
 ///         },
 ///         Transformation {
-///             mapping: Box::new(|x| x + Number::Integer(10)),
+///             mapping: |x| x + Number::Integer(10),
 ///             support: (Number::Integer(3), Number::Integer(5)),
 ///         },
 ///     ],
@@ -551,11 +551,11 @@ mod tests {
             &rv,
             &[
                 Transformation {
-                    mapping: Box::new(|x| x * Number::Integer(2)),
+                    mapping: |x| x * Number::Integer(2),
                     support: (Number::Integer(1), Number::Integer(3)),
                 },
                 Transformation {
-                    mapping: Box::new(|x| x + Number::Integer(10)),
+                    mapping: |x| x + Number::Integer(10),
                     support: (Number::Integer(3), Number::Integer(5)),
                 },
             ],
@@ -601,7 +601,7 @@ mod tests {
         let result = transform_discrete(
             &rv,
             &[Transformation {
-                mapping: Box::new(|x| x),
+                mapping: |x| x,
                 support: (Number::Integer(1), Number::Integer(1)),
             }],
         );
@@ -619,11 +619,11 @@ mod tests {
             &rv,
             &[
                 Transformation {
-                    mapping: Box::new(|x| x),
+                    mapping: |x| x,
                     support: (Number::Integer(1), Number::Integer(2)),
                 },
                 Transformation {
-                    mapping: Box::new(|x| x),
+                    mapping: |x| x,
                     support: (Number::Integer(3), Number::Integer(5)),
                 },
             ],
@@ -641,7 +641,7 @@ mod tests {
         let result = transform_discrete(
             &rv,
             &[Transformation {
-                mapping: Box::new(|x| x),
+                mapping: |x| x,
                 support: (Number::Integer(2), Number::Integer(5)),
             }],
         );
@@ -658,7 +658,7 @@ mod tests {
         let result = transform_discrete(
             &rv,
             &[Transformation {
-                mapping: Box::new(|x| x),
+                mapping: |x| x,
                 support: (Number::Integer(1), Number::Integer(3)),
             }],
         );
