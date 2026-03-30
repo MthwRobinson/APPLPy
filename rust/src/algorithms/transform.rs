@@ -370,25 +370,8 @@ pub fn transform_discrete(
     let (sorted_support, sorted_function): (Vec<Number>, Vec<Number>) =
         raw_transformed_pairs.into_iter().unzip();
 
-    // De-duplicate the support. If a a vlue appears multiple times in the
-    // support, combine the probabilities
-    let mut transformed_function = Vec::new();
-    let mut transformed_support = Vec::new();
-    for (&s, &probability) in sorted_support.iter().zip(sorted_function.iter()) {
-        let support_index = transformed_support
-            .iter()
-            .position(|&x: &Number| x.to_f64() == s.to_f64());
-
-        match support_index {
-            Some(index) => {
-                transformed_function[index] += probability;
-            }
-            None => {
-                transformed_support.push(s);
-                transformed_function.push(probability);
-            }
-        }
-    }
+    let (transformed_support, transformed_function) =
+        shared::deduplicate_support(sorted_support, sorted_function)?;
 
     let transformed_rv = RandomVariable {
         function: transformed_function,
