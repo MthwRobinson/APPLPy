@@ -549,6 +549,130 @@ mod tests {
     use num_rational::Rational64;
 
     #[test]
+    fn add_returns_sum_distribution() {
+        let lhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+        let rhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = (lhs + rhs).unwrap();
+
+        assert_eq!(
+            result.support,
+            vec![Number::Integer(3), Number::Integer(4), Number::Integer(5)]
+        );
+        assert_eq!(
+            result.function,
+            vec![
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 4)),
+            ]
+        );
+        assert!(matches!(result.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(result.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
+    fn add_assign_updates_random_variable_in_place() {
+        let mut lhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+        let rhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        lhs += rhs;
+
+        assert_eq!(
+            lhs.support,
+            vec![Number::Integer(3), Number::Integer(4), Number::Integer(5)]
+        );
+        assert_eq!(
+            lhs.function,
+            vec![
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 4)),
+            ]
+        );
+        assert!(matches!(lhs.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(lhs.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
+    fn div_returns_quotient_distribution() {
+        let lhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(2), Number::Integer(4)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+        let rhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![
+                Number::Rational(Rational64::new(2, 1)),
+                Number::Rational(Rational64::new(4, 1)),
+            ],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = (lhs / rhs).unwrap();
+
+        assert_eq!(
+            result.support,
+            vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 1)),
+                Number::Rational(Rational64::new(2, 1)),
+            ]
+        );
+        assert_eq!(
+            result.function,
+            vec![
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 4)),
+            ]
+        );
+        assert!(matches!(result.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(result.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
     fn sub_returns_difference_distribution() {
         let lhs = RandomVariable {
             function: vec![
@@ -624,6 +748,51 @@ mod tests {
         );
         assert!(matches!(lhs.functional_form, FunctionalForm::Pdf));
         assert!(matches!(lhs.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
+    fn mul_returns_product_distribution() {
+        let lhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(1), Number::Integer(2)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+        let rhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(2), Number::Integer(3)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+
+        let result = (lhs * rhs).unwrap();
+
+        assert_eq!(
+            result.support,
+            vec![
+                Number::Integer(2),
+                Number::Integer(3),
+                Number::Integer(4),
+                Number::Integer(6),
+            ]
+        );
+        assert_eq!(
+            result.function,
+            vec![
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 4)),
+            ]
+        );
+        assert!(matches!(result.functional_form, FunctionalForm::Pdf));
+        assert!(matches!(result.domain_type, DomainType::Discrete));
     }
 
     #[test]
