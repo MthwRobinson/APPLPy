@@ -291,6 +291,54 @@ impl FastRV {
         }
     }
 
+    pub fn __radd__(&self, lhs: FastRV) -> PyResult<FastRV> {
+        let self_rv = self.inner.clone();
+        let lhs_rv = lhs.inner.clone();
+
+        let sum_rv = lhs_rv + self_rv;
+
+        match sum_rv {
+            Ok(rv) => {
+                let fast_rv =
+                    FastRV::new(rv.function, rv.support, rv.functional_form, rv.domain_type);
+                Ok(fast_rv)
+            }
+            Err(s) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(s)),
+        }
+    }
+
+    pub fn __sub__(&self, rhs: FastRV) -> PyResult<FastRV> {
+        let self_rv = self.inner.clone();
+        let rhs_rv = rhs.inner.clone();
+
+        let difference_rv = self_rv - rhs_rv;
+
+        match difference_rv {
+            Ok(rv) => {
+                let fast_rv =
+                    FastRV::new(rv.function, rv.support, rv.functional_form, rv.domain_type);
+                Ok(fast_rv)
+            }
+            Err(s) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(s)),
+        }
+    }
+
+    pub fn __rsub__(&self, lhs: FastRV) -> PyResult<FastRV> {
+        let self_rv = self.inner.clone();
+        let lhs_rv = lhs.inner.clone();
+
+        let difference_rv = lhs_rv - self_rv;
+
+        match difference_rv {
+            Ok(rv) => {
+                let fast_rv =
+                    FastRV::new(rv.function, rv.support, rv.functional_form, rv.domain_type);
+                Ok(fast_rv)
+            }
+            Err(s) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(s)),
+        }
+    }
+
     pub fn __mul__(&self, rhs: FastRV) -> PyResult<FastRV> {
         let self_rv = self.inner.clone();
         let rhs_rv = rhs.inner.clone();
@@ -298,6 +346,54 @@ impl FastRV {
         let product_rv = self_rv * rhs_rv;
 
         match product_rv {
+            Ok(rv) => {
+                let fast_rv =
+                    FastRV::new(rv.function, rv.support, rv.functional_form, rv.domain_type);
+                Ok(fast_rv)
+            }
+            Err(s) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(s)),
+        }
+    }
+
+    pub fn __rmul__(&self, lhs: FastRV) -> PyResult<FastRV> {
+        let self_rv = self.inner.clone();
+        let lhs_rv = lhs.inner.clone();
+
+        let product_rv = lhs_rv * self_rv;
+
+        match product_rv {
+            Ok(rv) => {
+                let fast_rv =
+                    FastRV::new(rv.function, rv.support, rv.functional_form, rv.domain_type);
+                Ok(fast_rv)
+            }
+            Err(s) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(s)),
+        }
+    }
+
+    pub fn __truediv__(&self, rhs: FastRV) -> PyResult<FastRV> {
+        let self_rv = self.inner.clone();
+        let rhs_rv = rhs.inner.clone();
+
+        let quotient_rv = self_rv / rhs_rv;
+
+        match quotient_rv {
+            Ok(rv) => {
+                let fast_rv =
+                    FastRV::new(rv.function, rv.support, rv.functional_form, rv.domain_type);
+                Ok(fast_rv)
+            }
+            Err(s) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(s)),
+        }
+    }
+
+    pub fn __rtruediv__(&self, lhs: FastRV) -> PyResult<FastRV> {
+        let self_rv = self.inner.clone();
+        let lhs_rv = lhs.inner.clone();
+
+        let quotient_rv = lhs_rv / self_rv;
+
+        match quotient_rv {
             Ok(rv) => {
                 let fast_rv =
                     FastRV::new(rv.function, rv.support, rv.functional_form, rv.domain_type);
