@@ -63,3 +63,83 @@ pub fn deduplicate_support(
 
     Ok((deduped_support, deduped_function))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use num_rational::Rational64;
+
+    #[test]
+    fn sort_by_support_rejects_empty_inputs() {
+        let result = sort_by_support(vec![], vec![]);
+
+        assert!(matches!(
+            result,
+            Err(msg) if msg == "support and function cannot be empty"
+        ));
+    }
+
+    #[test]
+    fn deduplicate_support_combines_duplicate_values() {
+        let support = vec![
+            Number::Integer(1),
+            Number::Integer(1),
+            Number::Integer(2),
+            Number::Integer(2),
+            Number::Integer(3),
+        ];
+        let function = vec![
+            Number::Rational(Rational64::new(1, 10)),
+            Number::Rational(Rational64::new(2, 10)),
+            Number::Rational(Rational64::new(1, 5)),
+            Number::Rational(Rational64::new(1, 10)),
+            Number::Rational(Rational64::new(3, 10)),
+        ];
+
+        let (deduped_support, deduped_function) = deduplicate_support(support, function).unwrap();
+
+        assert_eq!(
+            deduped_support,
+            vec![Number::Integer(1), Number::Integer(2), Number::Integer(3)]
+        );
+        assert_eq!(
+            deduped_function,
+            vec![
+                Number::Rational(Rational64::new(3, 10)),
+                Number::Rational(Rational64::new(3, 10)),
+                Number::Rational(Rational64::new(3, 10)),
+            ]
+        );
+    }
+
+    #[test]
+    fn deduplicate_support_preserves_first_seen_order() {
+        let support = vec![
+            Number::Integer(2),
+            Number::Integer(1),
+            Number::Integer(2),
+            Number::Integer(3),
+        ];
+        let function = vec![
+            Number::Rational(Rational64::new(1, 4)),
+            Number::Rational(Rational64::new(1, 4)),
+            Number::Rational(Rational64::new(1, 4)),
+            Number::Rational(Rational64::new(1, 4)),
+        ];
+
+        let (deduped_support, deduped_function) = deduplicate_support(support, function).unwrap();
+
+        assert_eq!(
+            deduped_support,
+            vec![Number::Integer(2), Number::Integer(1), Number::Integer(3)]
+        );
+        assert_eq!(
+            deduped_function,
+            vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 4)),
+                Number::Rational(Rational64::new(1, 4)),
+            ]
+        );
+    }
+}
