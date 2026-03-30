@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::fmt;
-use std::ops::{Add, AddAssign, Mul};
+use std::ops::{Add, AddAssign, Mul, Sub};
 
 use num_rational::Rational64;
 use num_traits::cast::ToPrimitive;
@@ -10,6 +10,7 @@ use crate::algorithms::algebra;
 use crate::algorithms::conversion;
 use crate::algorithms::moments;
 use crate::algorithms::number::Number;
+use crate::algorithms::transform;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum FunctionalForm {
@@ -76,6 +77,24 @@ impl AddAssign for RandomVariable {
     fn add_assign(&mut self, rhs: Self) {
         *self =
             algebra::convolution_discrete(self, &rhs).expect("failed to sum the random variables");
+    }
+}
+
+impl Sub for RandomVariable {
+    type Output = Result<RandomVariable, String>;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        let min_support = self.support.first()
+            .expect("failed to extract the first number");
+        let max_support = self.support.last()
+            .expect("failed to extract the last number");
+        let transformation = transform::Transformation {
+            mapping: |x| x * Number::Integer(-1),
+            support: (*min_support, *max_support),
+        };
+        let negative_rhs = transform::transform_discrete(&rhs, &[transformation])?;
+        let sub_rv = algebra::convolution_discrete(&self, &negative_rhs)?;
+        Ok(sub_rv)
     }
 }
 
