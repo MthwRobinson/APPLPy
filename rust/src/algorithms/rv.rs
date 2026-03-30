@@ -84,6 +84,14 @@ impl Div for RandomVariable {
     type Output = Result<RandomVariable, String>;
 
     fn div(self, rhs: Self) -> Self::Output {
+        if rhs.support.iter().any(|value| match value {
+            Number::Float(x) => *x == 0.0,
+            Number::Integer(x) => *x == 0,
+            Number::Rational(x) => *x.numer() == 0,
+        }) {
+            return Err("cannot divide by a random variable with zero in its support".to_string());
+        }
+
         let min_support = rhs
             .support
             .first()
@@ -736,6 +744,27 @@ mod tests {
         );
         assert!(matches!(lhs.functional_form, FunctionalForm::Pdf));
         assert!(matches!(lhs.domain_type, DomainType::Discrete));
+    }
+
+    #[test]
+    fn div_returns_error_when_rhs_support_contains_zero() {
+        let lhs = RandomVariable {
+            function: vec![
+                Number::Rational(Rational64::new(1, 2)),
+                Number::Rational(Rational64::new(1, 2)),
+            ],
+            support: vec![Number::Integer(0), Number::Integer(1)],
+            functional_form: FunctionalForm::Pdf,
+            domain_type: DomainType::Discrete,
+        };
+        let rhs = lhs.clone();
+
+        let err = (lhs / rhs).unwrap_err();
+
+        assert_eq!(
+            err,
+            "cannot divide by a random variable with zero in its support"
+        );
     }
 
     #[test]

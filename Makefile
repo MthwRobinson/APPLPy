@@ -95,7 +95,7 @@ ipython: ## Runs iPython with --no-sync to ensure rust bindings are preserved
 
 .PHONY: check
 check: ## Run Ruff lint checks.
-	uv run ruff check applpy test_applpy
+	uv run --no-sync ruff check applpy test_applpy
 
 .PHONY: tidy
 tidy: ## Run Ruff autoformatter.

@@ -151,7 +151,7 @@ def test_operator_overloads_for_scalars_and_rvs():
     with pytest.raises(NotImplementedError):
         abs(rv)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         discrete / discrete
 
     with pytest.raises(RVError, match="integer value"):
